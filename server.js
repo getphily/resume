@@ -141,6 +141,22 @@ app.get('/api/education', checkSupabase, async (req, res) => {
   }
 });
 
+// Get Represented Employers
+app.get('/api/employers', checkSupabase, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('employers')
+      .select('*')
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching employers:', error.message);
+    res.status(500).json({ error: 'Database query failed', message: error.message });
+  }
+});
+
 // Fallback endpoint for Spa routing
 app.get('*', (req, res, next) => {
   if (req.path.includes('.')) {

@@ -10,6 +10,7 @@ import {
   fallbackSkills,
   fallbackEducation,
 } from './data/fallbacks';
+import { fallbackEmployers } from './data/employers';
 
 function App() {
   const [state, setState] = useState({
@@ -19,6 +20,7 @@ function App() {
     socials: null,
     skills: [],
     education: [],
+    employers: [],
     loading: true,
     usingFallbacks: false,
   });
@@ -42,6 +44,15 @@ function App() {
           fetchEndpoint('/api/education'),
         ]);
 
+        // Gracefully fetch employers. If table doesn't exist, use fallback list.
+        let employers = [];
+        try {
+          employers = await fetchEndpoint('/api/employers');
+        } catch (empErr) {
+          console.warn('Could not fetch employers from database, using fallbackEmployers:', empErr.message);
+          employers = fallbackEmployers;
+        }
+
         setState({
           timeline,
           podcasts,
@@ -49,6 +60,7 @@ function App() {
           socials: formatSocials(socials),
           skills,
           education,
+          employers,
           loading: false,
           usingFallbacks: false,
         });
@@ -63,6 +75,7 @@ function App() {
           socials: formatSocials(fallbackSocials),
           skills: fallbackSkills,
           education: fallbackEducation,
+          employers: fallbackEmployers,
           loading: false,
           usingFallbacks: true,
         });

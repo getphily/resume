@@ -11,7 +11,6 @@ import {
   IconButton,
   Link,
   Tag,
-  Divider,
   useColorMode,
   useColorModeValue,
   Input,
@@ -48,6 +47,7 @@ function Dashboard({ data }) {
   const textColorMuted = useColorModeValue('oklch(50% 0.01 240)', 'oklch(65% 0.01 240)');
   const brandPrimary = useColorModeValue('oklch(55% 0.16 260)', 'oklch(75% 0.15 200)');
   const brandSecondary = useColorModeValue('oklch(50% 0.18 200)', 'oklch(65% 0.20 280)');
+  const rowHoverBg = useColorModeValue('blackAlpha.50', 'whiteAlpha.50');
 
   // Search filter for timeline
   const filteredTimeline = data.timeline.filter(
@@ -285,7 +285,7 @@ function Dashboard({ data }) {
 
             <TableContainer maxH="250px" overflowY="auto">
               <Table variant="simple" size="sm">
-                <Thead bg={useColorModeValue('blackAlpha.50', 'whiteAlpha.50')}>
+                <Thead bg={rowHoverBg}>
                   <Tr>
                     <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Role</Th>
                     <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Company</Th>
@@ -297,7 +297,7 @@ function Dashboard({ data }) {
                   {filteredTimeline.map((item) => {
                     const isLabor = ['seiu-1021', 'teamsters-harris', 'teamsters-853', 'north-coast-trust', 'teamsters-665', 'teamsters-624'].includes(item.id);
                     return (
-                      <Tr key={item.id} _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.50') }}>
+                      <Tr key={item.id} _hover={{ bg: rowHoverBg }}>
                         <Td fontWeight="600" fontSize="0.82rem">{item.role}</Td>
                         <Td fontSize="0.82rem" color={isLabor ? 'blue.500' : 'purple.500'} fontWeight="600">{item.company}</Td>
                         <Td fontSize="0.82rem">{item.date_range}</Td>
@@ -329,7 +329,7 @@ function Dashboard({ data }) {
           </Heading>
           <TableContainer>
             <Table variant="simple" size="sm">
-              <Thead bg={useColorModeValue('blackAlpha.50', 'whiteAlpha.50')}>
+              <Thead bg={rowHoverBg}>
                 <Tr>
                   <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Show Title</Th>
                   <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Host(s)</Th>
@@ -340,7 +340,7 @@ function Dashboard({ data }) {
               </Thead>
               <Tbody>
                 {data.podcasts.map((show) => (
-                  <Tr key={show.id} _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.50') }}>
+                  <Tr key={show.id} _hover={{ bg: rowHoverBg }}>
                     <Td fontWeight="700" fontSize="0.82rem" color={show.apple_podcasts_url ? brandPrimary : undefined}>
                       {show.title}
                     </Td>

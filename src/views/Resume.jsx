@@ -96,18 +96,28 @@ function Resume({ data }) {
     onOpen();
   };
 
+  // Color mappings
+  const navBg = useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(20, 22, 32, 0.75)');
+  const borderLight = useColorModeValue('oklch(90% 0.01 240)', 'oklch(28% 0.015 240 / 0.7)');
+  const textColorMuted = useColorModeValue('oklch(50% 0.01 240)', 'oklch(65% 0.01 240)');
+  const brandPrimary = useColorModeValue('oklch(55% 0.16 260)', 'oklch(75% 0.15 200)');
+  const brandSecondary = useColorModeValue('oklch(50% 0.18 200)', 'oklch(65% 0.20 280)');
+  const blueColor = useColorModeValue('blue.600', 'blue.300');
+  const purpleColor = useColorModeValue('purple.600', 'purple.300');
+  const cardBg = useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)');
+
   // Helper functions for career color coding
   const getTimelineTheme = (itemId) => {
     const laborIds = ['seiu-1021', 'teamsters-harris', 'teamsters-853', 'north-coast-trust', 'teamsters-665', 'teamsters-624'];
     if (laborIds.includes(itemId)) {
       return {
-        color: useColorModeValue('blue.600', 'blue.300'),
+        color: blueColor,
         scheme: 'blue',
         label: 'Labor & Campaigns'
       };
     }
     return {
-      color: useColorModeValue('purple.600', 'purple.300'),
+      color: purpleColor,
       scheme: 'purple',
       label: 'Digital & Comms'
     };
@@ -119,13 +129,6 @@ function Resume({ data }) {
     }
     return 'purple';
   };
-
-  // Color mappings
-  const navBg = useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(20, 22, 32, 0.75)');
-  const borderLight = useColorModeValue('oklch(90% 0.01 240)', 'oklch(28% 0.015 240 / 0.7)');
-  const textColorMuted = useColorModeValue('oklch(50% 0.01 240)', 'oklch(65% 0.01 240)');
-  const brandPrimary = useColorModeValue('oklch(55% 0.16 260)', 'oklch(75% 0.15 200)');
-  const brandSecondary = useColorModeValue('oklch(50% 0.18 200)', 'oklch(65% 0.20 280)');
 
   // Filtered portfolio items
   const filteredPortfolio = selectedCategory === 'all'
@@ -447,7 +450,7 @@ function Resume({ data }) {
                   border="1px solid"
                   borderColor={borderLight}
                   borderRadius="xl"
-                  bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                  bg={cardBg}
                   p="1.5rem"
                   transition="all 0.2s"
                   _hover={{ shadow: 'md' }}
@@ -584,7 +587,7 @@ function Resume({ data }) {
                 borderColor={borderLight}
                 borderRadius="xl"
                 p="1.2rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                bg={cardBg}
               >
                 <Heading as="h4" fontSize="0.95rem" fontWeight="700" mb="0.2rem">
                   {edu.institution}
@@ -634,7 +637,7 @@ function Resume({ data }) {
                 borderColor={borderLight}
                 borderRadius="xl"
                 overflow="hidden"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                bg={cardBg}
                 transition="transform 0.25s"
                 _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
                 cursor="pointer"
