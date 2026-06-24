@@ -1317,6 +1317,91 @@
     margin-block-start: 4rem;
   }
 
+  /* --- Built With Stack section --- */
+  .built-with {
+    margin-block-end: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .built-with-label {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    font-weight: 600;
+    opacity: 0.8;
+  }
+
+  .tech-stack-tray {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 720px;
+    margin-inline: auto;
+  }
+
+  .tech-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.88rem;
+    background: var(--surface-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .tech-badge:hover {
+    transform: translateY(-2px);
+    border-color: var(--badge-color, var(--accent-primary));
+    box-shadow: 0 4px 12px var(--badge-glow, var(--accent-glow));
+    color: var(--badge-color);
+  }
+
+  .tech-icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
+    transition: fill 0.25s ease, stroke 0.25s ease;
+  }
+
+  /* Specific Hover Accent Colors & Shadows */
+  .tech-badge.badge-node {
+    --badge-color: oklch(65% 0.15 140); /* Node.js Green */
+    --badge-glow: oklch(65% 0.15 140 / 0.25);
+  }
+  .tech-badge.badge-express {
+    --badge-color: light-dark(oklch(20% 0 0), oklch(95% 0 0));
+    --badge-glow: light-dark(oklch(20% 0 0 / 0.15), oklch(95% 0 0 / 0.2));
+  }
+  .tech-badge.badge-supabase {
+    --badge-color: oklch(72% 0.18 150); /* Supabase Green */
+    --badge-glow: oklch(72% 0.18 150 / 0.25);
+  }
+  .tech-badge.badge-javascript {
+    --badge-color: oklch(80% 0.15 90); /* JS Yellow */
+    --badge-glow: oklch(80% 0.15 90 / 0.25);
+  }
+  .tech-badge.badge-css3 {
+    --badge-color: oklch(60% 0.18 250); /* CSS3 Blue */
+    --badge-glow: oklch(60% 0.18 250 / 0.25);
+  }
+  .tech-badge.badge-html5 {
+    --badge-color: oklch(65% 0.2 40); /* HTML5 Orange */
+    --badge-glow: oklch(65% 0.2 40 / 0.25);
+  }
+
   .domain-text {
     margin-block-start: 0.5rem;
     font-weight: 500;
