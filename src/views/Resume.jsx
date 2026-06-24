@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -69,6 +69,21 @@ function Resume({ data }) {
   const [expandedCards, setExpandedCards] = useState({});
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [lightboxImg, setLightboxImg] = useState({ src: '', alt: '', title: '', desc: '', tags: [] });
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Scroll past the title elements threshold (approx 220px)
+      if (window.scrollY > 220) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -95,17 +110,22 @@ function Resume({ data }) {
 
   return (
     <Box minH="100vh" pb="2rem">
-      {/* 1. Header & Navigation */}
       <Box
         as="nav"
-        position="sticky"
+        position="fixed"
         top="0"
+        left="0"
+        right="0"
         zIndex="100"
         bg={navBg}
         backdropFilter="blur(12px)"
         borderBottom="1px solid"
         borderColor={borderLight}
         py="1rem"
+        transform={scrolled ? 'translateY(0)' : 'translateY(-100%)'}
+        opacity={scrolled ? 1 : 0}
+        pointerEvents={scrolled ? 'auto' : 'none'}
+        transition="transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease"
       >
         <Container maxW="container.lg" display="flex" justifyContent="space-between" alignItems="center">
           <Heading
