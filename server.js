@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+import WebSocket from 'ws';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -19,7 +20,11 @@ const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
 let supabase = null;
 if (supabaseUrl && supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KEY_HERE') {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    realtime: {
+      transport: WebSocket,
+    },
+  });
   console.log('Supabase client initialized successfully.');
 } else {
   console.warn('WARNING: Supabase credentials are missing or still placeholder values. API endpoints will fail until configured.');
