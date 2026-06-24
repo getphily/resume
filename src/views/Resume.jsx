@@ -228,7 +228,91 @@ function Resume({ data }) {
       </Box>
 
       {/* Main Container */}
-      <Container maxW="container.md" pt="3rem">
+      <Container maxW="container.md" pt="2rem">
+        {/* Inline Top Header (scrolls away naturally) */}
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          w="100%"
+          mb="3rem"
+          pb="1rem"
+          borderBottom="1px solid"
+          borderColor={borderLight}
+        >
+          <Heading
+            fontSize="1.4rem"
+            fontWeight="800"
+            letterSpacing="-0.02em"
+            bgGradient={`linear(to-r, ${brandPrimary}, ${brandSecondary})`}
+            bgClip="text"
+            cursor="pointer"
+            onClick={() => window.scrollTo(0, 0)}
+          >
+            PHIL YBARROLAZA
+          </Heading>
+
+          <HStack spacing="0.5rem">
+            {/* Social Links */}
+            {data.socials?.primary?.linkedin && (
+              <IconButton
+                as="a"
+                href={data.socials.primary.linkedin}
+                target="_blank"
+                rel="noopener"
+                aria-label="LinkedIn"
+                icon={<FaLinkedin />}
+                size="sm"
+                variant="ghost"
+              />
+            )}
+            {data.socials?.primary?.x && (
+              <IconButton
+                as="a"
+                href={data.socials.primary.x}
+                target="_blank"
+                rel="noopener"
+                aria-label="X"
+                icon={<FaXTwitter />}
+                size="sm"
+                variant="ghost"
+              />
+            )}
+            {data.socials?.primary?.instagram && (
+              <IconButton
+                as="a"
+                href={data.socials.primary.instagram}
+                target="_blank"
+                rel="noopener"
+                aria-label="Instagram"
+                icon={<FaInstagram />}
+                size="sm"
+                variant="ghost"
+              />
+            )}
+            {data.socials?.primary?.youtube && (
+              <IconButton
+                as="a"
+                href={data.socials.primary.youtube}
+                target="_blank"
+                rel="noopener"
+                aria-label="YouTube"
+                icon={<FaYoutube />}
+                size="sm"
+                variant="ghost"
+              />
+            )}
+            <Divider orientation="vertical" height="20px" borderColor={borderLight} mx="0.5rem" />
+            <IconButton
+              aria-label="Toggle Color Mode"
+              icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
+              onClick={toggleColorMode}
+              variant="ghost"
+              size="sm"
+            />
+          </HStack>
+        </Box>
+
         {/* Warning Badge if using fallbacks */}
         {data.usingFallbacks && (
           <Box
