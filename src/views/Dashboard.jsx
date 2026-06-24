@@ -69,7 +69,7 @@ function Dashboard({ data }) {
       toolbar: { show: false },
       background: 'transparent',
     },
-    colors: [colorMode === 'dark' ? '#00F2FE' : '#4E65FF'],
+    colors: ['#3182CE', '#805AD5'],
     xaxis: {
       categories: ['Labor Org', 'Bargaining', 'Trust Fiduciary', 'Video Pods', 'Audio/Vid Edit', 'Design Systems', 'SEO & Coding'],
       labels: {
@@ -88,8 +88,12 @@ function Dashboard({ data }) {
 
   const skillsChartSeries = [
     {
-      name: 'Phil\'s Competencies',
-      data: [95, 90, 85, 92, 88, 80, 82],
+      name: 'Labor & Campaigns',
+      data: [95, 90, 85, 0, 0, 0, 0],
+    },
+    {
+      name: 'Digital & Comms',
+      data: [0, 0, 0, 92, 88, 80, 82],
     },
   ];
 
@@ -286,19 +290,28 @@ function Dashboard({ data }) {
                     <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Role</Th>
                     <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Company</Th>
                     <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Timeline</Th>
+                    <Th fontSize="0.68rem" fontWeight="700" color={textColorMuted}>Category</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {filteredTimeline.map((item) => (
-                    <Tr key={item.id} _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.50') }}>
-                      <Td fontWeight="600" fontSize="0.82rem">{item.role}</Td>
-                      <Td fontSize="0.82rem" color={brandPrimary} fontWeight="600">{item.company}</Td>
-                      <Td fontSize="0.82rem">{item.date_range}</Td>
-                    </Tr>
-                  ))}
+                  {filteredTimeline.map((item) => {
+                    const isLabor = ['seiu-1021', 'teamsters-harris', 'teamsters-853', 'north-coast-trust', 'teamsters-665', 'teamsters-624'].includes(item.id);
+                    return (
+                      <Tr key={item.id} _hover={{ bg: useColorModeValue('blackAlpha.50', 'whiteAlpha.50') }}>
+                        <Td fontWeight="600" fontSize="0.82rem">{item.role}</Td>
+                        <Td fontSize="0.82rem" color={isLabor ? 'blue.500' : 'purple.500'} fontWeight="600">{item.company}</Td>
+                        <Td fontSize="0.82rem">{item.date_range}</Td>
+                        <Td>
+                          <Tag size="sm" variant="subtle" colorScheme={isLabor ? 'blue' : 'purple'} fontSize="0.68rem" fontWeight="700">
+                            {isLabor ? 'Labor Relations' : 'Digital Media'}
+                          </Tag>
+                        </Td>
+                      </Tr>
+                    );
+                  })}
                   {filteredTimeline.length === 0 && (
                     <Tr>
-                      <Td colSpan="3" textAlign="center" py="2rem" color={textColorMuted}>
+                      <Td colSpan="4" textAlign="center" py="2rem" color={textColorMuted}>
                         No roles found matching your query.
                       </Td>
                     </Tr>

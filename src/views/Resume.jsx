@@ -416,6 +416,7 @@ function Resume({ data }) {
           <VStack spacing="1.5rem" align="stretch">
             {data.timeline.map((item) => {
               const isExpanded = expandedCards[item.id] || false;
+              const theme = getTimelineTheme(item.id);
               return (
                 <Box
                   key={item.id}
@@ -432,20 +433,25 @@ function Resume({ data }) {
                       <Heading as="h3" fontSize="1.1rem" fontWeight="700">
                         {item.role}
                       </Heading>
-                      <Text fontSize="0.9rem" fontWeight="600" color={brandPrimary}>
+                      <Text fontSize="0.9rem" fontWeight="600" color={theme.color}>
                         {item.company} {item.location && `• ${item.location}`}
                       </Text>
                       <Text fontSize="0.8rem" color={textColorMuted} fontWeight="500">
                         {item.date_range}
                       </Text>
                     </VStack>
-                    <IconButton
-                      aria-label="Expand details"
-                      icon={isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                      size="sm"
-                      onClick={() => toggleCard(item.id)}
-                      variant="ghost"
-                    />
+                    <HStack spacing="0.5rem" align="center">
+                      <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.75rem" fontWeight="700">
+                        {theme.label}
+                      </Tag>
+                      <IconButton
+                        aria-label="Expand details"
+                        icon={isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                        size="sm"
+                        onClick={() => toggleCard(item.id)}
+                        variant="ghost"
+                      />
+                    </HStack>
                   </HStack>
 
                   <Collapse in={isExpanded} animateOpacity>
@@ -618,7 +624,7 @@ function Resume({ data }) {
                 <Box h="180px" bg="blackAlpha.200" position="relative" display="flex" alignItems="center" justifyContent="center">
                   <Text fontSize="2rem">🎨</Text>
                   <Box position="absolute" top="0.75rem" left="0.75rem">
-                    <Tag size="sm" variant="solid" colorScheme="teal" textTransform="uppercase" fontSize="0.65rem" fontWeight="700">
+                    <Tag size="sm" variant="solid" colorScheme={getPortfolioScheme(item.category)} textTransform="uppercase" fontSize="0.65rem" fontWeight="700">
                       {item.category}
                     </Tag>
                   </Box>
