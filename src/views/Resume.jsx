@@ -167,18 +167,6 @@ function Resume({ data }) {
                   variant="ghost"
                 />
               )}
-              {data.socials?.primary?.x && (
-                <IconButton
-                  as="a"
-                  href={data.socials.primary.x}
-                  target="_blank"
-                  rel="noopener"
-                  aria-label="X"
-                  icon={<FaXTwitter />}
-                  size="sm"
-                  variant="ghost"
-                />
-              )}
               {data.socials?.primary?.instagram && (
                 <IconButton
                   as="a"
@@ -199,6 +187,18 @@ function Resume({ data }) {
                   rel="noopener"
                   aria-label="YouTube"
                   icon={<FaYoutube />}
+                  size="sm"
+                  variant="ghost"
+                />
+              )}
+              {data.socials?.primary?.x && (
+                <IconButton
+                  as="a"
+                  href={data.socials.primary.x}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="X"
+                  icon={<FaXTwitter />}
                   size="sm"
                   variant="ghost"
                 />
@@ -231,27 +231,30 @@ function Resume({ data }) {
       <Container maxW="container.md" pt="2rem">
         {/* Inline Top Header (scrolls away naturally) */}
         <Box mb="3rem" pb="1.5rem" borderBottom="2px solid" borderColor={borderLight}>
+          {/* Row 1: Social links (LinkedIn first), dashboard view, and theme buttons */}
           <Box
             display="flex"
-            flexDirection={{ base: 'column', md: 'row' }}
             justifyContent="space-between"
-            alignItems={{ base: 'flex-start', md: 'center' }}
-            gap="1rem"
+            alignItems="center"
             w="100%"
-            mb="0.75rem"
+            mb="2rem"
+            pb="0.75rem"
+            borderBottom="1px solid"
+            borderColor={borderLight}
           >
-            <Heading
-              as="h1"
-              fontSize={{ base: '2.2rem', md: '3.2rem' }}
-              fontWeight="800"
-              letterSpacing="-0.03em"
-              color={useColorModeValue('oklch(15% 0 0)', 'white')}
-              lineHeight="1"
-            >
-              PHIL YBARROLAZA
-            </Heading>
-
-            <HStack spacing="0.5rem" alignSelf={{ base: 'flex-end', md: 'center' }}>
+            <HStack spacing="0.5rem">
+              {data.socials?.primary?.linkedin && (
+                <IconButton
+                  as="a"
+                  href={data.socials.primary.linkedin}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="LinkedIn"
+                  icon={<FaLinkedin />}
+                  size="sm"
+                  variant="ghost"
+                />
+              )}
               {data.socials?.primary?.instagram && (
                 <IconButton
                   as="a"
@@ -288,7 +291,9 @@ function Resume({ data }) {
                   variant="ghost"
                 />
               )}
-              <Divider orientation="vertical" height="20px" borderColor={borderLight} mx="0.25rem" />
+            </HStack>
+
+            <HStack spacing="0.5rem">
               <Button
                 size="xs"
                 variant="outline"
@@ -307,24 +312,61 @@ function Resume({ data }) {
             </HStack>
           </Box>
 
-          {/* Traditional Resume Contact Details */}
-          <Text
-            fontSize={{ base: '0.8rem', md: '0.88rem' }}
-            fontWeight="600"
-            color={textColorMuted}
+          {/* Grid row for Profile Image + Name / Contact info details */}
+          <Box
             display="flex"
-            flexWrap="wrap"
-            gap={{ base: '0.3rem 0.6rem', md: '0.5rem 0.8rem' }}
-            alignItems="center"
+            flexDirection={{ base: 'column-reverse', md: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ base: 'center', md: 'center' }}
+            gap="2rem"
+            w="100%"
           >
-            <Box as="span">Petaluma, California</Box>
-            <Box as="span" color={borderLight}>|</Box>
-            <Link href="tel:+17072925778" _hover={{ color: brandPrimary }}>(707) 292-5778</Link>
-            <Box as="span" color={borderLight}>|</Box>
-            <Link href="mailto:phil@redwoodempiremedia.com" _hover={{ color: brandPrimary }}>phil@redwoodempiremedia.com</Link>
-            <Box as="span" color={borderLight}>|</Box>
-            <Link href="https://linkedin.com/in/philybarrolaza" target="_blank" rel="noopener" _hover={{ color: brandPrimary }}>linkedin.com/in/philybarrolaza</Link>
-          </Text>
+            <VStack align={{ base: 'center', md: 'start' }} spacing="0.75rem" textAlign={{ base: 'center', md: 'left' }}>
+              {/* Row 2: Name */}
+              <Heading
+                as="h1"
+                fontSize={{ base: '2.4rem', md: '3.5rem' }}
+                fontWeight="800"
+                letterSpacing="-0.03em"
+                color={useColorModeValue('oklch(15% 0 0)', 'white')}
+                lineHeight="1"
+              >
+                PHIL YBARROLAZA
+              </Heading>
+
+              {/* Row 3: City, phone number, and email address */}
+              <Text
+                fontSize={{ base: '0.82rem', md: '0.92rem' }}
+                fontWeight="600"
+                color={textColorMuted}
+                display="flex"
+                flexWrap="wrap"
+                gap={{ base: '0.3rem 0.6rem', md: '0.5rem 0.8rem' }}
+                alignItems="center"
+                justifyContent={{ base: 'center', md: 'flex-start' }}
+              >
+                <Box as="span">Petaluma, California</Box>
+                <Box as="span" color={borderLight}>|</Box>
+                <Link href="tel:+17072925778" _hover={{ color: brandPrimary }}>(707) 292-5778</Link>
+                <Box as="span" color={borderLight}>|</Box>
+                <Link href="mailto:phil@redwoodempiremedia.com" _hover={{ color: brandPrimary }}>phil@redwoodempiremedia.com</Link>
+              </Text>
+            </VStack>
+
+            {/* Profile Image */}
+            <Box flexShrink="0">
+              <Image
+                src="/assets/profile.jpg"
+                alt="Phil Ybarrolaza"
+                borderRadius="full"
+                boxSize={{ base: '100px', md: '120px' }}
+                objectFit="cover"
+                border="3px solid"
+                borderColor={brandPrimary}
+                shadow="md"
+              />
+            </Box>
+          </Box>
         </Box>
 
         {/* Warning Badge if using fallbacks */}
