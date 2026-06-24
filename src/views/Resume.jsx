@@ -230,87 +230,101 @@ function Resume({ data }) {
       {/* Main Container */}
       <Container maxW="container.md" pt="2rem">
         {/* Inline Top Header (scrolls away naturally) */}
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          w="100%"
-          mb="3rem"
-          pb="1rem"
-          borderBottom="1px solid"
-          borderColor={borderLight}
-        >
-          <Heading
-            fontSize="1.4rem"
-            fontWeight="800"
-            letterSpacing="-0.02em"
-            bgGradient={`linear(to-r, ${brandPrimary}, ${brandSecondary})`}
-            bgClip="text"
-            cursor="pointer"
-            onClick={() => window.scrollTo(0, 0)}
+        <Box mb="3rem" pb="1.5rem" borderBottom="2px solid" borderColor={borderLight}>
+          <Box
+            display="flex"
+            flexDirection={{ base: 'column', md: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ base: 'flex-start', md: 'center' }}
+            gap="1rem"
+            w="100%"
+            mb="0.75rem"
           >
-            PHIL YBARROLAZA
-          </Heading>
+            <Heading
+              as="h1"
+              fontSize={{ base: '2.2rem', md: '3.2rem' }}
+              fontWeight="800"
+              letterSpacing="-0.03em"
+              color={useColorModeValue('oklch(15% 0 0)', 'white')}
+              lineHeight="1"
+            >
+              PHIL YBARROLAZA
+            </Heading>
 
-          <HStack spacing="0.5rem">
-            {/* Social Links */}
-            {data.socials?.primary?.linkedin && (
+            <HStack spacing="0.5rem" alignSelf={{ base: 'flex-end', md: 'center' }}>
+              {data.socials?.primary?.instagram && (
+                <IconButton
+                  as="a"
+                  href={data.socials.primary.instagram}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="Instagram"
+                  icon={<FaInstagram />}
+                  size="sm"
+                  variant="ghost"
+                />
+              )}
+              {data.socials?.primary?.youtube && (
+                <IconButton
+                  as="a"
+                  href={data.socials.primary.youtube}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="YouTube"
+                  icon={<FaYoutube />}
+                  size="sm"
+                  variant="ghost"
+                />
+              )}
+              {data.socials?.primary?.x && (
+                <IconButton
+                  as="a"
+                  href={data.socials.primary.x}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label="X"
+                  icon={<FaXTwitter />}
+                  size="sm"
+                  variant="ghost"
+                />
+              )}
+              <Divider orientation="vertical" height="20px" borderColor={borderLight} mx="0.25rem" />
+              <Button
+                size="xs"
+                variant="outline"
+                colorScheme="teal"
+                onClick={() => navigate('/dashboard')}
+              >
+                Dashboard View
+              </Button>
               <IconButton
-                as="a"
-                href={data.socials.primary.linkedin}
-                target="_blank"
-                rel="noopener"
-                aria-label="LinkedIn"
-                icon={<FaLinkedin />}
-                size="sm"
+                aria-label="Toggle Color Mode"
+                icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
+                onClick={toggleColorMode}
                 variant="ghost"
-              />
-            )}
-            {data.socials?.primary?.x && (
-              <IconButton
-                as="a"
-                href={data.socials.primary.x}
-                target="_blank"
-                rel="noopener"
-                aria-label="X"
-                icon={<FaXTwitter />}
                 size="sm"
-                variant="ghost"
               />
-            )}
-            {data.socials?.primary?.instagram && (
-              <IconButton
-                as="a"
-                href={data.socials.primary.instagram}
-                target="_blank"
-                rel="noopener"
-                aria-label="Instagram"
-                icon={<FaInstagram />}
-                size="sm"
-                variant="ghost"
-              />
-            )}
-            {data.socials?.primary?.youtube && (
-              <IconButton
-                as="a"
-                href={data.socials.primary.youtube}
-                target="_blank"
-                rel="noopener"
-                aria-label="YouTube"
-                icon={<FaYoutube />}
-                size="sm"
-                variant="ghost"
-              />
-            )}
-            <Divider orientation="vertical" height="20px" borderColor={borderLight} mx="0.5rem" />
-            <IconButton
-              aria-label="Toggle Color Mode"
-              icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
-              onClick={toggleColorMode}
-              variant="ghost"
-              size="sm"
-            />
-          </HStack>
+            </HStack>
+          </Box>
+
+          {/* Traditional Resume Contact Details */}
+          <Text
+            fontSize={{ base: '0.8rem', md: '0.88rem' }}
+            fontWeight="600"
+            color={textColorMuted}
+            display="flex"
+            flexWrap="wrap"
+            gap={{ base: '0.3rem 0.6rem', md: '0.5rem 0.8rem' }}
+            alignItems="center"
+          >
+            <Box as="span">Petaluma, California</Box>
+            <Box as="span" color={borderLight}>|</Box>
+            <Link href="tel:+17072925778" _hover={{ color: brandPrimary }}>(707) 292-5778</Link>
+            <Box as="span" color={borderLight}>|</Box>
+            <Link href="mailto:phil@redwoodempiremedia.com" _hover={{ color: brandPrimary }}>phil@redwoodempiremedia.com</Link>
+            <Box as="span" color={borderLight}>|</Box>
+            <Link href="https://linkedin.com/in/philybarrolaza" target="_blank" rel="noopener" _hover={{ color: brandPrimary }}>linkedin.com/in/philybarrolaza</Link>
+          </Text>
         </Box>
 
         {/* Warning Badge if using fallbacks */}
@@ -330,15 +344,22 @@ function Resume({ data }) {
           </Box>
         )}
 
-        {/* 2. Hero / Profile Section */}
-        <VStack align="start" spacing="1rem" mb="4rem">
-          <Tag size="sm" variant="subtle" colorScheme="teal" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em">
-            Labor Relations & Digital Communications
-          </Tag>
-          <Heading as="h1" fontSize={{ base: '2rem', md: '2.8rem' }} fontWeight="800" letterSpacing="-0.03em" lineHeight="1.1">
-            Bridging collective organizing with modern digital narratives.
+        {/* 2. Hero / Profile Section (Traditional Professional Summary) */}
+        <VStack align="start" spacing="1.2rem" mb="4rem">
+          <Heading
+            as="h2"
+            fontSize="1.2rem"
+            fontWeight="800"
+            textTransform="uppercase"
+            letterSpacing="0.08em"
+            color={brandPrimary}
+          >
+            Professional Summary
           </Heading>
-          <Text fontSize="1.05rem" color={textColorMuted} lineHeight="1.6">
+          <Text fontSize="1.05rem" fontWeight="600" lineHeight="1.5">
+            Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance economic and social justice.
+          </Text>
+          <Text fontSize="1rem" color={textColorMuted} lineHeight="1.65">
             Field representative, former union local president, and digital media producer with 15+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts.
           </Text>
         </VStack>
