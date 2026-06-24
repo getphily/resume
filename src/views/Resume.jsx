@@ -535,66 +535,67 @@ function Resume({ data }) {
           </VStack>
         </Box>
 
-        {/* 4. Skills & Education Section */}
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="2rem" id="skills" mb="5rem">
-          <Box>
-            <Heading as="h2" fontSize="1.3rem" fontWeight="800" mb="1.5rem">
-              Skills & Core Competencies
-            </Heading>
-            <VStack align="start" spacing="1.5rem">
-              <Box w="100%">
-                <Text fontSize="0.8rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={brandPrimary}>
-                  Campaign Leadership & Strategy
-                </Text>
-                <HStack spacing="0.5rem" wrap="wrap" rowGap="0.5rem">
-                  {data.skills.filter(s => s.category === 'leadership').map((skill) => (
-                    <Tag key={skill.id} size="sm" variant="subtle" colorScheme="blue">
-                      {skill.name}
-                    </Tag>
-                  ))}
-                </HStack>
-              </Box>
+        {/* 4. Skills & Core Competencies Section */}
+        <Box id="skills" mb="4rem">
+          <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="1.5rem" letterSpacing="-0.01em">
+            Skills & Core Competencies
+          </Heading>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="2rem">
+            <Box>
+              <Text fontSize="0.8rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={brandPrimary}>
+                Campaign Leadership & Strategy
+              </Text>
+              <HStack spacing="0.5rem" wrap="wrap" rowGap="0.5rem">
+                {data.skills.filter(s => s.category === 'leadership').map((skill) => (
+                  <Tag key={skill.id} size="sm" variant="subtle" colorScheme="blue">
+                    {skill.name}
+                  </Tag>
+                ))}
+              </HStack>
+            </Box>
 
-              <Box w="100%">
-                <Text fontSize="0.8rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={brandSecondary}>
-                  Digital Media & Communications
-                </Text>
-                <HStack spacing="0.5rem" wrap="wrap" rowGap="0.5rem">
-                  {data.skills.filter(s => s.category === 'comms').map((skill) => (
-                    <Tag key={skill.id} size="sm" variant="subtle" colorScheme="purple">
-                      {skill.name}
-                    </Tag>
-                  ))}
-                </HStack>
-              </Box>
-            </VStack>
-          </Box>
+            <Box>
+              <Text fontSize="0.8rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={brandSecondary}>
+                Digital Media & Communications
+              </Text>
+              <HStack spacing="0.5rem" wrap="wrap" rowGap="0.5rem">
+                {data.skills.filter(s => s.category === 'comms').map((skill) => (
+                  <Tag key={skill.id} size="sm" variant="subtle" colorScheme="purple">
+                    {skill.name}
+                  </Tag>
+                ))}
+              </HStack>
+            </Box>
+          </SimpleGrid>
+        </Box>
 
-          <Box>
-            <Heading as="h2" fontSize="1.3rem" fontWeight="800" mb="1.5rem">
-              Education
-            </Heading>
-            <VStack spacing="1rem" align="stretch">
-              {data.education.map((edu) => (
-                <Box
-                  key={edu.id}
-                  border="1px solid"
-                  borderColor={borderLight}
-                  borderRadius="xl"
-                  p="1.2rem"
-                  bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                >
-                  <Heading as="h4" fontSize="0.95rem" fontWeight="700" mb="0.2rem">
-                    {edu.institution}
-                  </Heading>
-                  <Text fontSize="0.85rem" color={textColorMuted}>
-                    {edu.details}
-                  </Text>
-                </Box>
-              ))}
-            </VStack>
-          </Box>
-        </SimpleGrid>
+        <Divider borderColor={borderLight} my="3rem" />
+
+        {/* 4b. Education Section */}
+        <Box id="education" mb="4rem">
+          <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="1.5rem" letterSpacing="-0.01em">
+            Education
+          </Heading>
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1.5rem">
+            {data.education.map((edu) => (
+              <Box
+                key={edu.id}
+                border="1px solid"
+                borderColor={borderLight}
+                borderRadius="xl"
+                p="1.2rem"
+                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+              >
+                <Heading as="h4" fontSize="0.95rem" fontWeight="700" mb="0.2rem">
+                  {edu.institution}
+                </Heading>
+                <Text fontSize="0.85rem" color={textColorMuted}>
+                  {edu.details}
+                </Text>
+              </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
 
         <Divider borderColor={borderLight} my="3rem" />
 
