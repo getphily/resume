@@ -11,6 +11,7 @@ import {
   fallbackEducation,
 } from './data/fallbacks';
 import { fallbackEmployers } from './data/employers';
+import { fallbackCompetencies } from './data/competencies';
 
 function App() {
   const [state, setState] = useState({
@@ -21,6 +22,7 @@ function App() {
     skills: [],
     education: [],
     employers: [],
+    competencies: [],
     loading: true,
     usingFallbacks: false,
   });
@@ -53,6 +55,15 @@ function App() {
           employers = fallbackEmployers;
         }
 
+        // Gracefully fetch competencies. If table doesn't exist, use fallback list.
+        let competencies = [];
+        try {
+          competencies = await fetchEndpoint('/api/competencies');
+        } catch (compErr) {
+          console.warn('Could not fetch competencies from database, using fallbackCompetencies:', compErr.message);
+          competencies = fallbackCompetencies;
+        }
+
         setState({
           timeline,
           podcasts,
@@ -61,6 +72,7 @@ function App() {
           skills,
           education,
           employers,
+          competencies,
           loading: false,
           usingFallbacks: false,
         });
@@ -76,6 +88,7 @@ function App() {
           skills: fallbackSkills,
           education: fallbackEducation,
           employers: fallbackEmployers,
+          competencies: fallbackCompetencies,
           loading: false,
           usingFallbacks: true,
         });
