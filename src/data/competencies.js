@@ -573,5 +573,250 @@ export const fallbackCompetencies =
     "name": "Community Coalition Building",
     "description": "Partnering with regional organizing coalitions (e.g., Silicon Valley Rising) and local community/charitable networks to protect living standards and affordable housing initiatives.",
     "sort_order": 52
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Operating System Mastery",
+    "name": "macOS & iOS",
+    "description": "Extensive experience utilizing Apple products, hardware accessories, and creative applications within a professional studio environment. Highly proficient at executing localized mobile workflows and hardware configurations across the Apple ecosystem.",
+    "sort_order": 1
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Operating System Mastery",
+    "name": "Windows",
+    "description": "Long-term experience deploying enterprise productivity tools, campaign software, and secure application packages in Windows environments.",
+    "sort_order": 2
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Operating System Mastery",
+    "name": "Android",
+    "description": "Experienced with mobile operating system frameworks, including downloading, deploying, and formatting custom application packages (.apk files) to configure secure lockdown hardware tablets.",
+    "sort_order": 3
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Productivity & Collaboration Suites",
+    "name": "Google Workspace (Google Suite)",
+    "description": "Deep operational familiarity with Google Drive for secure asset storage, file transfer organization, and remote client collaboration. Competent utilizing Google collaboration tools to streamline production workflows.",
+    "sort_order": 4
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Productivity & Collaboration Suites",
+    "name": "Microsoft 365",
+    "description": "Advanced mastery across the enterprise office suite, including formatting text documents in Word, tracking metrics and logs in Excel, building client-facing presentations in PowerPoint, and managing communication channels via Outlook and Teams.",
+    "sort_order": 5
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "Frontend Web Development",
+    "description": "Experienced in building modern, responsive, and intuitive web applications using the React framework.",
+    "sort_order": 6
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "Software Architecture",
+    "description": "Skilled in designing Component Architecture to ensure modular, clean, and maintainable codebases.",
+    "sort_order": 7
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "State Management & Persistence",
+    "description": "Advanced capability implementing complex frontend state management to handle data flow, preserve form data, and maintain state continuity across multi-step user workflows.",
+    "sort_order": 8
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "Session Management & Auto-Save Systems",
+    "description": "Developed intelligent, event-driven auto-save systems and invisible session recovery logic to prevent data loss and enhance application reliability.",
+    "sort_order": 9
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "Information Architecture & UX Engineering",
+    "description": "Proficient at translating complex background analysis into structured multi-step wizard interfaces (e.g., Input → Analysis → Curation → Export) featuring progressive enhancement, navigation constraints, and progress tracking.",
+    "sort_order": 10
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "Performance & Error Optimization",
+    "description": "Focus on frontend performance optimization, technical debt mitigation, and implementing responsive design paradigms across disparate device screens.",
+    "sort_order": 11
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Coding & Software Engineering Skills",
+    "name": "AI Tool Integration & Prompt Engineering",
+    "description": "Familiar with leveraging Generative AI capabilities for code generation, text parsing, and building collaborative human-in-the-loop AI workflows.",
+    "sort_order": 12
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Multi-Cam Field Switching & Live Streaming",
+    "description": "Deep technical capability routing, switching, and syncing live audio and multi-camera video signals in real-time using advanced streaming engines.",
+    "sort_order": 13
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Network & Live Transmission Engineering",
+    "description": "Experienced in deploying ad-hoc Local and Wide Area Networks (WANs) utilizing Power over Ethernet (PoE) cameras to stream compressed live programming to YouTube over cellular and satellite bands under tight infrastructure or low-bandwidth constraints.",
+    "sort_order": 14
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Video Encoding & Compression Management",
+    "description": "Knowledgeable in managing video encoding parameters, troubleshooting transmission points of failure, and balancing live recording settings against available network bandwidth.",
+    "sort_order": 15
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Full-Cycle Podcast Production & Hosting",
+    "description": "Complete technical oversight of audio/video podcast development from concept to automated multi-platform distribution and promotional asset generation.",
+    "sort_order": 16
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Studio Audio Engineering & Hardware Configuration",
+    "description": "Mastery of signal routing, level management, and physical deployment for high-end studio gear including multi-microphone arrays and production mixing consoles.",
+    "sort_order": 17
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Search Engine Optimization (SEO) & Algorithmic Strategy",
+    "description": "Highly skilled in deploying web SEO configurations, analyzing audience data trends, and leveraging platform content algorithms to maximize digital visibility and engagement.",
+    "sort_order": 18
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Paid Social Dashboard Architecture",
+    "description": "Competent in structuring, targeting, and managing paid ad campaigns across native Meta, X (Twitter), and Google advertising dashboards to drive consumer actions and scale rapid audience growth.",
+    "sort_order": 19
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Web Development & Layout Design",
+    "description": "Front-end web layout configurations, system modernizations, landing page optimization, and centralized link-tree integration.",
+    "sort_order": 20
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Digital Media Production & Technical Systems",
+    "name": "Digital Crisis Management & Brand Defense",
+    "description": "Advanced execution of corporate digital counter-narratives using targeted ad models to redirect search traffic, combined with executing intellectual property protections such as copyright and DMCA removal requests.",
+    "sort_order": 21
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Audio, Video & Graphic Editing",
+    "name": "Final Cut Pro",
+    "description": "Mastered for multi-cam timeline synchronization, asset generation, and premium long- and short-form video cutting.",
+    "sort_order": 22
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Audio, Video & Graphic Editing",
+    "name": "Adobe Audition",
+    "description": "Primary environment for professional multi-track audio engineering, vocal cleaning, and post-production mixing.",
+    "sort_order": 23
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Audio, Video & Graphic Editing",
+    "name": "Adobe Creative Suite",
+    "description": "Proficient across creative asset generation software including Photoshop, Illustrator, and InDesign.",
+    "sort_order": 24
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Audio, Video & Graphic Editing",
+    "name": "Descript",
+    "description": "Proficient with algorithmic text-based audio parsing, track cleanup, and automated transcription editing.",
+    "sort_order": 25
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Audio, Video & Graphic Editing",
+    "name": "CapCut",
+    "description": "Leveraged for rapid-turnaround video asset creation, mobile cutting, and short-form video formatting.",
+    "sort_order": 26
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Audio, Video & Graphic Editing",
+    "name": "Canva",
+    "description": "Utilized for quick-to-market digital designs, flyers, presentation pitch decks, and visual media templates.",
+    "sort_order": 27
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Media Distribution, Streaming & Studio Capture",
+    "name": "Spreaker Studio",
+    "description": "Enterprise podcast syndication dashboard, audio stream delivery, and major network distribution management.",
+    "sort_order": 28
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Media Distribution, Streaming & Studio Capture",
+    "name": "Riverside.fm",
+    "description": "Advanced browser-based remote capture platform used to manage multi-camera isolated local recording tracks and large-scale data transfers.",
+    "sort_order": 29
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Media Distribution, Streaming & Studio Capture",
+    "name": "Switcher Studio",
+    "description": "Native iOS-based switching and live broadcasting suite used to sync audio mixers and cameras on field shoots.",
+    "sort_order": 30
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Media Distribution, Streaming & Studio Capture",
+    "name": "Opus.pro",
+    "description": "Automated AI-driven short-form video extraction, framing, and clip maximization.",
+    "sort_order": 31
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Campaign Data, Communications & Operations",
+    "name": "CallEvo / CallHub",
+    "description": "Deployment and operational management of digital and telephonic call center campaigns.",
+    "sort_order": 32
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Campaign Data, Communications & Operations",
+    "name": "Salesforce & Native CRMs",
+    "description": "Core functional knowledge of CRM system foundations and member database management tools.",
+    "sort_order": 33
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Campaign Data, Communications & Operations",
+    "name": "Fillout Forms",
+    "description": "Configuration of customized automated external booking widgets, custom images, and calendar scheduling flows.",
+    "sort_order": 34
+  },
+  {
+    "group_type": "technical_skills",
+    "category": "Software Proficiencies Master List - Campaign Data, Communications & Operations",
+    "name": "Fully Kiosk / Single App Kiosk",
+    "description": "Technical implementation of Android lockdown applications for deployment on public hardware displays.",
+    "sort_order": 35
   }
 ];
