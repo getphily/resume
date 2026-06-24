@@ -1,0 +1,52 @@
+{
+  "portfolioItems": [
+    {
+      "id": "tfh-banner",
+      "title": "Teamsters for Harris Campaign Header",
+      "category": "campaigns",
+      "description": "National digital campaign header used across social channels during the 2024 presidential mobilization.",
+      "imagePath": "assets/portfolio/tfh-banner.png",
+      "tags": ["Digital Banner", "Social Media", "Teamsters"]
+    },
+    {
+      "id": "labor-rally-flyer",
+      "title": "Academy of Sciences Rally Flyer",
+      "category": "flyers",
+      "description": "Mobilization flyer designed for the SEIU 1021 contract campaign at the California Academy of Sciences.",
+      "imagePath": "assets/portfolio/rally-flyer.png",
+      "tags": ["Print Flyer", "SEIU 1021", "Member Rally"]
+    },
+    {
+      "id": "redwood-media-logo",
+      "title": "Redwood Empire Media Branding",
+      "category": "branding",
+      "description": "Visual identity design, logo variations, and style guides for Redwood Empire Media content network.",
+      "imagePath": "assets/portfolio/rem-branding.png",
+      "tags": ["Logo Design", "Style Guide", "Vector"]
+    },
+    {
+      "id": "unionist-artwork",
+      "title": "Unionist Podcast Cover Artwork",
+      "category": "branding",
+      "description": "Podcast album cover art designed for the Unionist show, depicting labor solidarity and voice.",
+      "imagePath": "assets/portfolio/unionist-art.png",
+      "tags": ["Cover Art", "Typography", "Illustrator"]
+    },
+    {
+      "id": "local853-picket-flyer",
+      "title": "Teamsters 853 Strike Support Flyer",
+      "category": "flyers",
+      "description": "Local union support materials designed to coordinate picket lines, shift schedules, and community donation drives.",
+      "imagePath": "assets/portfolio/strike-support.png",
+      "tags": ["Print Flyer", "Campaign Outreach", "Teamsters 853"]
+    },
+    {
+      "id": "harris-campaign-social-ad",
+      "title": "National Organizing Social Ad",
+      "category": "campaigns",
+      "description": "Targeted social media ad creatives designed for Facebook and Instagram during the Teamsters for Harris mobilization.",
+      "imagePath": "assets/portfolio/social-ad.png",
+      "tags": ["Ad Creative", "Social Media", "Harris-Walz"]
+    }
+  ]
+}

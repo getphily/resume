@@ -1,0 +1,98 @@
+{
+  "podcasts": [
+    {
+      "title": "Buy The Bay",
+      "host": "Dan Ancheta",
+      "frequency": "Weekly",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/buy-the-bay-the-bay-area-real-estate-podcast/id1653134914",
+      "status": "active"
+    },
+    {
+      "title": "BenefitsTV",
+      "host": "Andrew McNeil & Rosario Avila",
+      "frequency": "Every Other Week",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/benefitstv-the-podcast/id1612739328",
+      "status": "active"
+    },
+    {
+      "title": "Lash Girls Don't Cry",
+      "host": "Niomi & Kayla",
+      "frequency": "Weekly",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/lash-girls-dont-cry/id1527632152",
+      "status": "ended"
+    },
+    {
+      "title": "Leave It Better",
+      "host": "Brandon Trammell",
+      "frequency": "Every Other Week",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/leave-it-better-w-brandon-trammell/id1674488330",
+      "status": "active"
+    },
+    {
+      "title": "The Yin Project",
+      "host": "Emily Beaven",
+      "frequency": "Every Other Week",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/the-yin-project/id1614742967",
+      "status": "active"
+    },
+    {
+      "title": "The Redwood Empire",
+      "host": "Phil Ybarrolaza",
+      "frequency": "Varies",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/the-redwood-empire/id1552594611",
+      "status": "active"
+    },
+    {
+      "title": "That's the Whiskey",
+      "host": "Jasmine Cruz & Caroline Moeller",
+      "frequency": "Every Other Week",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/thats-the-whiskey/id1573024982",
+      "status": "active"
+    },
+    {
+      "title": "RealWise Sonoma County",
+      "host": "Stephanie Johnson",
+      "frequency": "Varies",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/realwise-sonoma-county-a-real-estate-podcast-with/id1696205937",
+      "status": "active"
+    },
+    {
+      "title": "Unionist",
+      "host": "Phil Ybarrolaza",
+      "frequency": "Varies",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/unionist/id1534015691",
+      "status": "active"
+    },
+    {
+      "title": "AI for the Normal Guy",
+      "host": "Phil Ybarrolaza",
+      "frequency": "Varies",
+      "applePodcastsUrl": "https://podcasts.apple.com/us/podcast/ai-for-the-normal-guy/id1736639446",
+      "status": "active"
+    },
+    {
+      "title": "Just Show Up",
+      "host": "Julian Solano & Michael Williams",
+      "frequency": "Weekly",
+      "applePodcastsUrl": null,
+      "status": "no_apple_podcasts_match",
+      "notes": "Hosted by Julian & Michael. Video/Excellerate Real Estate content exists, but no standalone active show on Apple Podcasts."
+    },
+    {
+      "title": "The Interview Series",
+      "host": "Jeff Fuller",
+      "frequency": "Varies",
+      "applePodcastsUrl": null,
+      "status": "no_apple_podcasts_match",
+      "notes": "Produced by Redwood Empire Media. Distributed on other platforms (JioSaavn/Linktree), no standalone show on Apple Podcasts."
+    },
+    {
+      "title": "BBL",
+      "host": "Bianca Broos",
+      "frequency": "Varies",
+      "applePodcastsUrl": null,
+      "status": "no_apple_podcasts_match",
+      "notes": "Hosted by Bianca Broos. Guest appearances exist, but no standalone active show under this name on Apple Podcasts."
+    }
+  ]
+}
