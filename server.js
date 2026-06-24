@@ -25,8 +25,8 @@ if (supabaseUrl && supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_ANON_KE
   console.warn('WARNING: Supabase credentials are missing or still placeholder values. API endpoints will fail until configured.');
 }
 
-// Serve static assets from public folder
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static assets from dist folder (production build)
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Helper middleware to check Supabase client connection
 const checkSupabase = (req, res, next) => {
@@ -141,7 +141,7 @@ app.get('*', (req, res, next) => {
   if (req.path.includes('.')) {
     return next();
   }
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(PORT, () => {
