@@ -96,6 +96,30 @@ function Resume({ data }) {
     onOpen();
   };
 
+  // Helper functions for career color coding
+  const getTimelineTheme = (itemId) => {
+    const laborIds = ['seiu-1021', 'teamsters-harris', 'teamsters-853', 'north-coast-trust', 'teamsters-665', 'teamsters-624'];
+    if (laborIds.includes(itemId)) {
+      return {
+        color: useColorModeValue('blue.600', 'blue.300'),
+        scheme: 'blue',
+        label: 'Labor & Campaigns'
+      };
+    }
+    return {
+      color: useColorModeValue('purple.600', 'purple.300'),
+      scheme: 'purple',
+      label: 'Digital & Comms'
+    };
+  };
+
+  const getPortfolioScheme = (category) => {
+    if (category === 'campaigns' || category === 'flyers') {
+      return 'blue';
+    }
+    return 'purple';
+  };
+
   // Color mappings
   const navBg = useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(20, 22, 32, 0.75)');
   const borderLight = useColorModeValue('oklch(90% 0.01 240)', 'oklch(28% 0.015 240 / 0.7)');
