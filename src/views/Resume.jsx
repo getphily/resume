@@ -593,10 +593,10 @@ function Resume({ data }) {
                       cursor="pointer"
                       onClick={() => toggleCard(item.id)}
                       userSelect="none"
-                      {/* Subtle expand affordance: hairline accent border fades out when open */}
                       borderBottom="1px solid"
                       borderBottomColor={isExpanded ? 'transparent' : `${theme.color}20`}
                       transition="border-bottom-color 0.25s ease"
+
                     >
                       <VStack align="start" spacing="0.2rem" flex="1" minW="0">
                         <Heading as="h3" fontSize="1.1rem" fontWeight="700">
