@@ -289,8 +289,12 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
     <Box
       className="animated-glow-card"
       w="100%"
+      border="1px solid"
+      borderColor={borderLight}
       borderRadius="2xl"
       p={{ base: '1.5rem', md: '2rem' }}
+      bg={cardBg}
+      boxShadow="lg"
       position="relative"
       mb="4rem"
     >
@@ -582,30 +586,22 @@ function Resume({ data }) {
 
         .animated-glow-card {
           position: relative;
-          border: 1px solid transparent !important;
-          background-image: 
-            linear-gradient(${cardBg}, ${cardBg}), 
-            linear-gradient(90deg, ${brandPrimary}, ${brandSecondary}, ${brandPrimary}) !important;
-          background-clip: padding-box, border-box !important;
-          background-origin: padding-box, border-box !important;
-          background-size: 100% 100%, 200% 200% !important;
-          animation: animatedGlow 8s ease infinite !important;
           transition: all 0.28s ease !important;
         }
 
         .animated-glow-card::before {
           content: "";
           position: absolute;
-          top: -1px;
-          left: -1px;
-          right: -1px;
-          bottom: -1px;
+          top: 0px;
+          left: 0px;
+          right: 0px;
+          bottom: 0px;
           border-radius: inherit;
           background: linear-gradient(90deg, ${brandPrimary}, ${brandSecondary}, ${brandPrimary});
           background-size: 200% 200%;
           z-index: -1;
-          filter: blur(12px);
-          opacity: ${isDark ? 0.22 : 0.09};
+          filter: blur(16px);
+          opacity: ${isDark ? 0.32 : 0.12};
           transition: opacity 0.3s ease, filter 0.3s ease;
           animation: animatedGlow 8s ease infinite;
         }
@@ -615,8 +611,8 @@ function Resume({ data }) {
         }
 
         .animated-glow-card:hover::before {
-          opacity: ${isDark ? 0.45 : 0.18};
-          filter: blur(16px);
+          opacity: ${isDark ? 0.58 : 0.24};
+          filter: blur(24px);
         }
       `}</style>
 
@@ -1171,7 +1167,10 @@ function Resume({ data }) {
                     className="animated-glow-card"
                     flex="1"
                     minW="0"
+                    border="1px solid"
+                    borderColor={borderLight}
                     borderRadius="2xl"
+                    bg={cardBg}
                     position="relative"
                   >
                     {/* Clickable header — stacks vertically on mobile, row on md+ */}
