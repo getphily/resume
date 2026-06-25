@@ -1926,15 +1926,28 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           />
         ) : (
           <Tabs index={tabIdx} onChange={setTabIdx} variant="soft-rounded" size="sm" isLazy>
-            <TabList gap="0.5rem" mb="1.75rem" wrap="wrap">
+            <TabList
+              display="inline-flex"
+              bg={useColorModeValue('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.02)')}
+              p="0.25rem"
+              borderRadius="xl"
+              border="1px solid"
+              borderColor={borderLight}
+              gap="0.3rem"
+              mb="1.75rem"
+              wrap="wrap"
+            >
               <Tab
-                _selected={{ bg: 'blue.500', color: 'white' }}
+                _selected={{ bg: 'blue.500', color: 'white', boxShadow: 'sm' }}
+                _hover={{ bg: useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)') }}
                 fontWeight="700"
                 fontSize="0.8rem"
-                bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.03)')}
+                bg="transparent"
                 px="1rem"
                 py="0.4rem"
-                borderRadius="full"
+                borderRadius="lg"
+                color={textColorMuted}
+                transition="all 0.2s"
               >
                 🔵 Labor Relations
                 <Badge ml="0.5rem" bg="blue.600" color="white" borderRadius="full" fontSize="0.65rem">
@@ -1942,13 +1955,16 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 </Badge>
               </Tab>
               <Tab
-                _selected={{ bg: 'purple.500', color: 'white' }}
+                _selected={{ bg: 'purple.500', color: 'white', boxShadow: 'sm' }}
+                _hover={{ bg: useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)') }}
                 fontWeight="700"
                 fontSize="0.8rem"
-                bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.03)')}
+                bg="transparent"
                 px="1rem"
                 py="0.4rem"
-                borderRadius="full"
+                borderRadius="lg"
+                color={textColorMuted}
+                transition="all 0.2s"
               >
                 🟣 Digital Media &amp; Communications
                 <Badge ml="0.5rem" bg="purple.600" color="white" borderRadius="full" fontSize="0.65rem">
