@@ -375,6 +375,24 @@ app.delete('/api/admin/media/:id', checkAdmin, async (req, res) => {
   }
 });
 
+// PATCH /api/admin/media/bulk-assign — assign many assets to one job at once
+app.patch('/api/admin/media/bulk-assign', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { ids, jobId } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0)
+    return res.status(400).json({ error: 'ids must be a non-empty array' });
+  try {
+    const { error } = await supabaseAdmin
+      .from('media_assets')
+      .update({ timeline_job_id: jobId || null })
+      .in('id', ids);
+    if (error) throw error;
+    res.json({ updated: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PUT /api/admin/password  — change admin password
 app.put('/api/admin/password', checkAdmin, async (req, res) => {
   if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });

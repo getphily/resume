@@ -137,8 +137,12 @@ function MediaLibrary({ pwd }) {
   const [uploading, setUploading] = useState(false);
   const [editId,   setEditId]   = useState(null);
   const [msg,      setMsg]      = useState({ type:'', text:'' });
-  const [filter,   setFilter]   = useState('all');
-  const [queuePage, setQueuePage] = useState(20); // items visible in queue
+  const [filter,    setFilter]    = useState('all');
+  const [queuePage,  setQueuePage]  = useState(20);
+  const [bulkMode,   setBulkMode]   = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkJob,    setBulkJob]    = useState('');
+  const [bulkMsg,    setBulkMsg]    = useState('');
   const fileRef = useRef();
 
   useEffect(()=>{ loadAssets(); loadJobs(); }, []);
@@ -261,6 +265,38 @@ function MediaLibrary({ pwd }) {
 
   const pendingCount = queue.filter(x=>x.status==='pending').length;
 
+  // ── Bulk-assign handler ─────────────────────────────────────────────────────
+  async function bulkAssign() {
+    if (selectedIds.size === 0) return;
+    setBulkMsg('');
+    const res = await af('/api/admin/media/bulk-assign', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [...selectedIds], jobId: bulkJob || null }),
+    }, pwd);
+    if (res.ok) {
+      const { updated } = await res.json();
+      setBulkMsg(`✓ ${updated} asset${updated!==1?'s':''} assigned`);
+      setSelectedIds(new Set());
+      setBulkMode(false);
+      loadAssets();
+    } else {
+      const e = await res.json();
+      setBulkMsg(`Error: ${e.error}`);
+    }
+  }
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function selectAll() { setSelectedIds(new Set(displayed.map(a => a.id))); }
+  function clearSelection() { setSelectedIds(new Set()); }
+
   return (
     <div>
       {/* ── Drop zone ── */}
@@ -323,9 +359,9 @@ function MediaLibrary({ pwd }) {
       )}
 
       {/* ── Library filter bar ── */}
-      <div style={{display:'flex', gap:'0.5rem', marginBottom:'1.25rem', flexWrap:'wrap', alignItems:'center'}}>
-        <div style={c.sectionTitle} onClick={()=>{}}>Library ({assets.length})</div>
-        <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap', marginLeft:'auto'}}>
+      <div style={{display:'flex', gap:'0.5rem', marginBottom:'1rem', flexWrap:'wrap', alignItems:'center'}}>
+        <div style={c.sectionTitle}>Library ({assets.length})</div>
+        <div style={{display:'flex', gap:'0.4rem', flexWrap:'wrap', marginLeft:'auto', alignItems:'center'}}>
           {[['all','All'],['unassigned','Unassigned'],...jobs.map(j=>[j.id, j.company])].map(([id,label])=>(
             <button key={id} style={{
               ...c.btn, ...c.btnSm,
@@ -334,8 +370,46 @@ function MediaLibrary({ pwd }) {
               border: `1px solid ${filter===id?'rgba(96,165,250,0.4)':'rgba(255,255,255,0.08)'}`,
             }} onClick={()=>setFilter(id)}>{label}</button>
           ))}
+          <button style={{
+            ...c.btn, ...c.btnSm,
+            background: bulkMode ? 'rgba(96,165,250,0.18)' : 'rgba(255,255,255,0.04)',
+            color: bulkMode ? '#60a5fa' : '#64748b',
+            border: `1px solid ${bulkMode ? 'rgba(96,165,250,0.4)' : 'rgba(255,255,255,0.08)'}`,
+            marginLeft: '0.5rem',
+          }} onClick={()=>{ setBulkMode(m=>!m); clearSelection(); setBulkMsg(''); }}>
+            {bulkMode ? '✕ Cancel' : '☑ Select'}
+          </button>
         </div>
       </div>
+
+      {/* ── Bulk toolbar — visible when bulkMode ── */}
+      {bulkMode && (
+        <div style={{
+          background:'rgba(96,165,250,0.08)', border:'1px solid rgba(96,165,250,0.25)',
+          borderRadius:'12px', padding:'0.85rem 1.2rem', marginBottom:'1.25rem',
+          display:'flex', gap:'0.75rem', alignItems:'center', flexWrap:'wrap',
+        }}>
+          <span style={{fontSize:'0.82rem', fontWeight:700, color:'#60a5fa', minWidth:'80px'}}>
+            {selectedIds.size} selected
+          </span>
+          <select style={{...c.select, flex:1, minWidth:'180px', maxWidth:'280px', fontSize:'0.8rem', padding:'0.4rem 0.75rem'}}
+            value={bulkJob} onChange={e=>setBulkJob(e.target.value)}>
+            <option value=''>— Clear assignment —</option>
+            {jobs.map(j=><option key={j.id} value={j.id}>{j.role} @ {j.company}</option>)}
+          </select>
+          <button style={{...c.btn, ...c.btnPrimary, ...c.btnSm}}
+            onClick={bulkAssign} disabled={selectedIds.size===0}>
+            Assign {selectedIds.size > 0 ? selectedIds.size : ''} selected
+          </button>
+          <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={selectAll}>
+            Select all ({displayed.length})
+          </button>
+          <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={clearSelection}>
+            Clear
+          </button>
+          {bulkMsg && <span style={{fontSize:'0.8rem', color: bulkMsg.startsWith('✓') ? '#4ade80' : '#f87171'}}>{bulkMsg}</span>}
+        </div>
+      )}
 
       {/* ── Asset grid ── */}
       {displayed.length === 0 ? (
@@ -343,11 +417,37 @@ function MediaLibrary({ pwd }) {
           {filter==='unassigned' ? 'No unassigned assets.' : 'No assets yet — upload files above.'}
         </div>
       ) : (
-        <div style={{columns:'4 280px', columnGap:'0.75rem'}}>
+        <div style={{columns:'4 220px', columnGap:'0.75rem'}}>
           {displayed.map(asset=>(
-            <AssetCard key={asset.id} asset={asset} jobs={jobs} pwd={pwd}
-              isEditing={editId===asset.id} setEditing={setEditId}
-              onDelete={handleDelete} onSaved={loadAssets} />
+            <div key={asset.id} style={{position:'relative', breakInside:'avoid', marginBottom:'0.75rem'}}>
+              {/* Checkbox overlay in bulk mode */}
+              {bulkMode && (
+                <div
+                  onClick={()=>toggleSelect(asset.id)}
+                  style={{
+                    position:'absolute', inset:0, zIndex:5, cursor:'pointer', borderRadius:'12px',
+                    background: selectedIds.has(asset.id) ? 'rgba(96,165,250,0.18)' : 'transparent',
+                    border: selectedIds.has(asset.id) ? '2px solid #60a5fa' : '2px solid transparent',
+                    transition:'all 0.15s ease',
+                  }}
+                >
+                  <div style={{
+                    position:'absolute', top:'0.55rem', left:'0.55rem',
+                    width:'20px', height:'20px', borderRadius:'5px',
+                    background: selectedIds.has(asset.id) ? '#3b82f6' : 'rgba(0,0,0,0.55)',
+                    border: `2px solid ${selectedIds.has(asset.id) ? '#3b82f6' : 'rgba(255,255,255,0.4)'}`,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:'0.75rem', color:'white', fontWeight:700, transition:'all 0.15s',
+                  }}>
+                    {selectedIds.has(asset.id) ? '✓' : ''}
+                  </div>
+                </div>
+              )}
+              <AssetCard asset={asset} jobs={jobs} pwd={pwd}
+                isEditing={!bulkMode && editId===asset.id}
+                setEditing={bulkMode ? ()=>{} : setEditId}
+                onDelete={handleDelete} onSaved={loadAssets} />
+            </div>
           ))}
         </div>
       )}
