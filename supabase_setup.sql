@@ -19,6 +19,11 @@ CREATE TABLE IF NOT EXISTS timeline (
 ALTER TABLE timeline ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access for timeline" ON timeline FOR SELECT USING (true);
 
+-- Add enriched data columns (safe to run on existing DB)
+ALTER TABLE timeline
+  ADD COLUMN IF NOT EXISTS job_skills JSONB DEFAULT '[]',
+  ADD COLUMN IF NOT EXISTS employer_list JSONB DEFAULT '[]';
+
 -- 2. Create Podcasts Table
 CREATE TABLE IF NOT EXISTS podcasts (
     id SERIAL PRIMARY KEY,
@@ -177,14 +182,6 @@ INSERT INTO timeline (id, role, company, location, date_range, bullets, media, s
    '{"title": "Union General Membership Meeting", "req": "1920x1080px (PNG/JPG)"}'::jsonb,
    '{"title": "Picket Lines & Member Mobilization", "req": "1920x1080px (PNG/JPG)"}'::jsonb
  ], 8),
-
-('north-coast-trust', 'Trustee', 'North Coast Trust Fund', NULL, '09/2007 - 09/2014', 
- ARRAY[
-   'Collaborated on structural health plan design, fiduciary coverage policies, and responsible trust fund budgeting.'
- ], 
- ARRAY[
-   '{"title": "Trust Fund Board Assembly", "req": "1920x1080px (PNG/JPG)"}'::jsonb
- ], 9),
 
 ('teamsters-665', 'Business Representative', 'Teamsters Local 665', 'Santa Rosa, CA', '01/2012 - 01/2014', 
  ARRAY[
@@ -502,3 +499,172 @@ INSERT INTO competencies (group_type, category, name, description, sort_order) V
 ('technical_skills', 'Software Proficiencies Master List - Campaign Data, Communications & Operations', 'Salesforce & Native CRMs', 'Core functional knowledge of CRM system foundations and member database management tools.', 33),
 ('technical_skills', 'Software Proficiencies Master List - Campaign Data, Communications & Operations', 'Fillout Forms', 'Configuration of customized automated external booking widgets, custom images, and calendar scheduling flows.', 34),
 ('technical_skills', 'Software Proficiencies Master List - Campaign Data, Communications & Operations', 'Fully Kiosk / Single App Kiosk', 'Technical implementation of Android lockdown applications for deployment on public hardware displays.', 35);
+
+-- ==========================================
+-- JOB SKILLS & EMPLOYER MAPPING
+-- Run this block to enrich the 5 labor timeline entries
+-- ==========================================
+
+-- SEIU Local 1021 — Field Representative
+UPDATE timeline SET
+  employer_list = '["California Academy of Sciences","Santa Rosa Junior College (SRJC)","Cotati-Rohnert Park USD","Sebastopol USD","Geyserville USD","Community Action Marin","Head Start Sonoma","City of Rohnert Park","The Exploratorium"]'::jsonb,
+  job_skills = '[
+    {"name": "Successor Contract Negotiations", "description": "Drafting, editing, and executing initial and renewal collective bargaining agreements."},
+    {"name": "Forensic Information Requests", "description": "Engineering granular data demands for employee demographics and audited financial indicators."},
+    {"name": "Worksite Unit Mapping", "description": "Conducting department-by-department layout mappings to optimize internal site mobilization."},
+    {"name": "Total Workforce Representation (TWR)", "description": "Tracking member density percentiles and check-off authorization pipelines."},
+    {"name": "Sunshine Proposals", "description": "Formulating and presenting introductory collective bargaining frameworks to public bodies."},
+    {"name": "Classification & Retention Studies", "description": "Reviewing public sector employee tracking parameters and job title structures."}
+  ]'::jsonb
+WHERE id = 'seiu-1021';
+
+-- Teamsters for Harris — Director
+UPDATE timeline SET
+  employer_list = '["National Campaign / Grassroots Labor Coalition"]'::jsonb,
+  job_skills = '[
+    {"name": "Digital/Telephonic Campaigns", "description": "Organizing large-scale outreach systems via customized call center infrastructure (CallEvo/CallHub)."},
+    {"name": "Campaign Messaging & Communications", "description": "Crafting targeted, high-impact talking points and digital video scripts to engage labor audiences."},
+    {"name": "Community Coalition Building", "description": "Uniting regional networks and localized caucuses to secure joint endorsements."},
+    {"name": "Campaign Data Analytics", "description": "Distilling real-time qualitative metrics and worker sentiment trends."}
+  ]'::jsonb
+WHERE id = 'teamsters-harris';
+
+-- Teamsters Local 853 — Business Representative / Communications
+UPDATE timeline SET
+  employer_list = '["Mercedes-Benz of Oakland","Bauer\u2019s Intelligent Transportation","WeDriveU, Inc.","Steeler, Inc.","Clean Harbors Environmental","Douglas Parking LLC","Valet Hospitality Service","Encore (Highland Hospital)","Zenith American Solutions","Durham School Services","Amports / DBI SF / Cherin\u2019s","Coca Cola / GCR Tires","Farmers Produce Corporation","G3 Logistics","Peninsula Parking","Compass Transportation","Wholesale Produce Transport","Sysco Fremont & Coast County Trucks","San Francisco Toyota","Golden Gate Freightliner, Inc.","Pregis, LLC","LAZ Parking (Kaiser & OAK)","Transdev / First Transit","MV Transportation","GardaWorld"]'::jsonb,
+  job_skills = '[
+    {"name": "NLRB Statutory Defense", "description": "Managing board representation hearings and executing strategic interventions to block decertification petitions."},
+    {"name": "Unfair Labor Practice (ULP) Enforcement", "description": "Identifying management coercion and investigating/litigating formal charges with the Board."},
+    {"name": "CBA Structural Integration", "description": "Auditing and harmonizing local Memorandums of Understanding (MOUs) into master templates."},
+    {"name": "Seniority Roster Auditing", "description": "Reviewing payroll logs and roster metrics for quarterly shift bidding, recalls, and step advancements."},
+    {"name": "Multi-Step Grievance Processing", "description": "Documenting contractual violations, conducting witness interrogations, and securing binding settlements."},
+    {"name": "Taft-Hartley Trust Compliance", "description": "Policed employer contribution logs, handled delinquency financial audits, and resolved 90-day eligibility rules."}
+  ]'::jsonb
+WHERE id = 'teamsters-853';
+
+-- Teamsters Local 665 — Business Representative
+UPDATE timeline SET
+  employer_list = '["P & S Sales, Inc.","Central Parking System / New South Parking","Serramonte Ford","Stewart Chevrolet","A&B Towing / Jenkins Towing","AutoWest Honda","Storer Transportation","ABM (Oakland International Airport)","Sims Metal Management","SFO Shuttle Bus Company","Park \u2019N Fly Service, LLC","Fregene\u2019s","SuperShuttle of San Francisco"]'::jsonb,
+  job_skills = '[
+    {"name": "Federal Mediation Pathways", "description": "Navigating bargaining impasses and filing formal dispute notices with the FMCS."},
+    {"name": "Contract Ratification", "description": "Coordinating proposal assemblies, adjusting vacation caps, and executing final settlement terms."},
+    {"name": "Bargaining Unit Restructuring", "description": "Defining employee classifications, regular hours, and operational shop-floor parameters."},
+    {"name": "Just Cause Disciplinary Defense", "description": "Evaluating workplace investigations using investigative frameworks to challenge unjust discipline."},
+    {"name": "Meet-and-Confer Proceedings", "description": "Directing joint labor-management committee reviews regarding route times and safety standards."}
+  ]'::jsonb
+WHERE id = 'teamsters-665';
+
+-- Teamsters Local 624 — President
+UPDATE timeline SET
+  employer_list = '["The Press Democrat","Golden State Lumber, Inc.","Alsco / Steiner Corp.","Young\u2019s Market / Dairymen\u2019s Feed","Kings County Truck Lines","ABF Freight / Pacific Supply","Lucero Trucking / Airborne Express","Aramark Uniform Services","NeilMed Products, Inc.","DHL Express","Curtin Air Freight, Inc.","Unipart Services America, Inc.","Farmer Brothers Coffee","Buchanan Food Service","Lumber and Mill Employers Association (LAMEA)","Loop Transportation","First Student / Vella","USF Reddaway","Petaluma Poultry Processors","North Bay Corporation","Lace House Linen","Luxor Cab / Yellow Cab","Marin Sanitary Service","Mill Valley Refuse & Recycling","McPhail\u2019s Fuel Company","Yellow Freight & Roadway Freight"]'::jsonb,
+  job_skills = '[
+    {"name": "Executive Contract Architecture", "description": "Leading multi-party collective bargaining for renewals, master extensions, and wage openers."},
+    {"name": "On-the-Ground Strategic Organizing", "description": "Spearheading environments blueprints, card check verifications, and winning NLRB elections."},
+    {"name": "Economic Package Modeling", "description": "Architecting complex wage scales, COLAs, health/welfare contribution models, and retirement plans."},
+    {"name": "Strike Sanctions & Dispute Management", "description": "Organizing legal strike votes, issuing formal notices, and directing field tactics."},
+    {"name": "Effects-of-Closure Bargaining", "description": "Navigating transition strategies and trust fund compliance during operational cessations."},
+    {"name": "Internal Union Governance", "description": "Managing assets, handling independent audits, and ensuring strict Landrum-Griffin Act compliance."}
+  ]'::jsonb
+WHERE id = 'teamsters-624';
+
+-- ==========================================
+-- DIGITAL JOB SKILLS MAPPING
+-- Run this block to enrich the 5 digital/creative timeline entries
+-- ==========================================
+
+-- Redwood Empire Media — Partner / Producer / Editor
+UPDATE timeline SET
+  job_skills = '[
+    {"name": "Video Production", "description": ""},
+    {"name": "Podcast Production", "description": ""},
+    {"name": "Audio Engineering", "description": ""},
+    {"name": "Studio Production", "description": ""},
+    {"name": "Live Streaming", "description": ""},
+    {"name": "Content Strategy", "description": ""},
+    {"name": "Brand Identity", "description": ""},
+    {"name": "Social Media", "description": ""}
+  ]'::jsonb
+WHERE id = 'redwood-empire';
+
+-- Apple — Specialist
+UPDATE timeline SET
+  job_skills = '[
+    {"name": "Brand Identity", "description": ""},
+    {"name": "Content Strategy", "description": ""},
+    {"name": "Social Media", "description": ""},
+    {"name": "AI & Automation", "description": ""}
+  ]'::jsonb
+WHERE id = 'apple';
+
+-- NorCal Pods — Content Producer
+UPDATE timeline SET
+  job_skills = '[
+    {"name": "Podcast Production", "description": ""},
+    {"name": "Audio Engineering", "description": ""},
+    {"name": "Content Strategy", "description": ""},
+    {"name": "Brand Identity", "description": ""},
+    {"name": "SEO & Web Dev", "description": ""},
+    {"name": "Social Media", "description": ""}
+  ]'::jsonb
+WHERE id = 'norcal-pods';
+
+-- Freelance — Independent Communications Consultant
+UPDATE timeline SET
+  job_skills = '[
+    {"name": "Live Streaming", "description": ""},
+    {"name": "Video Production", "description": ""},
+    {"name": "Graphic Design", "description": ""},
+    {"name": "Content Strategy", "description": ""},
+    {"name": "Brand Identity", "description": ""},
+    {"name": "Social Media", "description": ""},
+    {"name": "SEO & Web Dev", "description": ""},
+    {"name": "Email Marketing", "description": ""}
+  ]'::jsonb
+WHERE id = 'freelance';
+
+-- Healthy Democracy — Technology and Logistics Specialist
+UPDATE timeline SET
+  job_skills = '[
+    {"name": "Live Streaming", "description": ""},
+    {"name": "Studio Production", "description": ""},
+    {"name": "Video Production", "description": ""},
+    {"name": "Audio Engineering", "description": ""},
+    {"name": "Coding & Dev", "description": ""}
+  ]'::jsonb
+WHERE id = 'healthy-democracy';
+
+-- ==========================================
+-- MEDIA LIBRARY TABLES
+-- ==========================================
+
+-- Media Assets table (uploaded files with metadata)
+CREATE TABLE IF NOT EXISTS media_assets (
+  id              UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at      TIMESTAMPTZ DEFAULT now(),
+  timeline_job_id TEXT        REFERENCES timeline(id) ON DELETE SET NULL,
+  filename        TEXT        NOT NULL,
+  storage_path    TEXT        NOT NULL,
+  public_url      TEXT        NOT NULL,
+  file_type       TEXT        NOT NULL CHECK (file_type IN ('image','video','pdf')),
+  mime_type       TEXT,
+  caption         TEXT,
+  keywords        TEXT[]      DEFAULT '{}',
+  location_label  TEXT,
+  location_lat    DECIMAL(9,6),
+  location_lng    DECIMAL(9,6),
+  sort_order      INTEGER     DEFAULT 0
+);
+
+ALTER TABLE media_assets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "media_assets_public_read"   ON media_assets FOR SELECT USING (true);
+CREATE POLICY "media_assets_service_write" ON media_assets FOR ALL   USING (auth.role() = 'service_role');
+
+-- App Settings table (key/value config, used for admin password hash)
+CREATE TABLE IF NOT EXISTS app_settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "app_settings_no_public_read" ON app_settings FOR SELECT USING (false);
+CREATE POLICY "app_settings_service_only"   ON app_settings FOR ALL   USING (auth.role() = 'service_role');

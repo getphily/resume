@@ -11,12 +11,23 @@ export const fallbackTimeline = [
       'Professional audio and video editing.',
       'Content strategy for individuals and businesses to increase online visibility.'
     ],
+    job_skills: [
+      { name: 'Video Production', description: '' },
+      { name: 'Podcast Production', description: '' },
+      { name: 'Audio Engineering', description: '' },
+      { name: 'Studio Production', description: '' },
+      { name: 'Live Streaming', description: '' },
+      { name: 'Content Strategy', description: '' },
+      { name: 'Brand Identity', description: '' },
+      { name: 'Social Media', description: '' }
+    ],
     media: [
       { title: 'Studio Recording Setup Photo', req: '1920x1080px (PNG/JPG)' },
       { title: 'Podcast Production Still', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 1
   },
+
   {
     id: 'seiu-1021',
     role: 'Field Representative',
@@ -28,12 +39,26 @@ export const fallbackTimeline = [
       'Bargained contracts and represented union members in public education sectors.',
       'Managed grievance presentation, member defense, and contract enforcement procedures.'
     ],
+    employer_list: [
+      'California Academy of Sciences', 'Santa Rosa Junior College (SRJC)', 'Cotati-Rohnert Park USD',
+      'Sebastopol USD', 'Geyserville USD', 'Community Action Marin',
+      'Head Start Sonoma', 'City of Rohnert Park', 'The Exploratorium'
+    ],
+    job_skills: [
+      { name: 'Successor Contract Negotiations', description: 'Drafting, editing, and executing initial and renewal collective bargaining agreements.' },
+      { name: 'Forensic Information Requests', description: 'Engineering granular data demands for employee demographics and audited financial indicators.' },
+      { name: 'Worksite Unit Mapping', description: 'Conducting department-by-department layout mappings to optimize internal site mobilization.' },
+      { name: 'Total Workforce Representation (TWR)', description: 'Tracking member density percentiles and check-off authorization pipelines.' },
+      { name: 'Sunshine Proposals', description: 'Formulating and presenting introductory collective bargaining frameworks to public bodies.' },
+      { name: 'Classification & Retention Studies', description: 'Reviewing public sector employee tracking parameters and job title structures.' }
+    ],
     media: [
       { title: 'California Academy of Sciences Rally', req: '1920x1080px (PNG/JPG)' },
       { title: 'Bargaining Committee Sessions', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 2
   },
+
   {
     id: 'teamsters-harris',
     role: 'Director',
@@ -46,12 +71,20 @@ export const fallbackTimeline = [
       'Created dynamic digital assets, educational videos, and messaging frameworks tailored for labor audiences.',
       'Built a nationwide grassroots coalition leading to local/regional endorsements covering over 1 million union members.'
     ],
+    employer_list: ['National Campaign / Grassroots Labor Coalition'],
+    job_skills: [
+      { name: 'Digital/Telephonic Campaigns', description: 'Organizing large-scale outreach systems via customized call center infrastructure (CallEvo/CallHub).' },
+      { name: 'Campaign Messaging & Communications', description: 'Crafting targeted, high-impact talking points and digital video scripts to engage labor audiences.' },
+      { name: 'Community Coalition Building', description: 'Uniting regional networks and localized caucuses to secure joint endorsements.' },
+      { name: 'Campaign Data Analytics', description: 'Distilling real-time qualitative metrics and worker sentiment trends.' }
+    ],
     media: [
       { title: 'Campaign Design & Banner Graphics', req: '1920x1080px (PNG/JPG)' },
       { title: 'Ad Campaign Analytics Graph', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 3
   },
+
   {
     id: 'apple',
     role: 'Specialist',
@@ -63,11 +96,18 @@ export const fallbackTimeline = [
       'Developed targeted messaging and educational walkthroughs for a highly diverse consumer demographic.',
       'Leveraged modern technology suites to deliver premium client experiences.'
     ],
+    job_skills: [
+      { name: 'Brand Identity', description: '' },
+      { name: 'Content Strategy', description: '' },
+      { name: 'Social Media', description: '' },
+      { name: 'AI & Automation', description: '' }
+    ],
     media: [
       { title: 'Apple Store Corte Madera Still', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 4
   },
+
   {
     id: 'norcal-pods',
     role: 'Content Producer',
@@ -78,11 +118,20 @@ export const fallbackTimeline = [
       'Produced over 150 podcast episodes, expanding distribution channels to capture thousands of active listeners.',
       'Provided targeted marketing, SEO optimization, and algorithm tuning to maximize audience viewership and engagement.'
     ],
+    job_skills: [
+      { name: 'Podcast Production', description: '' },
+      { name: 'Audio Engineering', description: '' },
+      { name: 'Content Strategy', description: '' },
+      { name: 'Brand Identity', description: '' },
+      { name: 'SEO & Web Dev', description: '' },
+      { name: 'Social Media', description: '' }
+    ],
     media: [
       { title: 'NorCal Pods Episode Cover Designs', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 5
   },
+
   {
     id: 'freelance',
     role: 'Independent Communications Consultant',
@@ -94,11 +143,22 @@ export const fallbackTimeline = [
       'Created and edited multi-format creative assets including print layout, graphic design, audio, and video streams.',
       'Strategized distribution pipelines to enhance structural SEO and organic viewer conversions.'
     ],
+    job_skills: [
+      { name: 'Live Streaming', description: '' },
+      { name: 'Video Production', description: '' },
+      { name: 'Graphic Design', description: '' },
+      { name: 'Content Strategy', description: '' },
+      { name: 'Brand Identity', description: '' },
+      { name: 'Social Media', description: '' },
+      { name: 'SEO & Web Dev', description: '' },
+      { name: 'Email Marketing', description: '' }
+    ],
     media: [
       { title: 'Stream Overlay & Branding Layouts', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 6
   },
+
   {
     id: 'healthy-democracy',
     role: 'Technology and Logistics Specialist',
@@ -109,11 +169,19 @@ export const fallbackTimeline = [
       'Managed digital streaming and communication technology pipelines for citizen engagement assemblies.',
       'Guaranteed seamless technical operations and low-latency broadcast systems for public participation processes.'
     ],
+    job_skills: [
+      { name: 'Live Streaming', description: '' },
+      { name: 'Studio Production', description: '' },
+      { name: 'Video Production', description: '' },
+      { name: 'Audio Engineering', description: '' },
+      { name: 'Coding & Dev', description: '' }
+    ],
     media: [
       { title: 'Citizen Assembly Broadcaster Control Desk', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 7
   },
+
   {
     id: 'teamsters-853',
     role: 'Business Representative / Communications',
@@ -127,26 +195,30 @@ export const fallbackTimeline = [
       'Developed internal and external communications frameworks supporting dynamic local organizing drives.',
       'Planned and orchestrated large-scale union events and assemblies.'
     ],
+    employer_list: [
+      'Mercedes-Benz of Oakland', "Bauer's Intelligent Transportation", 'WeDriveU, Inc.', 'Steeler, Inc.',
+      'Clean Harbors Environmental', 'Douglas Parking LLC', 'Valet Hospitality Service', 'Encore (Highland Hospital)',
+      'Zenith American Solutions', 'Durham School Services', "Amports / DBI SF / Cherin's", 'Coca Cola / GCR Tires',
+      'Farmers Produce Corporation', 'G3 Logistics', 'Peninsula Parking', 'Compass Transportation',
+      'Wholesale Produce Transport', 'Sysco Fremont & Coast County Trucks', 'San Francisco Toyota',
+      'Golden Gate Freightliner, Inc.', 'Pregis, LLC', 'LAZ Parking (Kaiser & OAK)',
+      'Transdev / First Transit', 'MV Transportation', 'GardaWorld'
+    ],
+    job_skills: [
+      { name: 'NLRB Statutory Defense', description: 'Managing board representation hearings and executing strategic interventions to block decertification petitions.' },
+      { name: 'Unfair Labor Practice (ULP) Enforcement', description: 'Identifying management coercion and investigating/litigating formal charges with the Board.' },
+      { name: 'CBA Structural Integration', description: 'Auditing and harmonizing local Memorandums of Understanding (MOUs) into master templates.' },
+      { name: 'Seniority Roster Auditing', description: 'Reviewing payroll logs and roster metrics for quarterly shift bidding, recalls, and step advancements.' },
+      { name: 'Multi-Step Grievance Processing', description: 'Documenting contractual violations, conducting witness interrogations, and securing binding settlements.' },
+      { name: 'Taft-Hartley Trust Compliance', description: 'Policed employer contribution logs, handled delinquency financial audits, and resolved 90-day eligibility rules.' }
+    ],
     media: [
       { title: 'Union General Membership Meeting', req: '1920x1080px (PNG/JPG)' },
       { title: 'Picket Lines & Member Mobilization', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 8
   },
-  {
-    id: 'north-coast-trust',
-    role: 'Trustee',
-    company: 'North Coast Trust Fund',
-    location: null,
-    date_range: '09/2007 - 09/2014',
-    bullets: [
-      'Collaborated on structural health plan design, fiduciary coverage policies, and responsible trust fund budgeting.'
-    ],
-    media: [
-      { title: 'Trust Fund Board Assembly', req: '1920x1080px (PNG/JPG)' }
-    ],
-    sort_order: 9
-  },
+
   {
     id: 'teamsters-665',
     role: 'Business Representative',
@@ -156,11 +228,25 @@ export const fallbackTimeline = [
     bullets: [
       'Bargained labor agreements, represented member interests, and conducted workplace audits and contract enforcement.'
     ],
+    employer_list: [
+      'P & S Sales, Inc.', 'Central Parking System / New South Parking', 'Serramonte Ford', 'Stewart Chevrolet',
+      'A&B Towing / Jenkins Towing', 'AutoWest Honda', 'Storer Transportation', 'ABM (Oakland International Airport)',
+      'Sims Metal Management', 'SFO Shuttle Bus Company', "Park 'N Fly Service, LLC", "Fregene's",
+      'SuperShuttle of San Francisco'
+    ],
+    job_skills: [
+      { name: 'Federal Mediation Pathways', description: 'Navigating bargaining impasses and filing formal dispute notices with the FMCS.' },
+      { name: 'Contract Ratification', description: 'Coordinating proposal assemblies, adjusting vacation caps, and executing final settlement terms.' },
+      { name: 'Bargaining Unit Restructuring', description: 'Defining employee classifications, regular hours, and operational shop-floor parameters.' },
+      { name: 'Just Cause Disciplinary Defense', description: 'Evaluating workplace investigations using investigative frameworks to challenge unjust discipline.' },
+      { name: 'Meet-and-Confer Proceedings', description: 'Directing joint labor-management committee reviews regarding route times and safety standards.' }
+    ],
     media: [
       { title: 'Local 665 Member Action Still', req: '1920x1080px (PNG/JPG)' }
     ],
     sort_order: 10
   },
+
   {
     id: 'teamsters-624',
     role: 'President',
@@ -170,6 +256,24 @@ export const fallbackTimeline = [
     bullets: [
       'Elected Local Union President, administering executive operations, financial budgeting, and strategic labor campaigns.',
       'Supervised all representational departments, business agents, and organizing drives.'
+    ],
+    employer_list: [
+      'The Press Democrat', 'Golden State Lumber, Inc.', 'Alsco / Steiner Corp.', "Young's Market / Dairymen's Feed",
+      'Kings County Truck Lines', 'ABF Freight / Pacific Supply', 'Lucero Trucking / Airborne Express',
+      'Aramark Uniform Services', 'NeilMed Products, Inc.', 'DHL Express', 'Curtin Air Freight, Inc.',
+      'Unipart Services America, Inc.', 'Farmer Brothers Coffee', 'Buchanan Food Service',
+      'Lumber and Mill Employers Association (LAMEA)', 'Loop Transportation', 'First Student / Vella',
+      'USF Reddaway', 'Petaluma Poultry Processors', 'North Bay Corporation', 'Lace House Linen',
+      'Luxor Cab / Yellow Cab', 'Marin Sanitary Service', 'Mill Valley Refuse & Recycling',
+      "McPhail's Fuel Company", 'Yellow Freight & Roadway Freight'
+    ],
+    job_skills: [
+      { name: 'Executive Contract Architecture', description: 'Leading multi-party collective bargaining for renewals, master extensions, and wage openers.' },
+      { name: 'On-the-Ground Strategic Organizing', description: 'Spearheading environments blueprints, card check verifications, and winning NLRB elections.' },
+      { name: 'Economic Package Modeling', description: 'Architecting complex wage scales, COLAs, health/welfare contribution models, and retirement plans.' },
+      { name: 'Strike Sanctions & Dispute Management', description: 'Organizing legal strike votes, issuing formal notices, and directing field tactics.' },
+      { name: 'Effects-of-Closure Bargaining', description: 'Navigating transition strategies and trust fund compliance during operational cessations.' },
+      { name: 'Internal Union Governance', description: 'Managing assets, handling independent audits, and ensuring strict Landrum-Griffin Act compliance.' }
     ],
     media: [
       { title: 'Local 624 Union Hall & President Assembly', req: '1920x1080px (PNG/JPG)' }

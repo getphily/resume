@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Resume from './views/Resume';
 import Dashboard from './views/Dashboard';
+import Admin from './views/Admin';
 import {
   fallbackTimeline,
   fallbackPodcasts,
@@ -126,6 +127,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Resume data={state} />} />
         <Route path="/dashboard" element={<Dashboard data={state} />} />
+        <Route path="/admin" element={<Admin />} />
       </Routes>
     </Router>
   );

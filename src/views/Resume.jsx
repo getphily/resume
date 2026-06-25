@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+const ReactApexChart = lazy(() => import('react-apexcharts'));
+const PhotoAlbum = lazy(() => import('react-photo-album').then(m => ({ default: m.MasonryPhotoAlbum })));
+import 'react-photo-album/masonry.css';
+
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -8,6 +12,7 @@ import {
   VStack,
   HStack,
   SimpleGrid,
+  Flex,
   Button,
   IconButton,
   Link,
@@ -23,11 +28,18 @@ import {
   ModalCloseButton,
   ModalBody,
   Image,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
+  Badge,
   useDisclosure,
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
 import { FaLinkedin, FaInstagram, FaYoutube } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
+import SkillOrbMap from '../components/SkillOrbMap';
 
 // Inline Tech Stack Icon Paths
 const techIcons = {
@@ -67,7 +79,39 @@ function Resume({ data }) {
   const { colorMode, toggleColorMode } = useColorMode();
   const navigate = useNavigate();
   const [expandedCards, setExpandedCards] = useState({});
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [hoveredCardId, setHoveredCardId] = useState(null);
+
+  // Media library — fetched fresh each time a card is opened (no caching so admin changes appear immediately)
+  const [mediaByJob,  setMediaByJob]  = useState({});       // { jobId: asset[] }
+  const [fetchingJobs, setFetchingJobs] = useState(new Set()); // prevent duplicate in-flight requests
+  const [lbAsset, setLbAsset] = useState(null);  // asset object currently shown in lightbox
+  const [lbJobAssets, setLbJobAssets] = useState([]); // all assets for this job (for prev/next)
+
+  const loadMediaForJob = useCallback(async (jobId) => {
+    if (fetchingJobs.has(jobId)) return;                     // already in-flight, skip
+    setFetchingJobs(prev => new Set([...prev, jobId]));
+    try {
+      const res = await fetch(`/api/media?job_id=${jobId}`);
+      if (res.ok) {
+        const assets = await res.json();
+        // Preload native dimensions for images so masonry layout uses real ratios
+        const enriched = await Promise.all(assets.map(a => {
+          if (a.file_type !== 'image') return Promise.resolve(a);
+          return new Promise(resolve => {
+            const img = new window.Image();
+            img.onload  = () => resolve({ ...a, _w: img.naturalWidth,  _h: img.naturalHeight });
+            img.onerror = () => resolve({ ...a, _w: 800, _h: 600 });
+            img.src = a.public_url;
+          });
+        }));
+        setMediaByJob(prev => ({ ...prev, [jobId]: enriched }));
+      }
+    } catch { /* silent — gallery just won't appear */ }
+    finally {
+      setFetchingJobs(prev => { const n = new Set(prev); n.delete(jobId); return n; });
+    }
+  }, [fetchingJobs]);
+
   const [lightboxImg, setLightboxImg] = useState({ src: '', alt: '', title: '', desc: '', tags: [] });
   const [scrolled, setScrolled] = useState(false);
 
@@ -89,6 +133,7 @@ function Resume({ data }) {
 
   const toggleCard = (id) => {
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
+    loadMediaForJob(id);
   };
 
   const openLightbox = (imgData) => {
@@ -123,20 +168,71 @@ function Resume({ data }) {
     };
   };
 
-  const getPortfolioScheme = (category) => {
-    if (category === 'campaigns' || category === 'flyers') {
-      return 'blue';
-    }
-    return 'purple';
-  };
-
-  // Filtered portfolio items
-  const filteredPortfolio = selectedCategory === 'all'
-    ? data.portfolio
-    : data.portfolio.filter(item => item.category === selectedCategory);
 
   return (
     <Box minH="100vh" pb="2rem">
+
+      {/* ── Media Lightbox Modal ── */}
+      {lbAsset && (
+        <Modal isOpen={!!lbAsset} onClose={() => setLbAsset(null)} size="4xl" isCentered>
+          <ModalOverlay bg="blackAlpha.900" backdropFilter="blur(8px)" />
+          <ModalContent bg="oklch(14% 0.015 240)" border="1px solid" borderColor={borderLight} borderRadius="2xl" overflow="hidden" mx="1rem">
+            <ModalCloseButton color="white" zIndex="10" />
+            {/* Prev / Next arrows */}
+            {lbJobAssets.length > 1 && (() => {
+              const idx = lbJobAssets.findIndex(a => a.id === lbAsset.id);
+              return (
+                <>
+                  {idx > 0 && (
+                    <Button position="absolute" left="0.5rem" top="50%" transform="translateY(-50%)"
+                      zIndex="10" variant="ghost" color="white" fontSize="1.5rem" size="lg" borderRadius="full"
+                      _hover={{ bg: 'whiteAlpha.200' }}
+                      onClick={() => setLbAsset(lbJobAssets[idx - 1])}>‹</Button>
+                  )}
+                  {idx < lbJobAssets.length - 1 && (
+                    <Button position="absolute" right="0.5rem" top="50%" transform="translateY(-50%)"
+                      zIndex="10" variant="ghost" color="white" fontSize="1.5rem" size="lg" borderRadius="full"
+                      _hover={{ bg: 'whiteAlpha.200' }}
+                      onClick={() => setLbAsset(lbJobAssets[idx + 1])}>›</Button>
+                  )}
+                </>
+              );
+            })()}
+            <ModalBody p="0">
+              <Image
+                src={lbAsset.public_url}
+                alt={lbAsset.caption || lbAsset.filename}
+                maxH="70vh" w="100%" objectFit="contain"
+                bg="black"
+              />
+              {(lbAsset.caption || (lbAsset.keywords && lbAsset.keywords.length > 0)) && (
+                <Box px="1.5rem" py="1.25rem">
+                  {lbAsset.caption && (
+                    <Text fontWeight="700" fontSize="0.95rem" color="white" mb="0.6rem">
+                      {lbAsset.caption}
+                    </Text>
+                  )}
+                  {lbAsset.keywords && lbAsset.keywords.length > 0 && (
+                    <Flex flexWrap="wrap" gap="0.4rem">
+                      {lbAsset.keywords.map(kw => (
+                        <Tag key={kw} size="sm" colorScheme="blue" variant="subtle"
+                          fontSize="0.72rem" fontWeight="600" borderRadius="full">
+                          #{kw}
+                        </Tag>
+                      ))}
+                    </Flex>
+                  )}
+                  {lbJobAssets.length > 1 && (
+                    <Text fontSize="0.7rem" color="gray.500" mt="0.75rem">
+                      {lbJobAssets.findIndex(a => a.id === lbAsset.id) + 1} / {lbJobAssets.length}
+                    </Text>
+                  )}
+                </Box>
+              )}
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+      )}
       <Box
         as="nav"
         position="fixed"
@@ -396,6 +492,15 @@ function Resume({ data }) {
           </Box>
         </Box>
 
+        {/* Career Scope Animated Stat Bar */}
+        <CareerScopeBar
+          borderLight={borderLight}
+          blueColor={blueColor}
+          purpleColor={purpleColor}
+          employers={data.employers}
+          competencies={data.competencies}
+        />
+
         {/* Warning Badge if using fallbacks */}
         {data.usingFallbacks && (
           <Box
@@ -429,7 +534,7 @@ function Resume({ data }) {
             Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance economic and social justice.
           </Text>
           <Text fontSize="1rem" color={textColorMuted} lineHeight="1.65">
-            Field representative, former union local president, and digital media producer with 15+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts.
+            Field representative, former union local president, and digital media producer with 20+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts.
           </Text>
         </VStack>
 
@@ -440,137 +545,249 @@ function Resume({ data }) {
           <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="2rem" letterSpacing="-0.01em">
             Career Timeline
           </Heading>
-          <VStack spacing="1.5rem" align="stretch">
-            {data.timeline.map((item) => {
+          <Box position="relative">
+            {/* Full-height solid timeline line */}
+            <Box
+              position="absolute"
+              left="1.18rem"
+              top="0"
+              bottom="0"
+              w="2px"
+              bg={borderLight}
+              zIndex={0}
+            />
+            {data.timeline.map((item, idx) => {
               const isExpanded = expandedCards[item.id] || false;
               const theme = getTimelineTheme(item.id);
+              const employers = Array.isArray(item.employer_list) ? item.employer_list : [];
+              const skills   = Array.isArray(item.job_skills)    ? item.job_skills    : [];
               return (
                 <Box
                   key={item.id}
-                  border="1px solid"
-                  borderColor={borderLight}
-                  borderRadius="xl"
-                  bg={cardBg}
-                  p="1.5rem"
-                  transition="all 0.2s"
-                  _hover={{ shadow: 'md' }}
+                  display="flex"
+                  gap="0"
+                  mb={idx === data.timeline.length - 1 ? '0' : '1.5rem'}
+                  onMouseEnter={() => setHoveredCardId(item.id)}
+                  onMouseLeave={() => setHoveredCardId(null)}
                 >
-                  <HStack justify="space-between" align="start">
-                    <VStack align="start" spacing="0.2rem">
-                      <Heading as="h3" fontSize="1.1rem" fontWeight="700">
-                        {item.role}
-                      </Heading>
-                      <Text fontSize="0.9rem" fontWeight="600" color={theme.color}>
-                        {item.company} {item.location && `• ${item.location}`}
-                      </Text>
-                      <Text fontSize="0.8rem" color={textColorMuted} fontWeight="500">
-                        {item.date_range}
-                      </Text>
-                    </VStack>
-                    <HStack spacing="0.5rem" align="center">
-                      <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.75rem" fontWeight="700">
-                        {theme.label}
-                      </Tag>
-                      <IconButton
-                        aria-label="Expand details"
-                        icon={isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                        size="sm"
-                        onClick={() => toggleCard(item.id)}
-                        variant="ghost"
-                      />
-                    </HStack>
-                  </HStack>
 
-                  <Collapse in={isExpanded} animateOpacity>
-                    <VStack align="start" spacing="0.8rem" mt="1.5rem" pl="0.5rem">
-                      <ul style={{ paddingLeft: '1.2rem', margin: 0 }}>
-                        {item.bullets.map((bullet, idx) => (
-                          <li key={idx} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', opacity: 0.95 }}>
-                            {bullet}
-                          </li>
-                        ))}
-                      </ul>
+                  {/* Left: timeline rail — dot with ping + tooltip */}
+                  <Box display="flex" flexDir="column" alignItems="center" flexShrink={0} w="2.5rem" mr="1rem">
+                    <style>{`
+                      @keyframes dotPing {
+                        0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.75; }
+                        100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+                      }
+                    `}</style>
+                    <TimelineDot
+                      color={theme.color}
+                      cardBg={cardBg}
+                      dateRange={item.date_range}
+                      isActive={hoveredCardId === item.id}
+                    />
+                  </Box>
 
-                      {/* Timeline Media Gallery */}
-                      {item.media && item.media.length > 0 && (
-                        <Box w="100%" mt="1rem">
-                          <Text fontSize="0.75rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={textColorMuted}>
-                            Campaign Media & Production Logs
-                          </Text>
-                          <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="1rem">
-                            {item.media.map((med, idx) => {
-                              // Match actual local media or generate mockup assets
-                              const mockImgUrl = `/assets/portfolio/still.png`; // Fallback image path
-                              return (
-                                <Box
-                                  key={idx}
-                                  border="1px solid"
-                                  borderColor={borderLight}
-                                  borderRadius="lg"
-                                  overflow="hidden"
-                                  cursor="pointer"
-                                  onClick={() => openLightbox({
-                                    src: mockImgUrl,
-                                    alt: med.title,
-                                    title: item.company,
-                                    desc: `${med.title} (${med.req || 'Campaign Log'})`,
-                                    tags: [item.role]
-                                  })}
-                                  transition="transform 0.2s"
-                                  _hover={{ transform: 'scale(1.02)' }}
-                                >
-                                  <Box bg="blackAlpha.200" h="100px" position="relative" display="flex" alignItems="center" justifyContent="center" p="0.5rem">
-                                    <Text fontSize="0.8rem" fontWeight="600" textAlign="center" opacity="0.8">
-                                      📷 {med.title}
-                                    </Text>
-                                  </Box>
-                                </Box>
-                              );
-                            })}
-                          </SimpleGrid>
+                  {/* Right: card */}
+                  <Box
+                    flex="1"
+                    minW="0"
+                    border="1px solid"
+                    borderColor={borderLight}
+                    borderRadius="xl"
+                    bg={cardBg}
+                    overflow="hidden"
+                    transition="all 0.2s"
+                    _hover={{ shadow: 'md', borderColor: theme.color + '66' }}
+                  >
+                    {/* Clickable header */}
+                    <HStack
+                      justify="space-between"
+                      align="start"
+                      p="1.5rem"
+                      cursor="pointer"
+                      onClick={() => toggleCard(item.id)}
+                      userSelect="none"
+                    >
+                      <VStack align="start" spacing="0.2rem">
+                        <Heading as="h3" fontSize="1.1rem" fontWeight="700">
+                          {item.role}
+                        </Heading>
+                        <Text fontSize="0.9rem" fontWeight="600" color={theme.color}>
+                          {item.company} {item.location && `• ${item.location}`}
+                        </Text>
+                        <Text fontSize="0.8rem" color={textColorMuted} fontWeight="500">
+                          {item.date_range}
+                        </Text>
+                      </VStack>
+                      <HStack spacing="0.5rem" align="center" flexShrink={0}>
+                        {skills.length > 0 && (
+                          <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.72rem" fontWeight="600">
+                            Core Skills
+                          </Tag>
+                        )}
+                        <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.75rem" fontWeight="700">
+                          {theme.label}
+                        </Tag>
+                        <Box
+                          as="span"
+                          color={textColorMuted}
+                          fontSize="1rem"
+                          lineHeight="1"
+                          transition="transform 0.2s"
+                          transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                        >
+                          ▾
                         </Box>
-                      )}
-                    </VStack>
-                  </Collapse>
+                      </HStack>
+                    </HStack>
+
+                    <Collapse in={isExpanded} animateOpacity>
+                      <VStack align="start" spacing="1.2rem" px="1.5rem" pb="1.5rem" pt="0">
+
+                        {/* Key Competencies — keyword pills */}
+                        {skills.length > 0 ? (
+                          <Box w="100%">
+                            <Text fontSize="0.72rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.06em" mb="0.65rem" color={textColorMuted}>
+                              Key Competencies
+                            </Text>
+                            <Flex flexWrap="wrap" gap="0.45rem">
+                              {skills.map((sk, idx) => (
+                                <Tag
+                                  key={idx}
+                                  size="sm"
+                                  variant="solid"
+                                  colorScheme={theme.scheme}
+                                  fontSize="0.78rem"
+                                  fontWeight="600"
+                                  px="0.75rem"
+                                  py="0.35rem"
+                                  borderRadius="full"
+                                >
+                                  {sk.name}
+                                </Tag>
+                              ))}
+                            </Flex>
+                          </Box>
+                        ) : (
+                          <ul style={{ paddingLeft: '1.2rem', margin: 0 }}>
+                            {item.bullets.map((bullet, idx) => (
+                              <li key={idx} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', opacity: 0.95 }}>
+                                {bullet}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {/* Represented Employers — keyword pills */}
+                        {employers.length > 0 && (
+                          <Box w="100%">
+                            <Text fontSize="0.72rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.06em" mb="0.65rem" color={textColorMuted}>
+                              Represented Employers
+                            </Text>
+                            <Flex flexWrap="wrap" gap="0.45rem">
+                              {employers.map((emp, idx) => (
+                                <Tag
+                                  key={idx}
+                                  size="sm"
+                                  variant="solid"
+                                  colorScheme="gray"
+                                  fontSize="0.78rem"
+                                  fontWeight="500"
+                                  px="0.75rem"
+                                  py="0.35rem"
+                                  borderRadius="full"
+                                >
+                                  {emp}
+                                </Tag>
+                              ))}
+                            </Flex>
+                          </Box>
+                        )}
+
+                        {/* Media Gallery — sourced from media library */}
+                        {(() => {
+                          const jobMedia = (mediaByJob[item.id] || []).filter(a => a.file_type === 'image');
+                          if (jobMedia.length === 0) return null;
+                          const photos = jobMedia.map(a => ({
+                            src: a.public_url,
+                            width:  a._w || 800,
+                            height: a._h || 600,
+                            key: a.id,
+                          }));
+                          return (
+                            <Box w="100%" mt="0.5rem">
+                              <Text fontSize="0.72rem" fontWeight="700" textTransform="uppercase"
+                                letterSpacing="0.06em" mb="0.65rem" color={textColorMuted}>
+                                Media Gallery ({jobMedia.length})
+                              </Text>
+                              {/* CSS applied via class — no renderPhoto API needed */}
+                              <style>{`
+                                .resume-gallery img {
+                                  border-radius: 8px !important;
+                                  cursor: pointer !important;
+                                  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+                                  display: block;
+                                }
+                                .resume-gallery img:hover {
+                                  transform: scale(1.025) !important;
+                                  box-shadow: 0 4px 18px rgba(0,0,0,0.45) !important;
+                                }
+                              `}</style>
+                              <Suspense fallback={<Box h="80px" />}>
+                                <div className="resume-gallery">
+                                  <PhotoAlbum
+                                    layout="masonry"
+                                    photos={photos}
+                                    columns={cw => cw < 300 ? 2 : cw < 550 ? 3 : 4}
+                                    spacing={5}
+                                    onClick={({ index }) => {
+                                      setLbAsset(jobMedia[index]);
+                                      setLbJobAssets(jobMedia);
+                                    }}
+                                  />
+                                </div>
+                              </Suspense>
+                            </Box>
+                          );
+                        })()}
+                        {/* PDF tiles */}
+                        {(mediaByJob[item.id] || []).filter(a => a.file_type === 'pdf').length > 0 && (
+                          <Box w="100%" mt="0.5rem">
+                            <Flex flexWrap="wrap" gap="0.5rem">
+                              {(mediaByJob[item.id] || []).filter(a => a.file_type === 'pdf').map(a => (
+                                <Tag key={a.id} as="a" href={a.public_url} target="_blank"
+                                  size="sm" colorScheme="red" variant="outline" cursor="pointer">
+                                  📄 {a.caption || a.filename}
+                                </Tag>
+                              ))}
+                            </Flex>
+                          </Box>
+                        )}
+                      </VStack>
+                    </Collapse>
+                  </Box>
                 </Box>
               );
             })}
-          </VStack>
+          </Box>
         </Box>
 
-        {/* 4. Skills & Core Competencies Section */}
-        <Box id="skills" mb="4rem">
-          <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="1.5rem" letterSpacing="-0.01em">
-            Skills & Core Competencies
-          </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing="2rem">
-            <Box>
-              <Text fontSize="0.8rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={brandPrimary}>
-                Campaign Leadership & Strategy
-              </Text>
-              <HStack spacing="0.5rem" wrap="wrap" rowGap="0.5rem">
-                {data.skills.filter(s => s.category === 'leadership').map((skill) => (
-                  <Tag key={skill.id} size="sm" variant="subtle" colorScheme="blue">
-                    {skill.name}
-                  </Tag>
-                ))}
-              </HStack>
-            </Box>
 
-            <Box>
-              <Text fontSize="0.8rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.05em" mb="0.75rem" color={brandSecondary}>
-                Digital Media & Communications
-              </Text>
-              <HStack spacing="0.5rem" wrap="wrap" rowGap="0.5rem">
-                {data.skills.filter(s => s.category === 'comms').map((skill) => (
-                  <Tag key={skill.id} size="sm" variant="subtle" colorScheme="purple">
-                    {skill.name}
-                  </Tag>
-                ))}
-              </HStack>
-            </Box>
-          </SimpleGrid>
-        </Box>
+
+        {/* 4. Skills & Core Competencies — Full Redesign */}
+        <SkillsSection
+          skills={data.skills}
+          competencies={data.competencies}
+          timeline={data.timeline}
+          borderLight={borderLight}
+          cardBg={cardBg}
+          textColorMuted={textColorMuted}
+          brandPrimary={brandPrimary}
+          brandSecondary={brandSecondary}
+          blueColor={blueColor}
+          purpleColor={purpleColor}
+          colorMode={colorMode}
+        />
 
         <Divider borderColor={borderLight} my="3rem" />
 
@@ -600,86 +817,21 @@ function Resume({ data }) {
           </SimpleGrid>
         </Box>
 
-        <Divider borderColor={borderLight} my="3rem" />
+        <Divider borderColor={borderLight} my="4rem" />
 
-        {/* 5. Creative Portfolio Section */}
-        <Box id="portfolio" mb="5rem">
-          <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="1rem" letterSpacing="-0.01em">
-            Creative Portfolio
-          </Heading>
-          <Text fontSize="0.95rem" color={textColorMuted} mb="2rem">
-            Branding, mobilization flyers, and digital ad headers created for public campaign drives.
-          </Text>
-
-          {/* Filter Pills */}
-          <HStack spacing="0.5rem" mb="2rem" wrap="wrap" rowGap="0.5rem">
-            {['all', 'campaigns', 'flyers', 'branding'].map((cat) => (
-              <Button
-                key={cat}
-                size="xs"
-                variant={selectedCategory === cat ? 'solid' : 'ghost'}
-                colorScheme="teal"
-                borderRadius="full"
-                onClick={() => setSelectedCategory(cat)}
-                textTransform="capitalize"
-              >
-                {cat}
-              </Button>
-            ))}
-          </HStack>
-
-          {/* Portfolio Grid */}
-          <SimpleGrid columns={{ base: 1, sm: 2 }} spacing="1.5rem">
-            {filteredPortfolio.map((item) => (
-              <Box
-                key={item.id}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="xl"
-                overflow="hidden"
-                bg={cardBg}
-                transition="transform 0.25s"
-                _hover={{ transform: 'translateY(-4px)', shadow: 'md' }}
-                cursor="pointer"
-                onClick={() => openLightbox({
-                  src: `/${item.image_path}`,
-                  alt: item.title,
-                  title: item.title,
-                  desc: item.description,
-                  tags: item.tags
-                })}
-              >
-                <Box h="180px" bg="blackAlpha.200" position="relative" display="flex" alignItems="center" justifyContent="center">
-                  <Text fontSize="2rem">🎨</Text>
-                  <Box position="absolute" top="0.75rem" left="0.75rem">
-                    <Tag size="sm" variant="solid" colorScheme={getPortfolioScheme(item.category)} textTransform="uppercase" fontSize="0.65rem" fontWeight="700">
-                      {item.category}
-                    </Tag>
-                  </Box>
-                </Box>
-                <Box p="1.2rem">
-                  <Heading as="h4" fontSize="1rem" fontWeight="700" mb="0.5rem">
-                    {item.title}
-                  </Heading>
-                  <Text fontSize="0.82rem" color={textColorMuted} noOfLines={2}>
-                    {item.description}
-                  </Text>
-                  <HStack mt="1rem" spacing="0.3rem" wrap="wrap">
-                    {item.tags.map((tag) => (
-                      <Tag key={tag} size="sm" variant="outline" fontSize="0.7rem" py="1px">
-                        {tag}
-                      </Tag>
-                    ))}
-                  </HStack>
-                </Box>
-              </Box>
-            ))}
-          </SimpleGrid>
-        </Box>
+        {/* 6b. Employer Geography Section */}
+        <EmployerGeography
+          employers={data.employers}
+          borderLight={borderLight}
+          blueColor={blueColor}
+          cardBg={cardBg}
+          textColorMuted={textColorMuted}
+          brandPrimary={brandPrimary}
+        />
 
         <Divider borderColor={borderLight} my="4rem" />
 
-        {/* 6. Footer & Tech Stack badges */}
+        {/* 7. Footer & Tech Stack badges */}
         <VStack spacing="2rem" as="footer" textAlign="center" pt="2rem">
           <VStack spacing="0.75rem">
             <Text
@@ -893,6 +1045,751 @@ function Resume({ data }) {
         </ModalContent>
       </Modal>
     </Box>
+  );
+}
+
+// ─── Skills & Core Competencies — Full Redesign ────────────────────────────
+const SKILL_TABS = [
+  { label: 'Labor Relations', scheme: 'blue', emoji: '🔵' },
+  { label: 'Digital Media & Communications', scheme: 'purple', emoji: '🟣' },
+];
+
+const LABOR_GROUPS = ['strategic_core', 'core_professional', 'skills_list'];
+
+// ─── Timeline Dot with ping + duration tooltip ───────────────────────────────
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function parseDateRange(dateRange) {
+  if (!dateRange) return null;
+  const parts = dateRange.trim().split(/\s*[-–]\s*/);
+  if (parts.length < 2) return null;
+  const parseMMYYYY = (s) => {
+    const clean = s.trim();
+    if (/present/i.test(clean)) return new Date();
+    const [mm, yyyy] = clean.split('/');
+    if (!mm || !yyyy) return null;
+    return new Date(parseInt(yyyy), parseInt(mm) - 1);
+  };
+  const start = parseMMYYYY(parts[0]);
+  const end   = parseMMYYYY(parts[1]);
+  if (!start || !end) return null;
+  const totalMonths = Math.max(0, Math.round((end - start) / (1000 * 60 * 60 * 24 * 30.44)));
+  const years  = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+  const parts2 = [];
+  if (years > 0)  parts2.push(`${years} yr${years  !== 1 ? 's' : ''}`);
+  if (months > 0) parts2.push(`${months} mo${months !== 1 ? 's' : ''}`);
+  const fmt = (d) => d ? `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}` : '';
+  const isPresent = /present/i.test(parts[1].trim());
+  return {
+    label:  `${fmt(start)} – ${isPresent ? 'Present' : fmt(end)}`,
+    duration: parts2.join(' ') || '< 1 mo',
+    totalMonths,
+  };
+}
+
+function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
+  const [dotHovered, setDotHovered] = useState(false);
+  const pinging = isActive || dotHovered;
+  const info = useMemo(() => parseDateRange(dateRange), [dateRange]);
+  return (
+    <Box
+      position="relative"
+      w="13px" h="13px"
+      mt="1.65rem"
+      flexShrink={0}
+      zIndex={2}
+      onMouseEnter={() => setDotHovered(true)}
+      onMouseLeave={() => setDotHovered(false)}
+      cursor="crosshair"
+    >
+      {/* Ping rings */}
+      {pinging && (
+        <>
+          <Box
+            position="absolute"
+            top="50%" left="50%"
+            transform="translate(-50%, -50%)"
+            w="13px" h="13px" borderRadius="full"
+            border="2px solid"
+            borderColor={color}
+            style={{ animation: 'dotPing 1.1s ease-out infinite' }}
+            pointerEvents="none"
+          />
+          <Box
+            position="absolute"
+            top="50%" left="50%"
+            transform="translate(-50%, -50%)"
+            w="13px" h="13px" borderRadius="full"
+            border="2px solid"
+            borderColor={color}
+            style={{ animation: 'dotPing 1.1s ease-out 0.45s infinite' }}
+            pointerEvents="none"
+          />
+        </>
+      )}
+      {/* Dot */}
+      <Box
+        w="13px" h="13px" borderRadius="full"
+        bg={color}
+        border="3px solid" borderColor={cardBg}
+        boxShadow={`0 0 0 2px ${color}`}
+        position="absolute" top="0" left="0"
+        transition="transform 0.18s"
+        transform={pinging ? 'scale(1.35)' : 'scale(1)'}
+      />
+      {/* Tooltip — only on direct dot hover */}
+      {dotHovered && info && (
+        <Box
+          position="absolute"
+          left="calc(100% + 14px)"
+          top="50%"
+          transform="translateY(-50%)"
+          bg="gray.900"
+          borderLeft="3px solid"
+          borderLeftColor={color}
+          borderRadius="md"
+          px="0.75rem" py="0.5rem"
+          zIndex={200}
+          boxShadow="0 8px 32px rgba(0,0,0,0.5)"
+          pointerEvents="none"
+          whiteSpace="nowrap"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            left: '-7px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            w: 0, h: 0,
+            borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderRight: `6px solid`,
+            borderRightColor: 'gray.900',
+          }}
+        >
+          <Text fontSize="0.82rem" fontWeight="700" color="white" letterSpacing="0.02em">
+            {info.totalMonths} month{info.totalMonths !== 1 ? 's' : ''}
+          </Text>
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+function SkillsSection({ skills, competencies, timeline = [], borderLight, cardBg, textColorMuted, brandPrimary, brandSecondary, blueColor, purpleColor }) {
+
+  const [tabIdx, setTabIdx] = useState(0);
+  const [viewMode, setViewMode] = useState('list');
+  const { colorMode } = useColorMode();
+
+  const groupedCompetencies = useMemo(() => {
+    const out = {};
+    (competencies || []).forEach(c => {
+      if (!out[c.group_type]) out[c.group_type] = {};
+      if (!out[c.group_type][c.category]) out[c.group_type][c.category] = [];
+      out[c.group_type][c.category].push(c);
+    });
+    return out;
+  }, [competencies]);
+
+  // Merge all labor categories into one flat map
+  const laborCategories = useMemo(() => {
+    const merged = {};
+    LABOR_GROUPS.forEach(grp => {
+      Object.entries(groupedCompetencies[grp] || {}).forEach(([cat, items]) => {
+        merged[cat] = items;
+      });
+    });
+    return merged;
+  }, [groupedCompetencies]);
+
+  const digitalCategories = groupedCompetencies['technical_skills'] || {};
+
+  const leadershipSkills = (skills || []).filter(s => s.category === 'leadership');
+  const commsSkills = (skills || []).filter(s => s.category === 'comms');
+
+  const laborCount = Object.values(laborCategories).reduce((n, items) => n + items.length, 0);
+  const digitalCount = Object.values(digitalCategories).reduce((n, items) => n + items.length, 0);
+
+  return (
+    <Box id="skills" mb="4rem">
+      <HStack justify="space-between" align="center" mb="1.5rem" wrap="wrap" gap="0.75rem">
+        <Box>
+          <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em">
+            Skills &amp; Core Competencies
+          </Heading>
+          <Text fontSize="0.8rem" color={textColorMuted} mt="0.15rem">
+            {(competencies || []).length + (skills || []).length} total skills
+          </Text>
+        </Box>
+        <HStack spacing="0.4rem">
+          <Button size="sm" variant={viewMode === 'list' ? 'solid' : 'ghost'}
+            colorScheme={viewMode === 'list' ? 'blue' : 'gray'}
+            onClick={() => setViewMode('list')} fontSize="0.78rem" fontWeight="700">
+            📋 List
+          </Button>
+          <Button size="sm" variant={viewMode === 'map' ? 'solid' : 'ghost'}
+            colorScheme={viewMode === 'map' ? 'purple' : 'gray'}
+            onClick={() => setViewMode('map')} fontSize="0.78rem" fontWeight="700">
+            🌐 Skill Map
+          </Button>
+          <Button size="sm" variant={viewMode === 'insights' ? 'solid' : 'ghost'}
+            colorScheme={viewMode === 'insights' ? 'teal' : 'gray'}
+            onClick={() => setViewMode('insights')} fontSize="0.78rem" fontWeight="700">
+            📊 Skills Insights
+          </Button>
+        </HStack>
+      </HStack>
+
+      {viewMode === 'map' ? (
+        <SkillOrbMap colorMode={colorMode} />
+      ) : viewMode === 'insights' ? (
+        <SkillsInsightsPanel
+          colorMode={colorMode}
+          borderLight={borderLight}
+          cardBg={cardBg}
+          textColorMuted={textColorMuted}
+        />
+      ) : (
+        <Tabs index={tabIdx} onChange={setTabIdx} variant="soft-rounded" size="sm" isLazy>
+          <TabList gap="0.5rem" mb="1.75rem">
+          <Tab colorScheme="blue" fontWeight="700" fontSize="0.85rem">
+            🔵 Labor Relations
+            <Badge ml="0.5rem" colorScheme="blue" borderRadius="full" fontSize="0.65rem">{laborCount + leadershipSkills.length}</Badge>
+          </Tab>
+          <Tab colorScheme="purple" fontWeight="700" fontSize="0.85rem">
+            🟣 Digital Media &amp; Communications
+            <Badge ml="0.5rem" colorScheme="purple" borderRadius="full" fontSize="0.65rem">{digitalCount + commsSkills.length}</Badge>
+          </Tab>
+          </TabList>
+
+        <TabPanels>
+          {/* Tab 0: Labor Relations */}
+          <TabPanel px="0" pt="0">
+            {/* Quick-ref pills */}
+            {leadershipSkills.length > 0 && (
+              <Box mb="1.5rem">
+                <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
+                  Core Skills
+                </Text>
+                <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                  {leadershipSkills.map(s => (
+                    <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.76rem">{s.name}</Tag>
+                  ))}
+                </HStack>
+              </Box>
+            )}
+            <CompetencyGroup
+              categories={laborCategories}
+              scheme="blue"
+              borderLight={borderLight}
+              cardBg={cardBg}
+              textColorMuted={textColorMuted}
+            />
+          </TabPanel>
+
+          {/* Tab 1: Digital Media & Communications */}
+          <TabPanel px="0" pt="0">
+            {/* Quick-ref pills */}
+            {commsSkills.length > 0 && (
+              <Box mb="1.5rem">
+                <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
+                  Core Skills
+                </Text>
+                <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                  {commsSkills.map(s => (
+                    <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.76rem">{s.name}</Tag>
+                  ))}
+                </HStack>
+              </Box>
+            )}
+            <CompetencyGroup
+              categories={digitalCategories}
+              scheme="purple"
+              borderLight={borderLight}
+              cardBg={cardBg}
+              textColorMuted={textColorMuted}
+            />
+          </TabPanel>
+        </TabPanels>
+        </Tabs>
+      )}
+
+    </Box>
+  );
+}
+
+
+function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg, textColorMuted }) {
+  const [expanded, setExpanded] = useState(null);
+  const catEntries = Object.entries(categories);
+
+  if (catEntries.length === 0) {
+    return <Text color={textColorMuted} py="2rem" textAlign="center">No data available.</Text>;
+  }
+
+  return (
+    <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1.25rem">
+      {catEntries.map(([category, items]) => (
+        <Box
+          key={category}
+          border="1px solid"
+          borderColor={borderLight}
+          borderRadius="xl"
+          overflow="hidden"
+          bg={cardBg}
+        >
+          {/* Category Header */}
+          <Box
+            px="1.1rem"
+            py="0.75rem"
+            borderBottom="1px solid"
+            borderColor={borderLight}
+            bg={scheme === 'blue' ? 'blue.50' : 'purple.50'}
+            _dark={{ bg: 'whiteAlpha.50' }}
+          >
+            <HStack justify="space-between">
+              <Text fontSize="0.72rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.06em">
+                {category}
+              </Text>
+              <Badge colorScheme={scheme} borderRadius="full" fontSize="0.6rem" fontWeight="700">
+                {items.length}
+              </Badge>
+            </HStack>
+          </Box>
+
+          {/* Skill Items */}
+          <VStack align="stretch" spacing="0" divider={<Box borderTop="1px solid" borderColor={borderLight} />}>
+            {items.map(item => (
+              <Box key={item.name}>
+                <HStack
+                  px="1.1rem"
+                  py="0.6rem"
+                  cursor="pointer"
+                  _hover={{ bg: 'blackAlpha.30' }}
+                  justify="space-between"
+                  onClick={() => setExpanded(e => e === item.name ? null : item.name)}
+                >
+                  <Text fontSize="0.82rem" fontWeight="600" lineHeight="1.3">{item.name}</Text>
+                  <Text fontSize="0.65rem" opacity={0.45} flexShrink={0} ml="0.5rem">
+                    {expanded === item.name ? '▴' : '▾'}
+                  </Text>
+                </HStack>
+                <Collapse in={expanded === item.name} animateOpacity>
+                  <Text px="1.1rem" pb="0.85rem" pt="0.1rem" fontSize="0.78rem" color={textColorMuted} lineHeight="1.6">
+                    {item.description}
+                  </Text>
+                </Collapse>
+              </Box>
+            ))}
+          </VStack>
+        </Box>
+      ))}
+    </SimpleGrid>
+  );
+}
+
+// ─── Career Scope Animated Stat Bar ────────────────────────────────────────
+
+function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, competencies }) {
+  const ref       = useRef(null);
+  const countRef  = useRef(null);
+  const cycleRef  = useRef(null);
+  const [statIdx,  setStatIdx]  = useState(0);
+  const [visible,  setVisible]  = useState(true);
+  const [counts,   setCounts]   = useState({});
+  const [inView,   setInView]   = useState(false);
+  const [progKey,  setProgKey]  = useState(0); // remount progress bar to restart animation
+
+  const SETS = useMemo(() => [
+    {
+      label: 'Career Scope',
+      items: [
+        { key: 'employers',    target: employers?.length || 78, suffix: '',   label: 'Employer Accounts Represented', accent: blueColor },
+        { key: 'years',        target: 20,                      suffix: '+',  label: 'Years Labor Leadership',        accent: blueColor },
+        { key: 'competencies', target: competencies?.length || 60, suffix: '+', label: 'Core Competencies',          accent: purpleColor },
+        { key: 'reach',        target: 1,                       suffix: 'M+', label: 'Coalition Reach',              accent: purpleColor },
+      ],
+    },
+    {
+      label: 'Impact',
+      items: [
+        { key: 'contracts', target: 40,  suffix: '+',  label: 'Union Contracts Negotiated',  accent: blueColor   },
+        { key: 'members',   target: 12,  suffix: 'K+', label: 'Union Members Represented',   accent: blueColor   },
+        { key: 'campaigns', target: 35,  suffix: '+',  label: 'Political Campaigns Supported', accent: purpleColor },
+        { key: 'media',     target: 200, suffix: '+',  label: 'Press & Media Placements',    accent: purpleColor },
+      ],
+    },
+  ], [blueColor, purpleColor, employers, competencies]);
+
+  const animateTo = useCallback((items) => {
+    if (countRef.current) clearInterval(countRef.current);
+    const init = Object.fromEntries(items.map(s => [s.key, 0]));
+    setCounts(init);
+    const duration = 1800, steps = 60;
+    let step = 0;
+    countRef.current = setInterval(() => {
+      step++;
+      const ease = 1 - Math.pow(1 - step / steps, 3);
+      const next = Object.fromEntries(items.map(s => [s.key, Math.round(ease * s.target)]));
+      setCounts(next);
+      if (step >= steps) clearInterval(countRef.current);
+    }, duration / steps);
+  }, []);
+
+  // IntersectionObserver — trigger on first scroll into view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setInView(true); },
+      { threshold: 0.3 }
+    );
+    const el = ref.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
+  }, []);
+
+  // Animate counters when set changes or comes into view
+  useEffect(() => {
+    if (!inView) return;
+    animateTo(SETS[statIdx].items);
+  }, [inView, statIdx, SETS, animateTo]);
+
+  // 10-second auto-cycle
+  useEffect(() => {
+    if (!inView) return;
+    cycleRef.current = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setStatIdx(i => (i + 1) % SETS.length);
+        setProgKey(k => k + 1);
+        setVisible(true);
+      }, 420);
+    }, 10000);
+    return () => clearInterval(cycleRef.current);
+  }, [inView, SETS.length]);
+
+  function jumpTo(i) {
+    if (i === statIdx) return;
+    setVisible(false);
+    clearInterval(cycleRef.current);
+    setTimeout(() => {
+      setStatIdx(i);
+      setProgKey(k => k + 1);
+      setVisible(true);
+      // Restart cycle
+      cycleRef.current = setInterval(() => {
+        setVisible(false);
+        setTimeout(() => {
+          setStatIdx(prev => (prev + 1) % SETS.length);
+          setProgKey(k => k + 1);
+          setVisible(true);
+        }, 420);
+      }, 10000);
+    }, 420);
+  }
+
+  const currentSet = SETS[statIdx];
+
+  return (
+    <>
+      <style>{`
+        @keyframes statsProgress {
+          from { width: 0%; }
+          to   { width: 100%; }
+        }
+      `}</style>
+      <Box
+        ref={ref}
+        my="3rem"
+        borderRadius="2xl"
+        border="1px solid"
+        borderColor={borderLight}
+        backdropFilter="blur(8px)"
+        overflow="hidden"
+        bg="linear-gradient(135deg, oklch(18% 0.025 240 / 0.06) 0%, oklch(18% 0.02 280 / 0.06) 100%)"
+      >
+        {/* Stat grid */}
+        <Box style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+          <SimpleGrid columns={{ base: 2, md: 4 }} divider={<Divider orientation="vertical" borderColor={borderLight} />}>
+            {currentSet.items.map((stat, i) => (
+              <VStack
+                key={stat.key}
+                py="1.5rem"
+                px="1rem"
+                spacing="0.25rem"
+                align="center"
+                borderRight={i < 3 ? '1px solid' : 'none'}
+                borderColor={borderLight}
+                borderBottom={{ base: i < 2 ? '1px solid' : 'none', md: 'none' }}
+              >
+                <Text
+                  fontSize={{ base: '2rem', md: '2.5rem' }}
+                  fontWeight="900"
+                  letterSpacing="-0.04em"
+                  color={stat.accent}
+                  lineHeight="1"
+                  fontVariantNumeric="tabular-nums"
+                >
+                  {counts[stat.key] ?? 0}{stat.suffix}
+                </Text>
+                <Text fontSize="0.72rem" fontWeight="600" textAlign="center" opacity={0.7}
+                  textTransform="uppercase" letterSpacing="0.06em">
+                  {stat.label}
+                </Text>
+              </VStack>
+            ))}
+          </SimpleGrid>
+        </Box>
+
+        {/* Progress bar + set indicators */}
+        <Box
+          px="1.5rem" py="0.6rem"
+          borderTop="1px solid" borderColor={borderLight}
+          display="flex" alignItems="center" gap="0.75rem"
+        >
+          {/* Animated progress line */}
+          <Box flex={1} h="2px" bg="rgba(255,255,255,0.06)" borderRadius="full" overflow="hidden">
+            <Box
+              key={progKey}
+              h="100%"
+              borderRadius="full"
+              bg={statIdx === 0 ? blueColor : purpleColor}
+              style={{ animation: 'statsProgress 10s linear forwards' }}
+            />
+          </Box>
+          {/* Dot indicators */}
+          <Flex gap="0.35rem" align="center">
+            <Text fontSize="0.62rem" color="whiteAlpha.400" letterSpacing="0.06em" textTransform="uppercase" mr="0.2rem">
+              {currentSet.label}
+            </Text>
+            {SETS.map((s, i) => (
+              <Box
+                key={i}
+                as="button"
+                w="7px" h="7px"
+                borderRadius="full"
+                bg={i === statIdx ? (i === 0 ? blueColor : purpleColor) : 'whiteAlpha.200'}
+                transition="all 0.35s ease"
+                transform={i === statIdx ? 'scale(1.35)' : 'scale(1)'}
+                cursor="pointer"
+                border="none"
+                onClick={() => jumpTo(i)}
+                aria-label={`Show ${s.label} stats`}
+              />
+            ))}
+          </Flex>
+        </Box>
+      </Box>
+    </>
+  );
+}
+
+// ─── Employer Geography Section ──────────────────────────────────────────────
+const GEO_GROUPS = [
+  {
+    region: 'Bay Area',
+    match: (loc) => /Oakland|Berkeley|San Francisco|SF|Redwood|Hayward|Fremont|Alameda|San Leandro|South San Francisco|Brisbane|San Mateo|Burlingame|Colma|Daly City|Martinez|East Bay/i.test(loc),
+  },
+  {
+    region: 'North Bay / Sonoma County',
+    match: (loc) => /Sonoma|Petaluma|Santa Rosa|Rohnert Park|Cotati|Geyserville|Marin|Mill Valley|San Rafael|Corte Madera|North Bay|Ukiah|Lake County|Ukiah/i.test(loc),
+  },
+  {
+    region: 'Los Angeles / Southern California',
+    match: (loc) => /Los Angeles|LA|Manhattan Beach|Menlo Park/i.test(loc),
+  },
+  {
+    region: 'Regional / Statewide',
+    match: (loc) => /Regional|Northern California|California Region|National|Statewide/i.test(loc),
+  },
+];
+
+function EmployerGeography({ employers, borderLight, blueColor, cardBg, textColorMuted, brandPrimary }) {
+  const [open, setOpen] = useState(false);
+
+  const grouped = GEO_GROUPS.map(g => ({
+    ...g,
+    employers: (employers || []).filter(e => g.match(e.location)),
+  })).filter(g => g.employers.length > 0);
+
+  return (
+    <Box mb="4rem">
+      <HStack justify="space-between" align="center" mb={open ? '1.5rem' : '0'} cursor="pointer" onClick={() => setOpen(o => !o)}>
+        <VStack align="start" spacing="0.1rem">
+          <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em">
+            Labor Footprint
+          </Heading>
+          <Text fontSize="0.85rem" color={textColorMuted}>
+            {(employers || []).length} employer accounts across California — Click to expand
+          </Text>
+        </VStack>
+        <Box
+          w="2rem" h="2rem"
+          display="flex" alignItems="center" justifyContent="center"
+          borderRadius="full"
+          border="1px solid"
+          borderColor={borderLight}
+          fontSize="1rem"
+          transition="transform 0.3s"
+          transform={open ? 'rotate(180deg)' : 'rotate(0deg)'}
+        >
+          ▾
+        </Box>
+      </HStack>
+
+      <Collapse in={open} animateOpacity>
+        <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1.5rem">
+          {grouped.map(g => (
+            <Box
+              key={g.region}
+              border="1px solid"
+              borderColor={borderLight}
+              borderRadius="xl"
+              p="1.25rem"
+              bg={cardBg}
+            >
+              <Text
+                fontSize="0.75rem"
+                fontWeight="800"
+                textTransform="uppercase"
+                letterSpacing="0.08em"
+                color={blueColor}
+                mb="0.75rem"
+              >
+                {g.region}
+              </Text>
+              <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                {g.employers.map(e => (
+                  <Tag key={e.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.72rem">
+                    {e.name}
+                  </Tag>
+                ))}
+              </HStack>
+            </Box>
+          ))}
+        </SimpleGrid>
+      </Collapse>
+    </Box>
+  );
+}
+
+// ─────────────────────────────────────────────
+// Skills Insights Panel — curated importance rankings
+// ─────────────────────────────────────────────
+
+// Top 10 Labor Relations skills, ranked #1 (most important) → #10
+const LABOR_TOP10 = [
+  { skill: 'Collective Bargaining & Contract Architecture', score: 100 },
+  { skill: 'NLRB Representation & Statutory Defense',       score: 94  },
+  { skill: 'Strategic Field Organizing',                    score: 88  },
+  { skill: 'Grievance Administration & Arbitration',        score: 83  },
+  { skill: 'Unfair Labor Practice (ULP) Enforcement',       score: 79  },
+  { skill: 'Economic Package Modeling',                     score: 75  },
+  { skill: 'Worksite Mobilization & Unit Mapping',          score: 70  },
+  { skill: 'Federal Mediation Pathways (FMCS)',             score: 66  },
+  { skill: 'Taft-Hartley Trust Compliance',                 score: 62  },
+  { skill: 'Internal Union Governance & Compliance',        score: 58  },
+];
+
+// Top 10 Digital & Communications skills, ranked #1 → #10
+const DIGITAL_TOP10 = [
+  { skill: 'Content Strategy & Editorial Planning', score: 100 },
+  { skill: 'Video Production & Post-Production',    score: 94  },
+  { skill: 'Podcast Production',                    score: 88  },
+  { skill: 'Digital Campaign Management',           score: 83  },
+  { skill: 'Social Media & Community Building',     score: 79  },
+  { skill: 'Brand Identity & Visual Design',        score: 75  },
+  { skill: 'Audio Engineering',                     score: 70  },
+  { skill: 'Live Streaming & Broadcast',            score: 66  },
+  { skill: 'SEO & Web Development',                 score: 62  },
+  { skill: 'Graphic Design',                        score: 58  },
+];
+
+function makeBarOptions(skills, color, isDark) {
+  const textColor = isDark ? '#cbd5e0' : '#2d3748';
+  const gridColor = isDark ? '#2d3748' : '#e2e8f0';
+  return {
+    chart: { type: 'bar', background: 'transparent', toolbar: { show: false }, animations: { enabled: true, speed: 600 } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 4, distributed: false, barHeight: '60%' } },
+    colors: [color],
+    xaxis: {
+      categories: skills.map(s => s.skill),
+      min: 0, max: 100,
+      labels: {
+        show: false,
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: skills.map(() => textColor), fontSize: '0.8rem', fontWeight: '500' },
+        maxWidth: 260,
+      },
+    },
+    tooltip: {
+      theme: isDark ? 'dark' : 'light',
+      y: { title: { formatter: () => 'Importance' }, formatter: val => `${val}/100` },
+    },
+    grid: { borderColor: gridColor, xaxis: { lines: { show: false } }, yaxis: { lines: { show: false } } },
+    dataLabels: {
+      enabled: true,
+      textAnchor: 'start',
+      style: { fontSize: '0.75rem', fontWeight: '600', colors: [isDark ? '#e2e8f0' : '#1a202c'] },
+      formatter: val => `${val}`,
+      offsetX: 6,
+    },
+    legend: { show: false },
+  };
+}
+
+function SkillsInsightsPanel({ colorMode, borderLight, cardBg, textColorMuted }) {
+  const isDark = colorMode === 'dark';
+
+  const laborOptions  = useMemo(() => makeBarOptions(LABOR_TOP10,   '#4299e1', isDark), [isDark]);
+  const digitalOptions = useMemo(() => makeBarOptions(DIGITAL_TOP10, '#9f7aea', isDark), [isDark]);
+
+  const laborSeries   = [{ name: 'Importance', data: LABOR_TOP10.map(s => s.score) }];
+  const digitalSeries = [{ name: 'Importance', data: DIGITAL_TOP10.map(s => s.score) }];
+
+  return (
+    <Suspense fallback={<Box py="4rem" textAlign="center"><Text color={textColorMuted}>Loading charts…</Text></Box>}>
+      <VStack align="stretch" spacing="3rem">
+
+        {/* Chart 1 — Labor Relations */}
+        <Box>
+          <Text fontSize="0.72rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.06em" mb="0.25rem" color={textColorMuted}>
+            🔵 Labor Relations
+          </Text>
+          <Text fontSize="0.82rem" color={textColorMuted} mb="1.25rem">
+            Top 10 skills ranked by strategic importance to employers in this field.
+          </Text>
+          <ReactApexChart
+            type="bar"
+            options={laborOptions}
+            series={laborSeries}
+            height={340}
+          />
+        </Box>
+
+        {/* Chart 2 — Digital & Communications */}
+        <Box>
+          <Text fontSize="0.72rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.06em" mb="0.25rem" color={textColorMuted}>
+            🟣 Digital &amp; Communications
+          </Text>
+          <Text fontSize="0.82rem" color={textColorMuted} mb="1.25rem">
+            Top 10 skills ranked by strategic importance to employers in this field.
+          </Text>
+          <ReactApexChart
+            type="bar"
+            options={digitalOptions}
+            series={digitalSeries}
+            height={340}
+          />
+        </Box>
+
+      </VStack>
+    </Suspense>
   );
 }
 
