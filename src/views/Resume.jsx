@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { LaborMap } from '../components/LaborMap';
 
 const ReactApexChart = lazy(() => import('react-apexcharts'));
@@ -38,7 +39,7 @@ import {
   Badge,
   useDisclosure,
 } from '@chakra-ui/react';
-import { SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon } from '@chakra-ui/icons';
+import { SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { FaLinkedin, FaInstagram, FaYoutube } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import SkillOrbMap from '../components/SkillOrbMap';
@@ -77,6 +78,323 @@ const techIcons = {
   ),
 };
 
+// ─── Horizontal Timeline Component for Carousel ───
+function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, textColorMuted }) {
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const selectedEvent = events[selectedIdx];
+
+  if (!events || events.length === 0) return null;
+
+  return (
+    <VStack align="stretch" spacing="1.5rem" w="100%">
+      <style>{`
+        @keyframes dotPingH {
+          0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.75; }
+          100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+        }
+      `}</style>
+      
+      {/* Horizontal timeline track and nodes */}
+      <Box
+        overflowX="auto"
+        w="100%"
+        pb="0.75rem"
+        sx={{
+          '&::-webkit-scrollbar': { height: '5px' },
+          '&::-webkit-scrollbar-track': { bg: 'transparent' },
+          '&::-webkit-scrollbar-thumb': {
+            bg: borderLight,
+            borderRadius: '4px',
+          },
+        }}
+      >
+        <Box position="relative" w="100%" minW="fit-content" h="90px">
+          {/* Track Line - mathematically centered vertically */}
+          <Box
+            position="absolute"
+            top="50%"
+            left="2rem"
+            right="2rem"
+            h="2px"
+            bg={borderLight}
+            zIndex="1"
+            transform="translateY(-50%)"
+          />
+
+          {/* Nodes Container */}
+          <HStack
+            spacing="3.5rem"
+            px="1.25rem"
+            zIndex="2"
+            position="relative"
+            align="center"
+            h="100%"
+          >
+            {events.map((ev, idx) => {
+              const isSelected = selectedIdx === idx;
+              return (
+                <Flex
+                  key={idx}
+                  direction="column"
+                  align="center"
+                  justify="center"
+                  minW="120px"
+                  cursor="pointer"
+                  onClick={() => setSelectedIdx(idx)}
+                  position="relative"
+                  userSelect="none"
+                  h="100%"
+                >
+                  {/* Year - Positioned Above Dot */}
+                  <Text
+                    position="absolute"
+                    top="0"
+                    fontSize="0.78rem"
+                    fontWeight="700"
+                    color={isSelected ? color : textColorMuted}
+                    transition="color 0.2s"
+                  >
+                    {ev.year}
+                  </Text>
+
+                  {/* Timeline node - Exactly Centered Vertically */}
+                  <Box
+                    boxSize="13px"
+                    borderRadius="full"
+                    bg={isSelected ? color : cardBg}
+                    border="3px solid"
+                    borderColor={isSelected ? color : borderLight}
+                    position="relative"
+                    transition="all 0.2s ease"
+                    _hover={{ transform: 'scale(1.25)', borderColor: color }}
+                    zIndex="2"
+                  >
+                    {isSelected && (
+                      <>
+                        <Box
+                          position="absolute"
+                          top="50%"
+                          left="50%"
+                          transform="translate(-50%, -50%)"
+                          boxSize="13px"
+                          borderRadius="full"
+                          border="2px solid"
+                          borderColor={color}
+                          style={{ animation: 'dotPingH 1.1s ease-out infinite' }}
+                          pointerEvents="none"
+                        />
+                        <Box
+                          position="absolute"
+                          top="50%"
+                          left="50%"
+                          transform="translate(-50%, -50%)"
+                          boxSize="13px"
+                          borderRadius="full"
+                          border="2px solid"
+                          borderColor={color}
+                          style={{ animation: 'dotPingH 1.1s ease-out 0.45s infinite' }}
+                          pointerEvents="none"
+                        />
+                      </>
+                    )}
+                  </Box>
+
+                  {/* Event Title - Positioned Below Dot */}
+                  <Text
+                    position="absolute"
+                    bottom="0"
+                    fontSize="0.8rem"
+                    fontWeight="600"
+                    textAlign="center"
+                    noOfLines={1}
+                    color={isSelected ? 'white' : textColorMuted}
+                    transition="color 0.2s"
+                    maxW="110px"
+                  >
+                    {ev.title}
+                  </Text>
+                </Flex>
+              );
+            })}
+          </HStack>
+        </Box>
+      </Box>
+
+      {/* Selected Event Details Card */}
+      <AnimatePresence mode="wait">
+        {selectedEvent && (
+          <motion.div
+            key={selectedIdx}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Box
+              p="1.25rem"
+              bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
+              border="1px solid"
+              borderColor={borderLight}
+              borderRadius="xl"
+              w="100%"
+            >
+              <HStack justify="space-between" align="center" mb="0.6rem">
+                <Text fontSize="1rem" fontWeight="700" color={color}>
+                  {selectedEvent.title}
+                </Text>
+                <Badge colorScheme={scheme} fontSize="0.75rem" px="0.5rem" py="0.1rem" borderRadius="full">
+                  {selectedEvent.year}
+                </Badge>
+              </HStack>
+              <Text fontSize="0.9rem" color={textColorMuted} lineHeight="1.6" fontWeight="500">
+                {selectedEvent.details}
+              </Text>
+            </Box>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </VStack>
+  );
+}
+
+// ─── Slide Carousel Component ───
+function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight, cardBg, textColorMuted }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const enabledSlides = slides.filter(s => s.is_enabled);
+
+  if (enabledSlides.length === 0) return null;
+
+  const currentSlide = enabledSlides[activeIdx];
+
+  const nextSlide = () => {
+    setActiveIdx(prev => (prev === enabledSlides.length - 1 ? 0 : prev + 1));
+  };
+
+  const prevSlide = () => {
+    setActiveIdx(prev => (prev === 0 ? enabledSlides.length - 1 : prev - 1));
+  };
+
+  const slideTheme = activeIdx % 2 === 0 ? {
+    color: brandPrimary,
+    scheme: 'blue'
+  } : {
+    color: brandSecondary,
+    scheme: 'purple'
+  };
+
+  return (
+    <Box
+      w="100%"
+      border="1px solid"
+      borderColor={borderLight}
+      borderRadius="2xl"
+      p={{ base: '1.5rem', md: '2rem' }}
+      bg={cardBg}
+      boxShadow="lg"
+      position="relative"
+      mb="4rem"
+    >
+      {/* Carousel Header */}
+      <Flex align="center" justify="space-between" mb="1.5rem" pb="1rem" borderBottom="1px solid" borderColor={borderLight}>
+        <Heading
+          as="h2"
+          fontSize="1.1rem"
+          fontWeight="800"
+          textTransform="uppercase"
+          letterSpacing="0.08em"
+          color={slideTheme.color}
+        >
+          {currentSlide.title}
+        </Heading>
+
+        {/* Carousel controls */}
+        {enabledSlides.length > 1 && (
+          <HStack spacing="0.75rem">
+            <IconButton
+              aria-label="Previous Slide"
+              icon={<span>&lsaquo;</span>}
+              size="sm"
+              variant="ghost"
+              borderRadius="full"
+              fontSize="1.3rem"
+              onClick={prevSlide}
+              _hover={{ bg: 'whiteAlpha.100' }}
+            />
+            <Text fontSize="0.78rem" fontWeight="700" color={textColorMuted} minW="2.5rem" textAlign="center">
+              {activeIdx + 1} / {enabledSlides.length}
+            </Text>
+            <IconButton
+              aria-label="Next Slide"
+              icon={<span>&rsaquo;</span>}
+              size="sm"
+              variant="ghost"
+              borderRadius="full"
+              fontSize="1.3rem"
+              onClick={nextSlide}
+              _hover={{ bg: 'whiteAlpha.100' }}
+            />
+          </HStack>
+        )}
+      </Flex>
+
+      {/* Slide body */}
+      <Box position="relative" minH="180px" w="100%">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide.id || activeIdx}
+            initial={{ opacity: 0, x: 15 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -15 }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
+            style={{ width: '100%' }}
+          >
+            {currentSlide.content_type === 'markdown' && (
+              <VStack align="start" spacing="1.2rem">
+                <Text fontSize="1.05rem" fontWeight="650" lineHeight="1.5">
+                  {currentSlide.content_data?.lead}
+                </Text>
+                <Text fontSize="1rem" color={textColorMuted} lineHeight="1.65">
+                  {currentSlide.content_data?.body}
+                </Text>
+              </VStack>
+            )}
+
+            {currentSlide.content_type === 'personal_timeline' && (
+              <HorizontalTimeline
+                events={currentSlide.content_data}
+                color={slideTheme.color}
+                scheme={slideTheme.scheme}
+                borderLight={borderLight}
+                cardBg={cardBg}
+                textColorMuted={textColorMuted}
+              />
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </Box>
+
+      {/* Indicator Dots */}
+      {enabledSlides.length > 1 && (
+        <HStack justify="center" spacing="0.5rem" mt="1.5rem">
+          {enabledSlides.map((_, idx) => (
+            <Box
+              key={idx}
+              boxSize="6px"
+              borderRadius="full"
+              bg={activeIdx === idx ? slideTheme.color : borderLight}
+              cursor="pointer"
+              onClick={() => setActiveIdx(idx)}
+              transition="all 0.2s ease"
+              _hover={{ transform: 'scale(1.2)' }}
+            />
+          ))}
+        </HStack>
+      )}
+    </Box>
+  );
+}
+
 function Resume({ data }) {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === 'dark';
@@ -90,6 +408,86 @@ function Resume({ data }) {
   const [lbAsset, setLbAsset] = useState(null);
   const [lbJobAssets, setLbJobAssets] = useState([]);
   const fetchedJobs = useRef(new Set()); // tracks jobs already fetched or in-flight
+
+  const [cropX, setCropX] = useState(50);
+  const [cropY, setCropY] = useState(50);
+  const [naturalWidth, setNaturalWidth] = useState(0);
+  const [naturalHeight, setNaturalHeight] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const minimapRef = useRef(null);
+
+  useEffect(() => {
+    setCropX(50);
+    setCropY(50);
+    setNaturalWidth(0);
+    setNaturalHeight(0);
+    setIsDragging(false);
+  }, [lbAsset?.id]);
+
+  const handleMinimapInteraction = useCallback((e) => {
+    if (!minimapRef.current || !naturalWidth || !naturalHeight) return;
+    const rect = minimapRef.current.getBoundingClientRect();
+    
+    // Support touch events as well
+    const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+
+    const clickX = clientX - rect.left;
+    const clickY = clientY - rect.top;
+
+    const imgRatio = naturalWidth / naturalHeight;
+
+    if (imgRatio > 1) {
+      // Landscape
+      const Wm = 100;
+      const Hm = 100 / imgRatio;
+      const left = clickX - Hm / 2;
+      const clampedLeft = Math.max(0, Math.min(Wm - Hm, left));
+      const range = Wm - Hm;
+      if (range > 0) {
+        setCropX((clampedLeft / range) * 100);
+      }
+    } else {
+      // Portrait
+      const Hm = 100;
+      const Wm = 100 * imgRatio;
+      const top = clickY - Wm / 2;
+      const clampedTop = Math.max(0, Math.min(Hm - Wm, top));
+      const range = Hm - Wm;
+      if (range > 0) {
+        setCropY((clampedTop / range) * 100);
+      }
+    }
+  }, [naturalWidth, naturalHeight]);
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    handleMinimapInteraction(e);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleWindowMouseMove = (e) => {
+      handleMinimapInteraction(e);
+    };
+
+    const handleWindowMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleWindowMouseMove);
+    window.addEventListener('mouseup', handleWindowMouseUp);
+    window.addEventListener('touchmove', handleWindowMouseMove);
+    window.addEventListener('touchend', handleWindowMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleWindowMouseMove);
+      window.removeEventListener('mouseup', handleWindowMouseUp);
+      window.removeEventListener('touchmove', handleWindowMouseMove);
+      window.removeEventListener('touchend', handleWindowMouseUp);
+    };
+  }, [isDragging, handleMinimapInteraction]);
 
   const loadMediaForJob = useCallback(async (jobId) => {
     if (fetchedJobs.current.has(jobId)) return; // already cached or in-flight
@@ -146,7 +544,7 @@ function Resume({ data }) {
   };
 
   // Color mappings
-  const navBg = useColorModeValue('rgba(255, 255, 255, 0.75)', 'rgba(20, 22, 32, 0.75)');
+  const navBg = useColorModeValue('oklch(100% 0 0 / 0.75)', 'oklch(18% 0.015 240 / 0.75)');
   const borderLight = useColorModeValue('oklch(90% 0.01 240)', 'oklch(28% 0.015 240 / 0.7)');
   const textColorMuted = useColorModeValue('oklch(50% 0.01 240)', 'oklch(65% 0.01 240)');
   const brandPrimary = useColorModeValue('oklch(55% 0.16 260)', 'oklch(75% 0.15 200)');
@@ -204,12 +602,158 @@ function Resume({ data }) {
               );
             })()}
             <ModalBody p="0">
-              <Image
-                src={lbAsset.public_url}
-                alt={lbAsset.caption || lbAsset.filename}
-                maxH="70vh" w="100%" objectFit="contain"
+              <Box
+                position="relative"
+                w="100%"
+                maxW="600px"
+                mx="auto"
+                aspectRatio="1/1"
+                overflow="hidden"
                 bg="black"
-              />
+              >
+                <Image
+                  src={lbAsset.public_url}
+                  alt={lbAsset.caption || lbAsset.filename}
+                  w="100%"
+                  h="100%"
+                  objectFit="cover"
+                  objectPosition={`${cropX}% ${cropY}%`}
+                  onLoad={(e) => {
+                    const { naturalWidth, naturalHeight } = e.target;
+                    setNaturalWidth(naturalWidth);
+                    setNaturalHeight(naturalHeight);
+                  }}
+                />
+
+                {/* Interactive Panning Minimap Overlay */}
+                {(() => {
+                  const imgRatio = naturalWidth && naturalHeight ? naturalWidth / naturalHeight : 1;
+                  const isImageNonSquare = naturalWidth && naturalHeight && Math.abs(imgRatio - 1) > 0.02;
+                  if (!isImageNonSquare) return null;
+
+                  return (
+                    <VStack
+                      position="absolute"
+                      bottom="1rem"
+                      right="1rem"
+                      p="0.5rem"
+                      bg="rgba(0, 0, 0, 0.75)"
+                      backdropFilter="blur(10px)"
+                      borderRadius="lg"
+                      border="1px solid"
+                      borderColor="whiteAlpha.300"
+                      spacing="0.5rem"
+                      zIndex="20"
+                      boxShadow="xl"
+                    >
+                      <Text
+                        fontSize="0.65rem"
+                        fontWeight="800"
+                        color="whiteAlpha.800"
+                        textTransform="uppercase"
+                        letterSpacing="0.05em"
+                        alignSelf="center"
+                      >
+                        Explore Crop
+                      </Text>
+                      {/* Bounding box of the minimap */}
+                      <Box
+                        ref={minimapRef}
+                        position="relative"
+                        cursor="crosshair"
+                        overflow="hidden"
+                        borderRadius="md"
+                        border="1px solid"
+                        borderColor="whiteAlpha.400"
+                        bg="blackAlpha.600"
+                        w={imgRatio > 1 ? '100px' : `${100 * imgRatio}px`}
+                        h={imgRatio > 1 ? `${100 / imgRatio}px` : '100px'}
+                        onMouseDown={handleMouseDown}
+                        onTouchStart={handleMouseDown}
+                        userSelect="none"
+                      >
+                        {/* Semi-transparent background image */}
+                        <Image
+                          src={lbAsset.public_url}
+                          w="100%"
+                          h="100%"
+                          objectFit="fill"
+                          pointerEvents="none"
+                          opacity="0.6"
+                        />
+                        {/* Highlighted Crop outline */}
+                        <Box
+                          position="absolute"
+                          border="2px solid"
+                          borderColor="blue.400"
+                          bg="blue.400"
+                          opacity="0.25"
+                          boxShadow="0 0 8px rgba(66, 153, 225, 0.6)"
+                          pointerEvents="none"
+                          w={imgRatio > 1 ? `${100 / imgRatio}px` : '100px'}
+                          h={imgRatio > 1 ? `${100 / imgRatio}px` : `${100 * imgRatio}px`}
+                          left={imgRatio > 1 ? `${(cropX / 100) * (100 - 100 / imgRatio)}px` : '0px'}
+                          top={imgRatio > 1 ? '0px' : `${(cropY / 100) * (100 - 100 * imgRatio)}px`}
+                        />
+                      </Box>
+
+                      {/* Control buttons */}
+                      <HStack spacing="0.25rem" justify="center" w="100%">
+                        {imgRatio > 1 ? (
+                          <>
+                            <IconButton
+                              size="xs"
+                              icon={<ChevronLeftIcon />}
+                              onClick={(e) => { e.stopPropagation(); setCropX(prev => Math.max(0, prev - 10)); }}
+                              aria-label="Pan Left"
+                              variant="ghost"
+                              color="white"
+                              _hover={{ bg: 'whiteAlpha.300' }}
+                            />
+                            <Text fontSize="0.65rem" color="whiteAlpha.800" fontWeight="600" minW="2.5rem" textAlign="center">
+                              X: {Math.round(cropX)}%
+                            </Text>
+                            <IconButton
+                              size="xs"
+                              icon={<ChevronRightIcon />}
+                              onClick={(e) => { e.stopPropagation(); setCropX(prev => Math.min(100, prev + 10)); }}
+                              aria-label="Pan Right"
+                              variant="ghost"
+                              color="white"
+                              _hover={{ bg: 'whiteAlpha.300' }}
+                            />
+                          </>
+                        ) : (
+                          <>
+                            <IconButton
+                              size="xs"
+                              icon={<ChevronUpIcon />}
+                              onClick={(e) => { e.stopPropagation(); setCropY(prev => Math.max(0, prev - 10)); }}
+                              aria-label="Pan Up"
+                              variant="ghost"
+                              color="white"
+                              _hover={{ bg: 'whiteAlpha.300' }}
+                            />
+                            <Text fontSize="0.65rem" color="whiteAlpha.800" fontWeight="600" minW="2.5rem" textAlign="center">
+                              Y: {Math.round(cropY)}%
+                            </Text>
+                            <IconButton
+                              size="xs"
+                              icon={<ChevronDownIcon />}
+                              onClick={(e) => { e.stopPropagation(); setCropY(prev => Math.min(100, prev + 10)); }}
+                              aria-label="Pan Down"
+                              variant="ghost"
+                              color="white"
+                              _hover={{ bg: 'whiteAlpha.300' }}
+                            />
+                          </>
+                        )}
+                      </HStack>
+                    </VStack>
+                  );
+                })()}
+              </Box>
+
               {(lbAsset.caption || (lbAsset.keywords && lbAsset.keywords.length > 0)) && (
                 <Box px="1.5rem" py="1.25rem">
                   {lbAsset.caption && (
@@ -435,6 +979,21 @@ function Resume({ data }) {
                 PHIL YBARROLAZA
               </Heading>
 
+              {data.slogan && (
+                <Text
+                  fontSize={{ base: '0.9rem', md: '1.1rem' }}
+                  fontWeight="650"
+                  bgGradient={`linear(to-r, ${brandPrimary}, ${brandSecondary})`}
+                  bgClip="text"
+                  letterSpacing="0.08em"
+                  textTransform="uppercase"
+                  mt="-0.2rem"
+                  mb="0.1rem"
+                >
+                  {data.slogan}
+                </Text>
+              )}
+
               {/* Row 3: City, phone number, and email address */}
               <Text
                 fontSize={{ base: '0.82rem', md: '0.92rem' }}
@@ -454,17 +1013,24 @@ function Resume({ data }) {
               </Text>
             </VStack>
 
-            {/* Profile Image */}
-            <Box flexShrink="0">
+            {/* Profile Image with Gradient Border */}
+            <Box
+              flexShrink="0"
+              p="3px"
+              bgGradient={`linear(to-tr, ${brandPrimary}, ${brandSecondary})`}
+              borderRadius="full"
+              shadow="lg"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+            >
               <Image
                 src="/assets/profile.jpg"
                 alt="Phil Ybarrolaza"
                 borderRadius="full"
-                boxSize={{ base: '100px', md: '120px' }}
+                boxSize={{ base: '94px', md: '114px' }}
                 objectFit="cover"
-                border="3px solid"
-                borderColor={brandPrimary}
-                shadow="md"
+                bg={cardBg}
               />
             </Box>
           </Box>
@@ -496,25 +1062,15 @@ function Resume({ data }) {
           </Box>
         )}
 
-        {/* 2. Hero / Profile Section (Traditional Professional Summary) */}
-        <VStack align="start" spacing="1.2rem" mb="4rem">
-          <Heading
-            as="h2"
-            fontSize="1.2rem"
-            fontWeight="800"
-            textTransform="uppercase"
-            letterSpacing="0.08em"
-            color={brandPrimary}
-          >
-            Professional Summary
-          </Heading>
-          <Text fontSize="1.05rem" fontWeight="600" lineHeight="1.5">
-            Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance economic and social justice.
-          </Text>
-          <Text fontSize="1rem" color={textColorMuted} lineHeight="1.65">
-            Field representative, former union local president, and digital media producer with 20+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts.
-          </Text>
-        </VStack>
+        {/* 2. Hero / Profile Section (Traditional Professional Summary Carousel) */}
+        <SlideCarousel
+          slides={data.slides || []}
+          brandPrimary={brandPrimary}
+          brandSecondary={brandSecondary}
+          borderLight={borderLight}
+          cardBg={cardBg}
+          textColorMuted={textColorMuted}
+        />
 
         <Divider borderColor={borderLight} my="3rem" />
 
@@ -544,13 +1100,14 @@ function Resume({ data }) {
                   key={item.id}
                   display="flex"
                   gap="0"
+                  alignItems="stretch"
                   mb={idx === data.timeline.length - 1 ? '0' : '1.5rem'}
                   onMouseEnter={() => setHoveredCardId(item.id)}
                   onMouseLeave={() => setHoveredCardId(null)}
                 >
 
                   {/* Left: timeline rail — dot with ping + tooltip */}
-                  <Box display="flex" flexDir="column" alignItems="center" flexShrink={0} w="2.5rem" mr="1rem">
+                  <Box display="flex" flexDir="column" justifyContent="center" alignItems="center" flexShrink={0} w="2.5rem" mr="1rem">
                     <style>{`
                       @keyframes dotPing {
                         0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.75; }
@@ -565,8 +1122,7 @@ function Resume({ data }) {
                     />
                   </Box>
 
-                  {/* Right: card */}
-                  <Box
+                                  <Box
                     flex="1"
                     minW="0"
                     border="1px solid"
@@ -593,13 +1149,12 @@ function Resume({ data }) {
                       onClick={() => toggleCard(item.id)}
                       userSelect="none"
                       borderBottom="1px solid"
-                      borderBottomColor={isExpanded ? 'transparent' : `${theme.color}20`}
-                      transition="border-bottom-color 0.25s ease"
-
+                      borderBottomColor={isExpanded ? borderLight : 'transparent'}
+                      transition="border-bottom-color 0.22s ease"
                     >
                       <VStack align="start" spacing="0.2rem" flex="1" minW="0">
                         <Heading as="h3" fontSize="1.1rem" fontWeight="700">
-                          {item.role}
+                           {item.role}
                         </Heading>
                         <Text fontSize="0.9rem" fontWeight="600" color={theme.color} noOfLines={2}>
                           {item.company} {item.location && `\u2022 ${item.location}`}
@@ -608,7 +1163,7 @@ function Resume({ data }) {
                           {item.date_range}
                         </Text>
                       </VStack>
-                      <HStack spacing="0.5rem" align="center" flexShrink={0} flexWrap="wrap">
+                      <HStack spacing="0.65rem" align="center" flexShrink={0} flexWrap="wrap">
                         {skills.length > 0 && (
                           <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.72rem" fontWeight="600">
                             Core Skills
@@ -617,17 +1172,30 @@ function Resume({ data }) {
                         <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.75rem" fontWeight="700">
                           {theme.label}
                         </Tag>
-                        {/* Chevron: theme color at 55% when collapsed, full when expanded */}
-                        <Box
-                          as="span"
+                        {/* Interactive Chevron Button */}
+                        <Flex
+                          align="center"
+                          justify="center"
+                          boxSize="28px"
+                          borderRadius="full"
+                          border="1px solid"
+                          borderColor={isExpanded ? theme.color : borderLight}
+                          bg={isExpanded ? `${theme.color}15` : 'transparent'}
                           color={isExpanded ? theme.color : theme.color + '8C'}
-                          fontSize="1.1rem"
-                          lineHeight="1"
-                          transition="transform 0.25s ease, color 0.25s ease"
-                          transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                          transition="all 0.22s ease"
+                          _hover={{
+                            borderColor: theme.color,
+                            bg: `${theme.color}25`,
+                            color: theme.color,
+                          }}
                         >
-                          ▾
-                        </Box>
+                          <ChevronDownIcon
+                            transition="transform 0.25s ease"
+                            transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                            w="16px"
+                            h="16px"
+                          />
+                        </Flex>
                       </HStack>
                     </Flex>
 
@@ -698,43 +1266,40 @@ function Resume({ data }) {
                         {(() => {
                           const jobMedia = (mediaByJob[item.id] || []).filter(a => a.file_type === 'image');
                           if (jobMedia.length === 0) return null;
-                          const photos = jobMedia.map(a => ({
-                            src: a.public_url,
-                            width:  a._w || 800,
-                            height: a._h || 600,
-                            key: a.id,
-                          }));
                           return (
                             <Box w="100%" mt="0.5rem">
                               <Text fontSize="0.72rem" fontWeight="700" textTransform="uppercase"
                                 letterSpacing="0.06em" mb="0.65rem" color={textColorMuted}>
                                 Media Gallery ({jobMedia.length})
                               </Text>
-                              {/* CSS applied via class — no renderPhoto API needed */}
-                              <style>{`
-                                .resume-gallery img {
-                                  border-radius: 8px !important;
-                                  cursor: pointer !important;
-                                  transition: transform 0.18s ease, box-shadow 0.18s ease !important;
-                                  display: block;
-                                }
-                                .resume-gallery img:hover {
-                                  transform: scale(1.025) !important;
-                                  box-shadow: 0 4px 18px rgba(0,0,0,0.45) !important;
-                                }
-                              `}</style>
-                              <div className="resume-gallery">
-                                <PhotoAlbum
-                                  layout="masonry"
-                                  photos={photos}
-                                  columns={cw => cw < 300 ? 2 : cw < 550 ? 3 : 4}
-                                  spacing={5}
-                                  onClick={({ index }) => {
-                                    setLbAsset(jobMedia[index]);
-                                    setLbJobAssets(jobMedia);
-                                  }}
-                                />
-                              </div>
+                              <SimpleGrid columns={[2, 3, 4]} spacing="16px">
+                                {jobMedia.map((media, index) => (
+                                  <Box
+                                    key={media.id}
+                                    aspectRatio="1/1"
+                                    overflow="hidden"
+                                    borderRadius="8px"
+                                    cursor="pointer"
+                                    onClick={() => {
+                                      setLbAsset(media);
+                                      setLbJobAssets(jobMedia);
+                                    }}
+                                    transition="transform 0.18s ease, box-shadow 0.18s ease"
+                                    _hover={{
+                                      transform: 'scale(1.025)',
+                                      boxShadow: '0 4px 18px rgba(0,0,0,0.45)'
+                                    }}
+                                  >
+                                    <Image
+                                      src={media.public_url}
+                                      alt={media.caption || media.filename}
+                                      w="100%"
+                                      h="100%"
+                                      objectFit="cover"
+                                    />
+                                  </Box>
+                                ))}
+                              </SimpleGrid>
                             </Box>
                           );
                         })()}
@@ -1007,14 +1572,16 @@ function Resume({ data }) {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody p="0" bg="black">
-            <Image
-              src={lightboxImg.src}
-              alt={lightboxImg.alt}
-              maxH="550px"
-              w="100%"
-              objectFit="contain"
-              mx="auto"
-            />
+            <Box position="relative" w="100%" aspectRatio="1/1" overflow="hidden">
+              <Image
+                src={lightboxImg.src}
+                alt={lightboxImg.alt}
+                w="100%"
+                h="100%"
+                objectFit="cover"
+                mx="auto"
+              />
+            </Box>
           </ModalBody>
           <Box p="1.5rem" bg={useColorModeValue('white', 'rgba(25, 27, 38, 0.95)')}>
             <Text fontSize="0.9rem" fontWeight="500" mb="1rem">
@@ -1082,7 +1649,6 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
     <Box
       position="relative"
       w="13px" h="13px"
-      mt="1.65rem"
       flexShrink={0}
       zIndex={2}
       onMouseEnter={() => setDotHovered(true)}
@@ -1480,9 +2046,9 @@ function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, compet
   return (
     <>
       <style>{`
-        @keyframes statsProgress {
-          from { width: 0%; }
-          to   { width: 100%; }
+        @keyframes statsProgressRadial {
+          from { stroke-dashoffset: 43.982; }
+          to   { stroke-dashoffset: 0; }
         }
       `}</style>
       <Box
@@ -1494,17 +2060,64 @@ function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, compet
         backdropFilter="blur(8px)"
         overflow="hidden"
         bg="linear-gradient(135deg, oklch(18% 0.025 240 / 0.06) 0%, oklch(18% 0.02 280 / 0.06) 100%)"
+        position="relative"
       >
+        {/* Tiny circle in top-right showing progress */}
+        <Box
+          key={progKey}
+          onClick={() => {
+            const next = (statIdx + 1) % SETS.length;
+            jumpTo(next);
+          }}
+          position="absolute"
+          top="0.75rem"
+          right="0.75rem"
+          zIndex="10"
+          cursor="pointer"
+          transition="opacity 0.2s"
+          _hover={{ opacity: 0.8 }}
+          title={`Click to switch to ${statIdx === 0 ? SETS[1].label : SETS[0].label} stats`}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20">
+            {/* Background Track */}
+            <circle
+              cx="10"
+              cy="10"
+              r="7"
+              fill="transparent"
+              stroke="rgba(255, 255, 255, 0.1)"
+              strokeWidth="1.5"
+            />
+            {/* Animated Stroke Progress */}
+            <circle
+              cx="10"
+              cy="10"
+              r="7"
+              fill="transparent"
+              stroke={statIdx === 0 ? '#60a5fa' : '#c084fc'}
+              strokeWidth="1.5"
+              strokeDasharray="43.982"
+              strokeDashoffset="43.982"
+              style={{
+                animation: 'statsProgressRadial 10s linear forwards',
+                transform: 'rotate(-90deg)',
+                transformOrigin: '50% 50%',
+              }}
+            />
+          </svg>
+        </Box>
+
         {/* Stat grid */}
         <Box style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
           <SimpleGrid columns={{ base: 2, md: 4 }} divider={<Divider orientation="vertical" borderColor={borderLight} />}>
             {currentSet.items.map((stat, i) => (
               <VStack
                 key={stat.key}
-                py="1.5rem"
+                aspectRatio="1/1"
+                justify="center"
+                align="center"
                 px="1rem"
                 spacing="0.25rem"
-                align="center"
                 borderRight={i < 3 ? '1px solid' : 'none'}
                 borderColor={borderLight}
                 borderBottom={{ base: i < 2 ? '1px solid' : 'none', md: 'none' }}
@@ -1526,45 +2139,6 @@ function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, compet
               </VStack>
             ))}
           </SimpleGrid>
-        </Box>
-
-        {/* Progress bar + set indicators */}
-        <Box
-          px="1.5rem" py="0.6rem"
-          borderTop="1px solid" borderColor={borderLight}
-          display="flex" alignItems="center" gap="0.75rem"
-        >
-          {/* Animated progress line */}
-          <Box flex={1} h="2px" bg={progressTrackBg} borderRadius="full" overflow="hidden">
-            <Box
-              key={progKey}
-              h="100%"
-              borderRadius="full"
-              bg={statIdx === 0 ? blueColor : purpleColor}
-              style={{ animation: 'statsProgress 10s linear forwards' }}
-            />
-          </Box>
-          {/* Dot indicators */}
-          <Flex gap="0.35rem" align="center">
-            <Text fontSize="0.62rem" color="whiteAlpha.400" letterSpacing="0.06em" textTransform="uppercase" mr="0.2rem">
-              {currentSet.label}
-            </Text>
-            {SETS.map((s, i) => (
-              <Box
-                key={i}
-                as="button"
-                w="7px" h="7px"
-                borderRadius="full"
-                bg={i === statIdx ? (i === 0 ? blueColor : purpleColor) : 'whiteAlpha.200'}
-                transition="all 0.35s ease"
-                transform={i === statIdx ? 'scale(1.35)' : 'scale(1)'}
-                cursor="pointer"
-                border="none"
-                onClick={() => jumpTo(i)}
-                aria-label={`Show ${s.label} stats`}
-              />
-            ))}
-          </Flex>
         </Box>
       </Box>
     </>

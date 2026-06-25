@@ -115,13 +115,20 @@ export default function Admin() {
         </div>
       </header>
       <div style={c.tabBar}>
-        {[['media','📁 Media Library'],['settings','⚙️ Settings']].map(([id,label])=>(
+        {[
+          ['media','📁 Media Library'],
+          ['employers','🏢 Employers'],
+          ['slides','🎴 Slides'],
+          ['settings','⚙️ Settings']
+        ].map(([id,label])=>(
           <button key={id} style={{...c.tab, ...(tab===id?c.tabOn:c.tabOff)}} onClick={()=>setTab(id)}>{label}</button>
         ))}
       </div>
       <div style={c.page}>
-        {tab==='media'    && <MediaLibrary pwd={authed} />}
-        {tab==='settings' && <SettingsPanel pwd={authed} />}
+        {tab==='media'      && <MediaLibrary pwd={authed} />}
+        {tab==='employers'  && <EmployersManager pwd={authed} />}
+        {tab==='slides'     && <SlidesManager pwd={authed} />}
+        {tab==='settings'   && <SettingsPanel pwd={authed} />}
       </div>
     </div>
   );
@@ -720,6 +727,47 @@ function SettingsPanel({ pwd }) {
   const [conf, setConf] = useState('');
   const [msg,  setMsg]  = useState({ type:'', text:'' });
 
+  const [slogan, setSlogan] = useState('');
+  const [sloganMsg, setSloganMsg] = useState({ type:'', text:'' });
+  const [loadingSlogan, setLoadingSlogan] = useState(true);
+
+  useEffect(() => {
+    async function loadSlogan() {
+      try {
+        const res = await fetch('/api/slogan');
+        if (res.ok) {
+          const d = await res.json();
+          setSlogan(d.slogan || '');
+        }
+      } catch (err) {
+        console.error('Failed to load slogan:', err);
+      } finally {
+        setLoadingSlogan(false);
+      }
+    }
+    loadSlogan();
+  }, []);
+
+  async function updateSlogan(e) {
+    e.preventDefault();
+    setSloganMsg({ type:'', text:'' });
+    try {
+      const res = await af('/api/admin/slogan', {
+        method: 'PUT',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ slogan }),
+      }, pwd);
+      if (res.ok) {
+        setSloganMsg({ type: 'ok', text: 'Slogan updated successfully.' });
+      } else {
+        const d = await res.json().catch(() => ({ error: 'Failed' }));
+        setSloganMsg({ type: 'err', text: d.error || 'Failed to update slogan' });
+      }
+    } catch (err) {
+      setSloganMsg({ type: 'err', text: err.message });
+    }
+  }
+
   async function change(e) {
     e.preventDefault(); setMsg({ type:'', text:'' });
     if (nw !== conf) return setMsg({ type:'err', text:'Passwords do not match' });
@@ -739,19 +787,709 @@ function SettingsPanel({ pwd }) {
   }
 
   return (
-    <div style={{maxWidth:'420px'}}>
-      <div style={{fontWeight:700, fontSize:'1.1rem', marginBottom:'0.3rem'}}>Change Password</div>
-      <div style={{color:'#475569', fontSize:'0.85rem', marginBottom:'2rem'}}>Stored as a bcrypt hash — never in plain text.</div>
-      <form onSubmit={change} style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
-        {[['Current',cur,setCur],['New Password (≥8 chars)',nw,setNw],['Confirm New',conf,setConf]].map(([label,val,setter])=>(
-          <div key={label}>
-            <label style={c.label}>{label}</label>
-            <input style={c.input} type="password" value={val} onChange={e=>setter(e.target.value)} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem', maxWidth: '420px' }}>
+      <div>
+        <div style={{fontWeight:700, fontSize:'1.1rem', marginBottom:'0.3rem'}}>Resume Slogan</div>
+        <div style={{color:'#475569', fontSize:'0.85rem', marginBottom:'1.5rem'}}>Displayed prominently under your name on the homepage.</div>
+        <form onSubmit={updateSlogan} style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
+          <div>
+            <label style={c.label}>Slogan / Tagline</label>
+            <input
+              style={c.input}
+              type="text"
+              placeholder="e.g. Strategic Campaigns, Labor Representation & Digital Organizing"
+              value={slogan}
+              onChange={e=>setSlogan(e.target.value)}
+              disabled={loadingSlogan}
+            />
           </div>
-        ))}
-        {msg.text && <div style={msg.type==='ok'?c.ok:c.err}>{msg.text}</div>}
-        <button type="submit" style={{...c.btn,...c.btnPrimary, alignSelf:'flex-start'}}>Update Password</button>
-      </form>
+          {sloganMsg.text && <div style={sloganMsg.type==='ok'?c.ok:c.err}>{sloganMsg.text}</div>}
+          <button type="submit" style={{...c.btn,...c.btnPrimary, alignSelf:'flex-start'}} disabled={loadingSlogan}>
+            Update Slogan
+          </button>
+        </form>
+      </div>
+
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '2.5rem' }}>
+        <div style={{fontWeight:700, fontSize:'1.1rem', marginBottom:'0.3rem'}}>Change Password</div>
+        <div style={{color:'#475569', fontSize:'0.85rem', marginBottom:'2rem'}}>Stored as a bcrypt hash — never in plain text.</div>
+        <form onSubmit={change} style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
+          {[['Current',cur,setCur],['New Password (≥8 chars)',nw,setNw],['Confirm New',conf,setConf]].map(([label,val,setter])=>(
+            <div key={label}>
+              <label style={c.label}>{label}</label>
+              <input style={c.input} type="password" value={val} onChange={e=>setter(e.target.value)} />
+            </div>
+          ))}
+          {msg.text && <div style={msg.type==='ok'?c.ok:c.err}>{msg.text}</div>}
+          <button type="submit" style={{...c.btn,...c.btnPrimary, alignSelf:'flex-start'}}>Update Password</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ─── Employers Manager ────────────────────────────────────────────────────────
+function EmployersManager({ pwd }) {
+  const [employers, setEmployers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Add Employer Form State
+  const [newName, setNewName] = useState('');
+  const [newIndustry, setNewIndustry] = useState('');
+  const [newLocation, setNewLocation] = useState('');
+  const [addMsg, setAddMsg] = useState({ type: '', text: '' });
+
+  // Edit State
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editIndustry, setEditIndustry] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editMsg, setEditMsg] = useState({ type: '', text: '' });
+
+  // Delete Confirmation State
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const INDUSTRIES = [
+    'Transportation & Logistics',
+    'Education',
+    'Automotive Services',
+    'Food & Beverage',
+    'Manufacturing & Construction',
+    'Non-Profit / Cultural',
+    'Media & Publishing',
+    'Facilities & Services',
+    'Environmental & Waste Management',
+    'Government',
+    'Energy & Utilities',
+    'Agriculture',
+    'Retail & Distribution',
+    'Financial & Administrative Services',
+    'Production Companies & Studio Entities'
+  ];
+
+  const LOCATIONS = [
+    'Alameda, CA',
+    'Bay Area Region, CA',
+    'Bay Area, CA',
+    'Berkeley & San Leandro, CA',
+    'Brisbane, CA',
+    'Burlingame, CA',
+    'Colma / Daly City Area, CA',
+    'Colma, CA',
+    'Corte Madera, CA',
+    'Geyserville, CA',
+    'Hayward, CA',
+    'Lake County, CA',
+    'Los Angeles, CA',
+    'Manhattan Beach, CA',
+    'Marin County, CA',
+    'Martinez, CA',
+    'Menlo Park, CA',
+    'Mill Valley / Marin County, CA',
+    'Newark, Brisbane, and San Rafael, CA',
+    'Newark, CA',
+    'North Bay Area, CA',
+    'North Bay Regional Network, CA',
+    'Northern California Region',
+    'Oakland, CA',
+    'Petaluma, CA',
+    'Redwood City & San Jose, CA',
+    'Redwood City, CA',
+    'Regional Distribution Hubs, CA',
+    'Rohnert Park, CA',
+    'San Francisco / Bay Area, CA',
+    'San Francisco, CA',
+    'San Mateo / East Bay / North Bay Regions, CA',
+    'San Rafael, CA',
+    'Santa Rosa / North Bay, CA',
+    'Santa Rosa, CA',
+    'Santa Rosa/San Jose, CA',
+    'Sonoma County, CA (Rohnert Park / Cotati)',
+    'Sonoma County, CA (Santa Rosa & Petaluma)',
+    'Sonoma and Marin Counties, CA',
+    'Sonoma, CA',
+    'South San Francisco, CA',
+    'Ukiah, CA'
+  ];
+
+  const loadEmployers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/employers');
+      if (res.ok) {
+        setEmployers(await res.json());
+      } else {
+        setError('Failed to load employers');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEmployers();
+  }, [loadEmployers]);
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    setAddMsg({ type: '', text: '' });
+    if (!newName || !newIndustry || !newLocation) {
+      setAddMsg({ type: 'err', text: 'All fields are required' });
+      return;
+    }
+    try {
+      const res = await af('/api/admin/employers', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: newName, industry: newIndustry, location: newLocation })
+      }, pwd);
+      if (res.ok) {
+        setNewName('');
+        setNewIndustry('');
+        setNewLocation('');
+        setAddMsg({ type: 'ok', text: 'Employer added successfully!' });
+        loadEmployers();
+      } else {
+        const d = await res.json();
+        setAddMsg({ type: 'err', text: d.error || 'Failed to add employer' });
+      }
+    } catch (err) {
+      setAddMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function handleSaveEdit(id) {
+    setEditMsg({ type: '', text: '' });
+    if (!editName || !editIndustry || !editLocation) {
+      setEditMsg({ type: 'err', text: 'All fields are required' });
+      return;
+    }
+    try {
+      const res = await af(`/api/admin/employers/${id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: editName, industry: editIndustry, location: editLocation })
+      }, pwd);
+      if (res.ok) {
+        setEditId(null);
+        loadEmployers();
+      } else {
+        const d = await res.json();
+        setEditMsg({ type: 'err', text: d.error || 'Failed to update' });
+      }
+    } catch (err) {
+      setEditMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      const res = await af(`/api/admin/employers/${id}`, {
+        method: 'DELETE'
+      }, pwd);
+      if (res.ok) {
+        setDeleteConfirmId(null);
+        loadEmployers();
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to delete');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function startEdit(emp) {
+    setEditId(emp.id);
+    setEditName(emp.name);
+    setEditIndustry(emp.industry);
+    setEditLocation(emp.location);
+    setEditMsg({ type: '', text: '' });
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      
+      {/* Add Employer Card */}
+      <div style={{ ...c.card, padding: '2rem' }}>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>🏢 Add New Employer</div>
+        <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '1rem', alignItems: 'end' }}>
+          <div>
+            <label style={c.label}>Employer Name</label>
+            <input style={c.input} type="text" placeholder="e.g. Acme Corp" value={newName} onChange={e => setNewName(e.target.value)} />
+          </div>
+          <div>
+            <label style={c.label}>Industry</label>
+            <select style={c.select} value={newIndustry} onChange={e => setNewIndustry(e.target.value)}>
+              <option value="">-- Select Industry --</option>
+              {INDUSTRIES.map(ind => (
+                <option key={ind} value={ind}>{ind}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={c.label}>Location Mapping</label>
+            <select style={c.select} value={newLocation} onChange={e => setNewLocation(e.target.value)}>
+              <option value="">-- Select Map Region --</option>
+              {LOCATIONS.map(loc => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+          </div>
+          <button type="submit" style={{ ...c.btn, ...c.btnPrimary }}>+ Add</button>
+        </form>
+        {addMsg.text && <div style={{ mt: '1rem', ...(addMsg.type === 'ok' ? c.ok : c.err), marginTop: '0.75rem' }}>{addMsg.text}</div>}
+      </div>
+
+      {/* Employers List Table */}
+      <div style={{ ...c.card, padding: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Employer Accounts Represented</div>
+          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{employers.length} total records</span>
+        </div>
+
+        {loading ? (
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading employers...</div>
+        ) : error ? (
+          <div style={c.err}>{error}</div>
+        ) : employers.length === 0 ? (
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>No employers found. Add one above.</div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', color: '#64748b', textAlign: 'left' }}>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>ID</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Name</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Industry</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Location (Map Coordinate)</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employers.map(emp => {
+                  const isEditing = editId === emp.id;
+                  return (
+                    <tr key={emp.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: isEditing ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                      <td style={{ padding: '1rem', color: '#475569' }}>{emp.id}</td>
+                      <td style={{ padding: '1rem' }}>
+                        {isEditing ? (
+                          <input style={c.input} type="text" value={editName} onChange={e => setEditName(e.target.value)} />
+                        ) : (
+                          <span style={{ fontWeight: 600 }}>{emp.name}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {isEditing ? (
+                          <select style={c.select} value={editIndustry} onChange={e => setEditIndustry(e.target.value)}>
+                            {INDUSTRIES.map(ind => (
+                              <option key={ind} value={ind}>{ind}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span style={{ color: '#60a5fa', background: 'rgba(96,165,250,0.1)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 650 }}>{emp.industry}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem' }}>
+                        {isEditing ? (
+                          <select style={c.select} value={editLocation} onChange={e => setEditLocation(e.target.value)}>
+                            {LOCATIONS.map(loc => (
+                              <option key={loc} value={loc}>{loc}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span style={{ color: '#94a3b8' }}>{emp.location}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'right' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          {isEditing ? (
+                            <>
+                              <button onClick={() => handleSaveEdit(emp.id)} style={{ ...c.btn, ...c.btnPrimary, ...c.btnSm }}>Save</button>
+                              <button onClick={() => setEditId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => startEdit(emp)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Edit</button>
+                              {deleteConfirmId === emp.id ? (
+                                <>
+                                  <button onClick={() => handleDelete(emp.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm }}>Confirm</button>
+                                  <button onClick={() => setDeleteConfirmId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
+                                </>
+                              ) : (
+                                <button onClick={() => setDeleteConfirmId(emp.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, background: 'transparent', color: '#f87171' }}>Delete</button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {isEditing && editMsg.text && (
+                          <div style={{ ...(editMsg.type === 'ok' ? c.ok : c.err), fontSize: '0.78rem', marginTop: '0.4rem', textAlign: 'right' }}>{editMsg.text}</div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+// ─── Slides Manager ──────────────────────────────────────────────────────────
+function SlidesManager({ pwd }) {
+  const [slides, setSlides] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Add Slide Form State
+  const [newTitle, setNewTitle] = useState('');
+  const [newType, setNewType] = useState('markdown');
+  const [newSortOrder, setNewSortOrder] = useState('0');
+  const [addMsg, setAddMsg] = useState({ type: '', text: '' });
+
+  // Edit Slide Form State
+  const [editId, setEditId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    content_type: 'markdown',
+    content_data: {},
+    is_enabled: true,
+    sort_order: 0
+  });
+  const [editMsg, setEditMsg] = useState({ type: '', text: '' });
+
+  // Deletion Confirm State
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const INDUSTRIES = []; // Not used in this manager but keeps env happy if checked
+
+  const INDUSTRIES_COMPAT = [];
+
+  const loadSlides = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await af('/api/admin/slides', {}, pwd);
+      if (res.ok) {
+        setSlides(await res.json());
+      } else {
+        setError('Failed to load slides');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [pwd]);
+
+  useEffect(() => {
+    loadSlides();
+  }, [loadSlides]);
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    setAddMsg({ type: '', text: '' });
+    if (!newTitle) {
+      setAddMsg({ type: 'err', text: 'Title is required' });
+      return;
+    }
+
+    const defaultData = newType === 'markdown'
+      ? { lead: 'Lead paragraph...', body: 'Body paragraph...' }
+      : [
+          { year: 1969, title: 'Born', details: 'Born and raised...' },
+          { year: 2026, title: 'Today', details: 'Working on full stack web dev...' }
+        ];
+
+    try {
+      const res = await af('/api/admin/slides', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          title: newTitle,
+          content_type: newType,
+          content_data: defaultData,
+          is_enabled: true,
+          sort_order: parseInt(newSortOrder) || 0
+        })
+      }, pwd);
+
+      if (res.ok) {
+        setNewTitle('');
+        setNewSortOrder('0');
+        setAddMsg({ type: 'ok', text: 'Slide created successfully!' });
+        loadSlides();
+      } else {
+        const d = await res.json();
+        setAddMsg({ type: 'err', text: d.error || 'Failed to create slide' });
+      }
+    } catch (err) {
+      setAddMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function toggleEnabled(slide) {
+    try {
+      const res = await af(`/api/admin/slides/${slide.id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ is_enabled: !slide.is_enabled })
+      }, pwd);
+      if (res.ok) {
+        loadSlides();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function handleSaveEdit(e) {
+    if (e) e.preventDefault();
+    setEditMsg({ type: '', text: '' });
+    try {
+      const res = await af(`/api/admin/slides/${editId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(editForm)
+      }, pwd);
+      if (res.ok) {
+        setEditId(null);
+        setEditMsg({ type: 'ok', text: 'Saved!' });
+        loadSlides();
+      } else {
+        const d = await res.json();
+        setEditMsg({ type: 'err', text: d.error || 'Failed to update' });
+      }
+    } catch (err) {
+      setEditMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      const res = await af(`/api/admin/slides/${id}`, {
+        method: 'DELETE'
+      }, pwd);
+      if (res.ok) {
+        setDeleteConfirmId(null);
+        loadSlides();
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to delete');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function startEdit(slide) {
+    setEditId(slide.id);
+    setEditForm({
+      title: slide.title,
+      content_type: slide.content_type,
+      content_data: JSON.parse(JSON.stringify(slide.content_data)), // deep clone
+      is_enabled: slide.is_enabled,
+      sort_order: slide.sort_order
+    });
+    setEditMsg({ type: '', text: '' });
+  }
+
+  function updateTimelineEvent(idx, field, value) {
+    const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
+    copy[idx] = {
+      ...copy[idx],
+      [field]: field === 'year' ? parseInt(value) || value : value
+    };
+    setEditForm(prev => ({ ...prev, content_data: copy }));
+  }
+
+  function addTimelineEvent() {
+    const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
+    copy.push({ year: new Date().getFullYear(), title: 'New Event', details: 'Details...' });
+    setEditForm(prev => ({ ...prev, content_data: copy }));
+  }
+
+  function deleteTimelineEvent(idx) {
+    const copy = (Array.isArray(editForm.content_data) ? editForm.content_data : [])
+      .filter((_, i) => i !== idx);
+    setEditForm(prev => ({ ...prev, content_data: copy }));
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      
+      {/* Creation form */}
+      <div style={{ ...c.card, padding: '2rem' }}>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>🎴 Create New Slide</div>
+        <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: '1rem', alignItems: 'end' }}>
+          <div>
+            <label style={c.label}>Slide Title</label>
+            <input style={c.input} type="text" placeholder="e.g. Personal Journey" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
+          </div>
+          <div>
+            <label style={c.label}>Content Type</label>
+            <select style={c.select} value={newType} onChange={e => setNewType(e.target.value)}>
+              <option value="markdown">Markdown Text</option>
+              <option value="personal_timeline">Horizontal Personal Timeline</option>
+            </select>
+          </div>
+          <div>
+            <label style={c.label}>Sort Order</label>
+            <input style={c.input} type="number" value={newSortOrder} onChange={e => setNewSortOrder(e.target.value)} />
+          </div>
+          <button type="submit" style={{ ...c.btn, ...c.btnPrimary }}>+ Create</button>
+        </form>
+        {addMsg.text && <div style={{ marginTop: '0.75rem', ...(addMsg.type === 'ok' ? c.ok : c.err) }}>{addMsg.text}</div>}
+      </div>
+
+      {/* Grid of slides */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Manage Slides</div>
+        
+        {loading ? (
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading slides...</div>
+        ) : error ? (
+          <div style={c.err}>{error}</div>
+        ) : slides.length === 0 ? (
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>No slides found.</div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {slides.map(slide => {
+              const isEditing = editId === slide.id;
+              return (
+                <div key={slide.id} style={{ ...c.card, padding: '1.5rem', border: isEditing ? '1px solid #4299e1' : c.card.border }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <span style={{ fontSize: '1rem', fontWeight: 700 }}>{slide.title}</span>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', background: 'rgba(255,255,255,0.04)', padding: '0.15rem 0.45rem', borderRadius: '4px' }}>
+                        {slide.content_type}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none' }}>
+                        <input type="checkbox" checked={slide.is_enabled} onChange={() => toggleEnabled(slide)} />
+                        Enabled
+                      </label>
+
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                        Order: <strong>{slide.sort_order}</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isEditing ? (
+                    <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem' }}>
+                        <div>
+                          <label style={c.label}>Title</label>
+                          <input style={c.input} type="text" value={editForm.title} onChange={e => setEditForm(prev => ({ ...prev, title: e.target.value }))} />
+                        </div>
+                        <div>
+                          <label style={c.label}>Sort Order</label>
+                          <input style={c.input} type="number" value={editForm.sort_order} onChange={e => setEditForm(prev => ({ ...prev, sort_order: parseInt(e.target.value) || 0 }))} />
+                        </div>
+                      </div>
+
+                      {/* Content editor based on type */}
+                      {editForm.content_type === 'markdown' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          <div>
+                            <label style={c.label}>Lead Highlight Paragraph</label>
+                            <textarea style={c.textarea} value={editForm.content_data?.lead || ''} onChange={e => setEditForm(prev => ({ ...prev, content_data: { ...prev.content_data, lead: e.target.value } }))} />
+                          </div>
+                          <div>
+                            <label style={c.label}>Body Paragraph</label>
+                            <textarea style={c.textarea} value={editForm.content_data?.body || ''} onChange={e => setEditForm(prev => ({ ...prev, content_data: { ...prev.content_data, body: e.target.value } }))} />
+                          </div>
+                        </div>
+                      )}
+
+                      {editForm.content_type === 'personal_timeline' && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <label style={c.label}>Timeline Events</label>
+                            <button type="button" onClick={addTimelineEvent} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm, color: '#60a5fa', borderColor: 'rgba(96,165,250,0.2)' }}>
+                              + Add Event
+                            </button>
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                            {(editForm.content_data || []).map((ev, idx) => (
+                              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '80px 2fr 3fr auto', gap: '0.75rem', alignItems: 'start', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div>
+                                  <label style={{ ...c.label, fontSize: '0.62rem' }}>Year</label>
+                                  <input style={{ ...c.input, padding: '0.5rem' }} type="number" value={ev.year} onChange={e => updateTimelineEvent(idx, 'year', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label style={{ ...c.label, fontSize: '0.62rem' }}>Event Title</label>
+                                  <input style={{ ...c.input, padding: '0.5rem' }} type="text" value={ev.title} onChange={e => updateTimelineEvent(idx, 'title', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label style={{ ...c.label, fontSize: '0.62rem' }}>Description Details</label>
+                                  <textarea style={{ ...c.textarea, padding: '0.5rem', minHeight: '38px' }} value={ev.details} onChange={e => updateTimelineEvent(idx, 'details', e.target.value)} />
+                                </div>
+                                <button type="button" onClick={() => deleteTimelineEvent(idx)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, alignSelf: 'center', background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.1)' }}>
+                                  Delete
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+                        <button type="submit" style={{ ...c.btn, ...c.btnPrimary }}>Save Changes</button>
+                        <button type="button" onClick={() => setEditId(null)} style={{ ...c.btn, ...c.btnGhost }}>Cancel</button>
+                      </div>
+                      {editMsg.text && (
+                        <div style={editMsg.type === 'ok' ? c.ok : c.err}>{editMsg.text}</div>
+                      )}
+                    </form>
+                  ) : (
+                    <div>
+                      {slide.content_type === 'markdown' && (
+                        <div style={{ fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
+                          <p style={{ fontWeight: 600, color: '#e2e8f0', margin: '0 0 0.5rem' }}>{slide.content_data?.lead}</p>
+                          <p style={{ margin: 0 }}>{slide.content_data?.body}</p>
+                        </div>
+                      )}
+
+                      {slide.content_type === 'personal_timeline' && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {(slide.content_data || []).map((ev, i) => (
+                            <span key={i} style={c.pill}>
+                              <strong>{ev.year}</strong>: {ev.title}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '1rem' }}>
+                        <button onClick={() => startEdit(slide)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Edit Slide</button>
+                        {deleteConfirmId === slide.id ? (
+                          <>
+                            <button onClick={() => handleDelete(slide.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm }}>Confirm Delete</button>
+                            <button onClick={() => setDeleteConfirmId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
+                          </>
+                        ) : (
+                          <button onClick={() => setDeleteConfirmId(slide.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, background: 'transparent', color: '#f87171' }}>Delete</button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

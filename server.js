@@ -471,6 +471,239 @@ app.put('/api/admin/password', checkAdmin, async (req, res) => {
   }
 });
 
+// GET /api/slogan  — get public slogan
+app.get('/api/slogan', async (req, res) => {
+  try {
+    const client = supabaseAdmin || supabase;
+    if (!client) {
+      return res.json({ slogan: '' });
+    }
+    const { data, error } = await client
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'slogan')
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Error fetching slogan from DB:', error.message);
+      return res.json({ slogan: '' });
+    }
+    res.json({ slogan: data ? data.value : '' });
+  } catch (err) {
+    res.json({ slogan: '' });
+  }
+});
+
+// --- Slide Carousel Endpoints ---
+
+const fallbackSlides = [
+  {
+    id: 'slide-summary',
+    title: 'Professional Summary',
+    content_type: 'markdown',
+    content_data: {
+      lead: "Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance economic and social justice.",
+      body: "Field representative, former union local president, and digital media producer with 20+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts."
+    },
+    is_enabled: true,
+    sort_order: 1
+  },
+  {
+    id: 'slide-personal-timeline',
+    title: 'Personal Highlights',
+    content_type: 'personal_timeline',
+    content_data: [
+      { year: 1969, title: "Born", details: "Born and raised in California, starting a lifelong journey." },
+      { year: 1988, title: "Academic Foundations", details: "Began coursework in Political Science and Economics at Santa Rosa Junior College." },
+      { year: 1989, title: "Cuesta College Studies", details: "Continued studies in economics and community advocacy." },
+      { year: 1999, title: "Entered Labor Leadership", details: "Dedicated focus to organizing campaigns and worker advocacy." },
+      { year: 2006, title: "Local Union Leadership", details: "Elected President of Teamsters Local 624, leading strategic contract campaigns." },
+      { year: 2026, title: "Present Day", details: "Integrating full-stack web development with senior labor organizing." }
+    ],
+    is_enabled: true,
+    sort_order: 2
+  }
+];
+
+// GET /api/slides  — get public enabled slides
+app.get('/api/slides', async (req, res) => {
+  try {
+    const client = supabaseAdmin || supabase;
+    if (!client) return res.json(fallbackSlides);
+    
+    const { data, error } = await client
+      .from('slides')
+      .select('*')
+      .eq('is_enabled', true)
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.warn('Could not fetch slides from Supabase, using fallbacks:', error.message);
+      return res.json(fallbackSlides);
+    }
+    res.json(data && data.length > 0 ? data : fallbackSlides);
+  } catch (err) {
+    console.warn('Could not fetch slides, using fallbacks:', err.message);
+    res.json(fallbackSlides);
+  }
+});
+
+// GET /api/admin/slides  — get all slides for admin
+app.get('/api/admin/slides', checkAdmin, async (req, res) => {
+  try {
+    const client = supabaseAdmin || supabase;
+    if (!client) return res.json(fallbackSlides);
+
+    const { data, error } = await client
+      .from('slides')
+      .select('*')
+      .order('sort_order', { ascending: true });
+
+    if (error) {
+      console.warn('Could not fetch admin slides from Supabase, using fallbacks:', error.message);
+      return res.json(fallbackSlides);
+    }
+    res.json(data && data.length > 0 ? data : fallbackSlides);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/slides  — create slide
+app.post('/api/admin/slides', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { title, content_type, content_data, is_enabled, sort_order } = req.body;
+  if (!title || !content_type || !content_data) {
+    return res.status(400).json({ error: 'Missing title, content_type, or content_data' });
+  }
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('slides')
+      .insert({ title, content_type, content_data, is_enabled: is_enabled !== false, sort_order: parseInt(sort_order) || 0 })
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/slides/:id  — update slide
+app.patch('/api/admin/slides/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { title, content_type, content_data, is_enabled, sort_order } = req.body;
+  try {
+    const updates = {};
+    if (title !== undefined) updates.title = title;
+    if (content_type !== undefined) updates.content_type = content_type;
+    if (content_data !== undefined) updates.content_data = content_data;
+    if (is_enabled !== undefined) updates.is_enabled = is_enabled;
+    if (sort_order !== undefined) updates.sort_order = parseInt(sort_order) || 0;
+
+    const { data, error } = await supabaseAdmin
+      .from('slides')
+      .update(updates)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/slides/:id  — delete slide
+app.delete('/api/admin/slides/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  try {
+    const { error } = await supabaseAdmin
+      .from('slides')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/admin/slogan  — set slogan
+app.put('/api/admin/slogan', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { slogan } = req.body;
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('app_settings')
+      .upsert({ key: 'slogan', value: slogan || '' })
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/employers  — create employer record
+app.post('/api/admin/employers', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { name, industry, location } = req.body;
+  if (!name || !industry || !location) {
+    return res.status(400).json({ error: 'Missing name, industry, or location' });
+  }
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('employers')
+      .insert({ name, industry, location })
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/employers/:id  — update employer record
+app.patch('/api/admin/employers/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { name, industry, location } = req.body;
+  try {
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (industry !== undefined) updates.industry = industry;
+    if (location !== undefined) updates.location = location;
+
+    const { data, error } = await supabaseAdmin
+      .from('employers')
+      .update(updates)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/employers/:id  — delete employer record
+app.delete('/api/admin/employers/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  try {
+    const { error } = await supabaseAdmin
+      .from('employers')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Fallback endpoint for Spa routing
 app.get('*', (req, res, next) => {
   if (req.path.includes('.')) {

@@ -668,3 +668,34 @@ CREATE TABLE IF NOT EXISTS app_settings (
 ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "app_settings_no_public_read" ON app_settings FOR SELECT USING (false);
 CREATE POLICY "app_settings_service_only"   ON app_settings FOR ALL   USING (auth.role() = 'service_role');
+
+-- Slides table (carousel slides)
+CREATE TABLE IF NOT EXISTS slides (
+  id           SERIAL PRIMARY KEY,
+  title        TEXT NOT NULL,
+  content_type TEXT NOT NULL,
+  content_data JSONB NOT NULL,
+  is_enabled   BOOLEAN DEFAULT true,
+  sort_order   INTEGER DEFAULT 0
+);
+
+ALTER TABLE slides ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "slides_public_read"   ON slides FOR SELECT USING (true);
+CREATE POLICY "slides_service_only"  ON slides FOR ALL   USING (auth.role() = 'service_role');
+
+-- Seed slides
+TRUNCATE slides RESTART IDENTITY CASCADE;
+INSERT INTO slides (title, content_type, content_data, is_enabled, sort_order) VALUES
+('Professional Summary', 'markdown', '{
+  "lead": "Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance economic and social justice.",
+  "body": "Field representative, former union local president, and digital media producer with 20+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts."
+}'::jsonb, true, 1),
+('Personal Highlights', 'personal_timeline', '[
+  {"year": 1969, "title": "Born", "details": "Born and raised in California, starting a lifelong journey."},
+  {"year": 1988, "title": "Academic Foundations", "details": "Began coursework in Political Science and Economics at Santa Rosa Junior College."},
+  {"year": 1989, "title": "Cuesta College Studies", "details": "Continued studies in economics and community advocacy."},
+  {"year": 1999, "title": "Entered Labor Leadership", "details": "Dedicated focus to organizing campaigns and worker advocacy."},
+  {"year": 2006, "title": "Local Union Leadership", "details": "Elected President of Teamsters Local 624, leading strategic contract campaigns."},
+  {"year": 2026, "title": "Present Day", "details": "Integrating full-stack web development with senior labor organizing."}
+]'::jsonb, true, 2);
+

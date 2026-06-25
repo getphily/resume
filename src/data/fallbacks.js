@@ -344,3 +344,33 @@ export const fallbackEducation = [
   { id: 1, institution: 'Cuesta College', details: 'Economics Coursework | 1989 - 1990' },
   { id: 2, institution: 'Santa Rosa Junior College', details: 'Political Science, Economics Coursework | 1988 - 1989' }
 ];
+
+export const fallbackSlides = [
+  {
+    id: 'slide-summary',
+    title: 'Professional Summary',
+    content_type: 'markdown',
+    content_data: {
+      lead: "Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance economic and social justice.",
+      body: "Field representative, former union local president, and digital media producer with 20+ years of experience directing high-impact contract campaigns, building nationwide labor coalitions, and producing viral video/audio podcasts."
+    },
+    is_enabled: true,
+    sort_order: 1
+  },
+  {
+    id: 'slide-personal-timeline',
+    title: 'Personal Highlights',
+    content_type: 'personal_timeline',
+    content_data: [
+      { year: 1969, title: "Born", details: "Born and raised in California, starting a lifelong journey." },
+      { year: 1988, title: "Academic Foundations", details: "Began coursework in Political Science and Economics at Santa Rosa Junior College." },
+      { year: 1989, title: "Cuesta College Studies", details: "Continued studies in economics and community advocacy." },
+      { year: 1999, title: "Entered Labor Leadership", details: "Dedicated focus to organizing campaigns and worker advocacy." },
+      { year: 2006, title: "Local Union Leadership", details: "Elected President of Teamsters Local 624, leading strategic contract campaigns." },
+      { year: 2026, title: "Present Day", details: "Integrating full-stack web development with senior labor organizing."}
+    ],
+    is_enabled: true,
+    sort_order: 2
+  }
+];
+
