@@ -252,9 +252,9 @@ function MediaLibrary({ pwd }) {
     setMsg({ type:'ok', text:`Uploaded ${pending.length} file(s)` });
   }
 
-  // ── Delete asset ─────────────────────────────────────────────────────────────
+  // ── Delete asset ─────────────────────────────────────────────────────
   async function handleDelete(id) {
-    if (!confirm('Delete this asset permanently?')) return;
+    // no confirm() here — AssetCard handles inline two-step confirm
     const res = await af(`/api/admin/media/${id}`, { method:'DELETE' }, pwd);
     if (res.ok) setAssets(a=>a.filter(x=>x.id!==id));
   }
@@ -640,6 +640,7 @@ function AssetCard({ asset, jobs, pwd, isEditing, setEditing, onDelete, onSaved 
     location_label: asset.location_label||'',
     location_lat: asset.location_lat||'', location_lng: asset.location_lng||'',
   });
+  const [confirmDel, setConfirmDel] = useState(false);
   const job = jobs.find(j=>j.id===asset.timeline_job_id);
 
   async function save() {
@@ -665,9 +666,22 @@ function AssetCard({ asset, jobs, pwd, isEditing, setEditing, onDelete, onSaved 
             }
             {asset.caption && <div style={{fontSize:'0.73rem', color:'#64748b', marginTop:'0.3rem', lineHeight:1.35}}>{asset.caption}</div>}
           </div>
-          <div style={{display:'flex', gap:'0.3rem', flexShrink:0}}>
+          <div style={{display:'flex', gap:'0.3rem', flexShrink:0, alignItems:'center'}}>
             <button style={{...c.btn,...c.btnGhost,...c.btnSm}} onClick={()=>setEditing(isEditing?null:asset.id)}>{isEditing?'Close':'✏️'}</button>
-            <button style={{...c.btn,...c.btnDanger,...c.btnSm}} onClick={()=>onDelete(asset.id)}>🗑</button>
+            {confirmDel ? (
+              <>
+                <button style={{...c.btn,...c.btnDanger,...c.btnSm, fontSize:'0.72rem', padding:'0.3rem 0.5rem'}}
+                  onClick={()=>onDelete(asset.id)}>
+                  Sure?
+                </button>
+                <button style={{...c.btn,...c.btnGhost,...c.btnSm, fontSize:'0.72rem', padding:'0.3rem 0.4rem'}}
+                  onClick={()=>setConfirmDel(false)}>
+                  ✕
+                </button>
+              </>
+            ) : (
+              <button style={{...c.btn,...c.btnDanger,...c.btnSm}} onClick={()=>setConfirmDel(true)}>🗑</button>
+            )}
           </div>
         </div>
         {isEditing && (
