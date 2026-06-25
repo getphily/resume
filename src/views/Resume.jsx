@@ -180,7 +180,8 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                           borderRadius="full"
                           border="2px solid"
                           borderColor={color}
-                          style={{ animation: 'dotPingH 1.485s ease-out infinite' }}
+                          style={{ animation: 'dotPingH 2.2s ease-out infinite' }}
+                          transformOrigin="center"
                           pointerEvents="none"
                         />
                         <Box
@@ -192,7 +193,8 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                           borderRadius="full"
                           border="2px solid"
                           borderColor={color}
-                          style={{ animation: 'dotPingH 1.485s ease-out 0.61s infinite' }}
+                          style={{ animation: 'dotPingH 2.2s ease-out 0.9s infinite' }}
+                          transformOrigin="center"
                           pointerEvents="none"
                         />
                       </>
@@ -285,13 +287,10 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
 
   return (
     <Box
+      className="animated-glow-card"
       w="100%"
-      border="1px solid"
-      borderColor={borderLight}
       borderRadius="2xl"
       p={{ base: '1.5rem', md: '2rem' }}
-      bg={cardBg}
-      boxShadow="lg"
       position="relative"
       mb="4rem"
     >
@@ -574,6 +573,52 @@ function Resume({ data }) {
 
   return (
     <Box minH="100vh" pb="2rem">
+      <style>{`
+        @keyframes animatedGlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .animated-glow-card {
+          position: relative;
+          border: 1px solid transparent !important;
+          background-image: 
+            linear-gradient(${cardBg}, ${cardBg}), 
+            linear-gradient(90deg, ${brandPrimary}, ${brandSecondary}, ${brandPrimary}) !important;
+          background-clip: padding-box, border-box !important;
+          background-origin: padding-box, border-box !important;
+          background-size: 100% 100%, 200% 200% !important;
+          animation: animatedGlow 8s ease infinite !important;
+          transition: all 0.28s ease !important;
+        }
+
+        .animated-glow-card::before {
+          content: "";
+          position: absolute;
+          top: -1px;
+          left: -1px;
+          right: -1px;
+          bottom: -1px;
+          border-radius: inherit;
+          background: linear-gradient(90deg, ${brandPrimary}, ${brandSecondary}, ${brandPrimary});
+          background-size: 200% 200%;
+          z-index: -1;
+          filter: blur(12px);
+          opacity: ${isDark ? 0.22 : 0.09};
+          transition: opacity 0.3s ease, filter 0.3s ease;
+          animation: animatedGlow 8s ease infinite;
+        }
+
+        .animated-glow-card:hover {
+          transform: translateY(-2px);
+        }
+
+        .animated-glow-card:hover::before {
+          opacity: ${isDark ? 0.45 : 0.18};
+          filter: blur(16px);
+        }
+      `}</style>
 
       {/* ── Media Lightbox Modal ── */}
       {lbAsset && (
@@ -1123,20 +1168,11 @@ function Resume({ data }) {
                   </Box>
 
                                   <Box
+                    className="animated-glow-card"
                     flex="1"
                     minW="0"
-                    border="1px solid"
-                    borderColor={borderLight}
-                    borderRadius="xl"
-                    bg={cardBg}
-                    overflow="hidden"
-                    transition="all 0.28s ease"
-                    _hover={{
-                      borderColor: theme.color + '99',
-                      boxShadow: isDark
-                        ? `0 0 0 1px ${theme.color}44, 0 0 28px ${theme.color}26, 0 6px 24px rgba(0,0,0,0.35)`
-                        : `0 0 0 1px ${theme.color}44, 0 0 18px ${theme.color}18, 0 4px 16px rgba(0,0,0,0.08)`,
-                    }}
+                    borderRadius="2xl"
+                    position="relative"
                   >
                     {/* Clickable header — stacks vertically on mobile, row on md+ */}
                     <Flex
@@ -1665,7 +1701,8 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
             w="13px" h="13px" borderRadius="full"
             border="2px solid"
             borderColor={color}
-            style={{ animation: 'dotPing 1.485s ease-out infinite' }}
+            style={{ animation: 'dotPing 2.2s ease-out infinite' }}
+            transformOrigin="center"
             pointerEvents="none"
           />
           <Box
@@ -1675,7 +1712,8 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
             w="13px" h="13px" borderRadius="full"
             border="2px solid"
             borderColor={color}
-            style={{ animation: 'dotPing 1.485s ease-out 0.61s infinite' }}
+            style={{ animation: 'dotPing 2.2s ease-out 0.9s infinite' }}
+            transformOrigin="center"
             pointerEvents="none"
           />
         </>
