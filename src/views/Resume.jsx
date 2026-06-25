@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspens
 import { LaborMap } from '../components/LaborMap';
 
 const ReactApexChart = lazy(() => import('react-apexcharts'));
-const PhotoAlbum = lazy(() => import('react-photo-album').then(m => ({ default: m.MasonryPhotoAlbum })));
+import { MasonryPhotoAlbum as PhotoAlbum } from 'react-photo-album';
 import 'react-photo-album/masonry.css';
 
 import { useNavigate } from 'react-router-dom';
@@ -83,36 +83,27 @@ function Resume({ data }) {
   const [expandedCards, setExpandedCards] = useState({});
   const [hoveredCardId, setHoveredCardId] = useState(null);
 
-  // Media library — fetched fresh each time a card is opened (no caching so admin changes appear immediately)
-  const [mediaByJob,  setMediaByJob]  = useState({});       // { jobId: asset[] }
-  const [fetchingJobs, setFetchingJobs] = useState(new Set()); // prevent duplicate in-flight requests
-  const [lbAsset, setLbAsset] = useState(null);  // asset object currently shown in lightbox
-  const [lbJobAssets, setLbJobAssets] = useState([]); // all assets for this job (for prev/next)
+  // Media library — prefetched for all jobs on load; never re-fetches if already cached
+  const [mediaByJob,  setMediaByJob]  = useState({});
+  const [lbAsset, setLbAsset] = useState(null);
+  const [lbJobAssets, setLbJobAssets] = useState([]);
+  const fetchedJobs = useRef(new Set()); // tracks jobs already fetched or in-flight
 
   const loadMediaForJob = useCallback(async (jobId) => {
-    if (fetchingJobs.has(jobId)) return;                     // already in-flight, skip
-    setFetchingJobs(prev => new Set([...prev, jobId]));
+    if (fetchedJobs.current.has(jobId)) return; // already cached or in-flight
+    fetchedJobs.current.add(jobId);
     try {
       const res = await fetch(`/api/media?job_id=${jobId}`);
       if (res.ok) {
         const assets = await res.json();
-        // Preload native dimensions for images so masonry layout uses real ratios
-        const enriched = await Promise.all(assets.map(a => {
-          if (a.file_type !== 'image') return Promise.resolve(a);
-          return new Promise(resolve => {
-            const img = new window.Image();
-            img.onload  = () => resolve({ ...a, _w: img.naturalWidth,  _h: img.naturalHeight });
-            img.onerror = () => resolve({ ...a, _w: 800, _h: 600 });
-            img.src = a.public_url;
-          });
-        }));
-        setMediaByJob(prev => ({ ...prev, [jobId]: enriched }));
+        // Use default 4:3 dims — avoids blocking on image load before gallery renders
+        const withDims = assets.map(a =>
+          a.file_type === 'image' ? { ...a, _w: 800, _h: 600 } : a
+        );
+        setMediaByJob(prev => ({ ...prev, [jobId]: withDims }));
       }
-    } catch { /* silent — gallery just won't appear */ }
-    finally {
-      setFetchingJobs(prev => { const n = new Set(prev); n.delete(jobId); return n; });
-    }
-  }, [fetchingJobs]);
+    } catch { /* silent */ }
+  }, []);
 
   const [lightboxImg, setLightboxImg] = useState({ src: '', alt: '', title: '', desc: '', tags: [] });
   const [scrolled, setScrolled] = useState(false);
@@ -133,9 +124,18 @@ function Resume({ data }) {
   
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  // Background-prefetch media for every timeline job as soon as the data arrives
+  useEffect(() => {
+    if (!data?.timeline?.length) return;
+    data.timeline.forEach((item, i) => {
+      setTimeout(() => loadMediaForJob(item.id), i * 250);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.timeline?.length]); // run once when timeline is populated
+
   const toggleCard = (id) => {
     setExpandedCards((prev) => ({ ...prev, [id]: !prev[id] }));
-    loadMediaForJob(id);
+    loadMediaForJob(id); // no-op if already prefetched
   };
 
   const openLightbox = (imgData) => {
@@ -713,20 +713,18 @@ function Resume({ data }) {
                                   box-shadow: 0 4px 18px rgba(0,0,0,0.45) !important;
                                 }
                               `}</style>
-                              <Suspense fallback={<Box h="80px" />}>
-                                <div className="resume-gallery">
-                                  <PhotoAlbum
-                                    layout="masonry"
-                                    photos={photos}
-                                    columns={cw => cw < 300 ? 2 : cw < 550 ? 3 : 4}
-                                    spacing={5}
-                                    onClick={({ index }) => {
-                                      setLbAsset(jobMedia[index]);
-                                      setLbJobAssets(jobMedia);
-                                    }}
-                                  />
-                                </div>
-                              </Suspense>
+                              <div className="resume-gallery">
+                                <PhotoAlbum
+                                  layout="masonry"
+                                  photos={photos}
+                                  columns={cw => cw < 300 ? 2 : cw < 550 ? 3 : 4}
+                                  spacing={5}
+                                  onClick={({ index }) => {
+                                    setLbAsset(jobMedia[index]);
+                                    setLbJobAssets(jobMedia);
+                                  }}
+                                />
+                              </div>
                             </Box>
                           );
                         })()}
