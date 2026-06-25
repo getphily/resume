@@ -267,16 +267,6 @@ function Resume({ data }) {
             <Link href="#timeline" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Timeline</Link>
             <Link href="#skills" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Skills & Edu</Link>
             <Link href="#portfolio" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Portfolio</Link>
-            <Button
-              size="xs"
-              variant="outline"
-              colorScheme="teal"
-              fontWeight="bold"
-              onClick={() => navigate('/dashboard')}
-            >
-              Dashboard View
-            </Button>
-            <Divider orientation="vertical" height="20px" borderColor={borderLight} />
             <HStack spacing="0.75rem">
               {data.socials?.primary?.linkedin && (
                 <IconButton
@@ -337,15 +327,6 @@ function Resume({ data }) {
               variant="ghost"
               size="sm"
             />
-            <Button
-              display={{ base: 'flex', md: 'none' }}
-              size="xs"
-              variant="outline"
-              colorScheme="teal"
-              onClick={() => navigate('/dashboard')}
-            >
-              Dashboard
-            </Button>
           </HStack>
         </Container>
       </Box>
@@ -417,14 +398,6 @@ function Resume({ data }) {
             </HStack>
 
             <HStack spacing="0.5rem">
-              <Button
-                size="xs"
-                variant="outline"
-                colorScheme="teal"
-                onClick={() => navigate('/dashboard')}
-              >
-                Dashboard View
-              </Button>
               <IconButton
                 aria-label="Toggle Color Mode"
                 icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
