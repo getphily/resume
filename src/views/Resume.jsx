@@ -287,14 +287,12 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
 
   return (
     <Box
-      className="animated-glow-card"
       w="100%"
       border="1px solid"
       borderColor={borderLight}
       borderRadius="2xl"
       p={{ base: '1.5rem', md: '2rem' }}
       bg={cardBg}
-      boxShadow="lg"
       position="relative"
       mb="4rem"
     >
@@ -601,7 +599,7 @@ function Resume({ data }) {
           background-size: 200% 200%;
           z-index: -1;
           filter: blur(16px);
-          opacity: ${isDark ? 0.32 : 0.12};
+          opacity: 0;
           transition: opacity 0.3s ease, filter 0.3s ease;
           animation: animatedGlow 8s ease infinite;
         }
