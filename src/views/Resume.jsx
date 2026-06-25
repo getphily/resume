@@ -79,6 +79,8 @@ const techIcons = {
 
 function Resume({ data }) {
   const { colorMode, toggleColorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
+
   const navigate = useNavigate();
   const [expandedCards, setExpandedCards] = useState({});
   const [hoveredCardId, setHoveredCardId] = useState(null);
@@ -573,10 +575,12 @@ function Resume({ data }) {
                     borderRadius="xl"
                     bg={cardBg}
                     overflow="hidden"
-                    transition="all 0.25s ease"
+                    transition="all 0.28s ease"
                     _hover={{
-                      borderColor: theme.color + '88',
-                      boxShadow: `0 0 0 1px ${theme.color}44, 0 0 24px ${theme.color}22, 0 4px 20px rgba(0,0,0,0.25)`,
+                      borderColor: theme.color + '99',
+                      boxShadow: isDark
+                        ? `0 0 0 1px ${theme.color}44, 0 0 28px ${theme.color}26, 0 6px 24px rgba(0,0,0,0.35)`
+                        : `0 0 0 1px ${theme.color}44, 0 0 18px ${theme.color}18, 0 4px 16px rgba(0,0,0,0.08)`,
                     }}
                   >
                     {/* Clickable header — stacks vertically on mobile, row on md+ */}
@@ -589,13 +593,17 @@ function Resume({ data }) {
                       cursor="pointer"
                       onClick={() => toggleCard(item.id)}
                       userSelect="none"
+                      {/* Subtle expand affordance: hairline accent border fades out when open */}
+                      borderBottom="1px solid"
+                      borderBottomColor={isExpanded ? 'transparent' : `${theme.color}20`}
+                      transition="border-bottom-color 0.25s ease"
                     >
                       <VStack align="start" spacing="0.2rem" flex="1" minW="0">
                         <Heading as="h3" fontSize="1.1rem" fontWeight="700">
                           {item.role}
                         </Heading>
                         <Text fontSize="0.9rem" fontWeight="600" color={theme.color} noOfLines={2}>
-                          {item.company} {item.location && `• ${item.location}`}
+                          {item.company} {item.location && `\u2022 ${item.location}`}
                         </Text>
                         <Text fontSize="0.8rem" color={textColorMuted} fontWeight="500">
                           {item.date_range}
@@ -610,12 +618,13 @@ function Resume({ data }) {
                         <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.75rem" fontWeight="700">
                           {theme.label}
                         </Tag>
+                        {/* Chevron: theme color at 55% when collapsed, full when expanded */}
                         <Box
                           as="span"
-                          color={textColorMuted}
-                          fontSize="1rem"
+                          color={isExpanded ? theme.color : theme.color + '8C'}
+                          fontSize="1.1rem"
                           lineHeight="1"
-                          transition="transform 0.2s"
+                          transition="transform 0.25s ease, color 0.25s ease"
                           transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
                         >
                           ▾
