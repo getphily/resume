@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
+import { LaborMap } from '../components/LaborMap';
+
 const ReactApexChart = lazy(() => import('react-apexcharts'));
 const PhotoAlbum = lazy(() => import('react-photo-album').then(m => ({ default: m.MasonryPhotoAlbum })));
 import 'react-photo-album/masonry.css';
@@ -797,14 +799,12 @@ function Resume({ data }) {
 
         <Divider borderColor={borderLight} my="4rem" />
 
-        {/* 6b. Employer Geography Section */}
-        <EmployerGeography
+        {/* 6b. Labor Footprint — interactive employer map */}
+        <LaborMap
           employers={data.employers}
           borderLight={borderLight}
-          blueColor={blueColor}
           cardBg={cardBg}
           textColorMuted={textColorMuted}
-          brandPrimary={brandPrimary}
         />
 
         <Divider borderColor={borderLight} my="4rem" />
