@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
-import { Box, Text, Heading, Flex, HStack, VStack, useColorMode } from '@chakra-ui/react';
+import { Box, Text, Heading, Flex, HStack, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
 
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json';
@@ -156,43 +156,65 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
   }
 
   return (
-    <Box ref={containerRef} mb="4rem">
-      <Box mb="1.75rem">
-        <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em" mb="0.25rem">
-          Labor Footprint
-        </Heading>
-        <Text fontSize="0.85rem" color={textColorMuted}>
-          Employer accounts represented across California
-        </Text>
-      </Box>
-
-      <HStack spacing={0} mb="2rem" wrap="wrap" rowGap="1rem">
-        {[
-          { n: cntEmployers,  label: 'Employer Accounts' },
-          { n: cntIndustries, label: 'Industries' },
-          { n: cntRegions,    label: 'Regions' },
-        ].map(({ n, label }, i) => (
-          <Box key={label} display="flex" alignItems="center">
-            {i > 0 && <Box h="2.5rem" w="1px" bg={borderLight} mx={['1.2rem', '2rem']} />}
-            <Box>
-              <Text
-                fontSize={['1.8rem', '2.5rem']}
-                fontWeight="900"
-                lineHeight="1"
-                letterSpacing="-0.04em"
-                color={statNumClr}
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-              >
-                {n}
-              </Text>
-              <Text fontSize="0.65rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" color={textColorMuted} mt="0.3rem">
-                {label}
-              </Text>
+    <Box
+      ref={containerRef}
+      id="labor-footprint"
+      mb="4rem"
+      border="1px solid"
+      borderColor={borderLight}
+      borderRadius="2xl"
+      p={{ base: '1.5rem', md: '2rem' }}
+      bg={cardBg}
+    >
+      {/* Header with Stats */}
+      <Flex
+        direction={{ base: 'column', md: 'row' }}
+        justify="space-between"
+        align={{ base: 'stretch', md: 'center' }}
+        gap="1rem"
+        mb="1.75rem"
+        pb="1.25rem"
+        borderBottom="1px solid"
+        borderColor={borderLight}
+        flexShrink={0}
+      >
+        <Box>
+          <Heading as="h2" fontSize="1.1rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.25rem">
+            Labor Footprint
+          </Heading>
+          <Text fontSize="0.85rem" color={textColorMuted}>
+            Employer accounts represented across California
+          </Text>
+        </Box>
+        <HStack spacing={0} wrap="wrap" rowGap="0.5rem" align="center" justify={{ base: 'start', md: 'end' }}>
+          {[
+            { n: cntEmployers,  label: 'Employers' },
+            { n: cntIndustries, label: 'Industries' },
+            { n: cntRegions,    label: 'Regions' },
+          ].map(({ n, label }, i) => (
+            <Box key={label} display="flex" alignItems="center">
+              {i > 0 && <Box h="1.5rem" w="1px" bg={borderLight} mx={['0.75rem', '1.25rem']} />}
+              <Box>
+                <Text
+                  fontSize={['1.2rem', '1.5rem']}
+                  fontWeight="900"
+                  lineHeight="1"
+                  letterSpacing="-0.03em"
+                  color={statNumClr}
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {n}
+                </Text>
+                <Text fontSize="0.6rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" color={textColorMuted} mt="0.1rem">
+                  {label}
+                </Text>
+              </Box>
             </Box>
-          </Box>
-        ))}
-      </HStack>      <Flex direction="column" gap="1.25rem" align="stretch" w="100%">
+          ))}
+        </HStack>
+      </Flex>
 
+      <Flex direction="column" gap="1.25rem" align="stretch" w="100%">
         {/* Map */}
         <Box
           w="100%"
@@ -308,11 +330,11 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
         {/* Industry filter key (Horizontal layout underneath map) */}
         <Box
           w="100%"
+          p="1rem"
+          bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
           border="1px solid"
           borderColor={borderLight}
           borderRadius="xl"
-          p="1.25rem"
-          bg={cardBg}
         >
           <Text fontSize="0.68rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.1em" color={textColorMuted} mb="1rem">
             Filter by Industry

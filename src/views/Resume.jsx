@@ -1837,109 +1837,192 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
   const digitalCount = Object.values(digitalCategories).reduce((n, items) => n + items.length, 0);
 
   return (
-    <Box id="skills" mb="4rem">
-      <HStack justify="space-between" align="center" mb="1.5rem" wrap="wrap" gap="0.75rem">
+    <Box
+      id="skills"
+      mb="4rem"
+      border="1px solid"
+      borderColor={borderLight}
+      borderRadius="2xl"
+      p={{ base: '1.5rem', md: '2rem' }}
+      bg={cardBg}
+    >
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        justify="space-between"
+        align={{ base: 'stretch', sm: 'center' }}
+        gap="1rem"
+        mb="2rem"
+        pb="1.25rem"
+        borderBottom="1px solid"
+        borderColor={borderLight}
+      >
         <Box>
-          <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em">
+          <Heading as="h2" fontSize="1.1rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em">
             Skills &amp; Core Competencies
           </Heading>
           <Text fontSize="0.8rem" color={textColorMuted} mt="0.15rem">
             {(competencies || []).length + (skills || []).length} total skills
           </Text>
         </Box>
-        <HStack spacing="0.4rem">
-          <Button size="sm" variant={viewMode === 'list' ? 'solid' : 'ghost'}
+        <HStack
+          spacing="0.4rem"
+          bg={useColorModeValue('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.02)')}
+          p="0.25rem"
+          borderRadius="lg"
+          border="1px solid"
+          borderColor={borderLight}
+          alignSelf={{ base: 'start', sm: 'auto' }}
+        >
+          <Button
+            size="xs"
+            variant={viewMode === 'list' ? 'solid' : 'ghost'}
             colorScheme={viewMode === 'list' ? 'blue' : 'gray'}
-            onClick={() => setViewMode('list')} fontSize="0.78rem" fontWeight="700">
+            onClick={() => setViewMode('list')}
+            fontSize="0.75rem"
+            fontWeight="700"
+            borderRadius="md"
+            px="0.75rem"
+          >
             📋 List
           </Button>
-          <Button size="sm" variant={viewMode === 'map' ? 'solid' : 'ghost'}
+          <Button
+            size="xs"
+            variant={viewMode === 'map' ? 'solid' : 'ghost'}
             colorScheme={viewMode === 'map' ? 'purple' : 'gray'}
-            onClick={() => setViewMode('map')} fontSize="0.78rem" fontWeight="700">
+            onClick={() => setViewMode('map')}
+            fontSize="0.75rem"
+            fontWeight="700"
+            borderRadius="md"
+            px="0.75rem"
+          >
             🌐 Skill Map
           </Button>
-          <Button size="sm" variant={viewMode === 'insights' ? 'solid' : 'ghost'}
+          <Button
+            size="xs"
+            variant={viewMode === 'insights' ? 'solid' : 'ghost'}
             colorScheme={viewMode === 'insights' ? 'teal' : 'gray'}
-            onClick={() => setViewMode('insights')} fontSize="0.78rem" fontWeight="700">
-            📊 Skills Insights
+            onClick={() => setViewMode('insights')}
+            fontSize="0.75rem"
+            fontWeight="700"
+            borderRadius="md"
+            px="0.75rem"
+          >
+            📊 Insights
           </Button>
         </HStack>
-      </HStack>
+      </Flex>
 
-      {viewMode === 'map' ? (
-        <SkillOrbMap colorMode={colorMode} />
-      ) : viewMode === 'insights' ? (
-        <SkillsInsightsPanel
-          colorMode={colorMode}
-          borderLight={borderLight}
-          cardBg={cardBg}
-          textColorMuted={textColorMuted}
-        />
-      ) : (
-        <Tabs index={tabIdx} onChange={setTabIdx} variant="soft-rounded" size="sm" isLazy>
-          <TabList gap="0.5rem" mb="1.75rem">
-          <Tab colorScheme="blue" fontWeight="700" fontSize="0.85rem">
-            🔵 Labor Relations
-            <Badge ml="0.5rem" colorScheme="blue" borderRadius="full" fontSize="0.65rem">{laborCount + leadershipSkills.length}</Badge>
-          </Tab>
-          <Tab colorScheme="purple" fontWeight="700" fontSize="0.85rem">
-            🟣 Digital Media &amp; Communications
-            <Badge ml="0.5rem" colorScheme="purple" borderRadius="full" fontSize="0.65rem">{digitalCount + commsSkills.length}</Badge>
-          </Tab>
-          </TabList>
+      <Box flex="1">
+        {viewMode === 'map' ? (
+          <Box minH="300px">
+            <SkillOrbMap colorMode={colorMode} />
+          </Box>
+        ) : viewMode === 'insights' ? (
+          <SkillsInsightsPanel
+            colorMode={colorMode}
+            borderLight={borderLight}
+            cardBg={cardBg}
+            textColorMuted={textColorMuted}
+          />
+        ) : (
+          <Tabs index={tabIdx} onChange={setTabIdx} variant="soft-rounded" size="sm" isLazy>
+            <TabList gap="0.5rem" mb="1.75rem" wrap="wrap">
+              <Tab
+                _selected={{ bg: 'blue.500', color: 'white' }}
+                fontWeight="700"
+                fontSize="0.8rem"
+                bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.03)')}
+                px="1rem"
+                py="0.4rem"
+                borderRadius="full"
+              >
+                🔵 Labor Relations
+                <Badge ml="0.5rem" bg="blue.600" color="white" borderRadius="full" fontSize="0.65rem">
+                  {laborCount + leadershipSkills.length}
+                </Badge>
+              </Tab>
+              <Tab
+                _selected={{ bg: 'purple.500', color: 'white' }}
+                fontWeight="700"
+                fontSize="0.8rem"
+                bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.03)')}
+                px="1rem"
+                py="0.4rem"
+                borderRadius="full"
+              >
+                🟣 Digital Media &amp; Communications
+                <Badge ml="0.5rem" bg="purple.600" color="white" borderRadius="full" fontSize="0.65rem">
+                  {digitalCount + commsSkills.length}
+                </Badge>
+              </Tab>
+            </TabList>
 
-        <TabPanels>
-          {/* Tab 0: Labor Relations */}
-          <TabPanel px="0" pt="0">
-            {/* Quick-ref pills */}
-            {leadershipSkills.length > 0 && (
-              <Box mb="1.5rem">
-                <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
-                  Core Skills
-                </Text>
-                <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
-                  {leadershipSkills.map(s => (
-                    <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.76rem">{s.name}</Tag>
-                  ))}
-                </HStack>
-              </Box>
-            )}
-            <CompetencyGroup
-              categories={laborCategories}
-              scheme="blue"
-              borderLight={borderLight}
-              cardBg={cardBg}
-              textColorMuted={textColorMuted}
-            />
-          </TabPanel>
+            <TabPanels>
+              {/* Tab 0: Labor Relations */}
+              <TabPanel px="0" pt="0">
+                {/* Quick-ref pills */}
+                {leadershipSkills.length > 0 && (
+                  <Box
+                    mb="1.5rem"
+                    p="1rem"
+                    bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
+                    border="1px solid"
+                    borderColor={borderLight}
+                    borderRadius="xl"
+                  >
+                    <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
+                      Core Skills
+                    </Text>
+                    <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                      {leadershipSkills.map(s => (
+                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.76rem">{s.name}</Tag>
+                      ))}
+                    </HStack>
+                  </Box>
+                )}
+                <CompetencyGroup
+                  categories={laborCategories}
+                  scheme="blue"
+                  borderLight={borderLight}
+                  cardBg={cardBg}
+                  textColorMuted={textColorMuted}
+                />
+              </TabPanel>
 
-          {/* Tab 1: Digital Media & Communications */}
-          <TabPanel px="0" pt="0">
-            {/* Quick-ref pills */}
-            {commsSkills.length > 0 && (
-              <Box mb="1.5rem">
-                <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
-                  Core Skills
-                </Text>
-                <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
-                  {commsSkills.map(s => (
-                    <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.76rem">{s.name}</Tag>
-                  ))}
-                </HStack>
-              </Box>
-            )}
-            <CompetencyGroup
-              categories={digitalCategories}
-              scheme="purple"
-              borderLight={borderLight}
-              cardBg={cardBg}
-              textColorMuted={textColorMuted}
-            />
-          </TabPanel>
-        </TabPanels>
-        </Tabs>
-      )}
-
+              {/* Tab 1: Digital Media & Communications */}
+              <TabPanel px="0" pt="0">
+                {/* Quick-ref pills */}
+                {commsSkills.length > 0 && (
+                  <Box
+                    mb="1.5rem"
+                    p="1rem"
+                    bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
+                    border="1px solid"
+                    borderColor={borderLight}
+                    borderRadius="xl"
+                  >
+                    <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
+                      Core Skills
+                    </Text>
+                    <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                      {commsSkills.map(s => (
+                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.76rem">{s.name}</Tag>
+                      ))}
+                    </HStack>
+                  </Box>
+                )}
+                <CompetencyGroup
+                  categories={digitalCategories}
+                  scheme="purple"
+                  borderLight={borderLight}
+                  cardBg={cardBg}
+                  textColorMuted={textColorMuted}
+                />
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        )}
+      </Box>
     </Box>
   );
 }
