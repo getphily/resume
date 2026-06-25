@@ -596,30 +596,35 @@ function Resume({ data }) {
                     borderRadius="xl"
                     bg={cardBg}
                     overflow="hidden"
-                    transition="all 0.2s"
-                    _hover={{ shadow: 'md', borderColor: theme.color + '66' }}
+                    transition="all 0.25s ease"
+                    _hover={{
+                      borderColor: theme.color + '88',
+                      boxShadow: `0 0 0 1px ${theme.color}44, 0 0 24px ${theme.color}22, 0 4px 20px rgba(0,0,0,0.25)`,
+                    }}
                   >
-                    {/* Clickable header */}
-                    <HStack
+                    {/* Clickable header — stacks vertically on mobile, row on md+ */}
+                    <Flex
+                      direction={['column', 'column', 'row']}
                       justify="space-between"
-                      align="start"
+                      align={['stretch', 'stretch', 'start']}
+                      gap={['0.75rem', '0.75rem', '0']}
                       p="1.5rem"
                       cursor="pointer"
                       onClick={() => toggleCard(item.id)}
                       userSelect="none"
                     >
-                      <VStack align="start" spacing="0.2rem">
+                      <VStack align="start" spacing="0.2rem" flex="1" minW="0">
                         <Heading as="h3" fontSize="1.1rem" fontWeight="700">
                           {item.role}
                         </Heading>
-                        <Text fontSize="0.9rem" fontWeight="600" color={theme.color}>
+                        <Text fontSize="0.9rem" fontWeight="600" color={theme.color} noOfLines={2}>
                           {item.company} {item.location && `• ${item.location}`}
                         </Text>
                         <Text fontSize="0.8rem" color={textColorMuted} fontWeight="500">
                           {item.date_range}
                         </Text>
                       </VStack>
-                      <HStack spacing="0.5rem" align="center" flexShrink={0}>
+                      <HStack spacing="0.5rem" align="center" flexShrink={0} flexWrap="wrap">
                         {skills.length > 0 && (
                           <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.72rem" fontWeight="600">
                             Core Skills
@@ -639,7 +644,7 @@ function Resume({ data }) {
                           ▾
                         </Box>
                       </HStack>
-                    </HStack>
+                    </Flex>
 
                     <Collapse in={isExpanded} animateOpacity>
                       <VStack align="start" spacing="1.2rem" px="1.5rem" pb="1.5rem" pt="0">
