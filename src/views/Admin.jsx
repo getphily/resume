@@ -1147,6 +1147,7 @@ function SlidesManager({ pwd }) {
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [uploadingIdx, setUploadingIdx] = useState(null);
 
   // Add Slide Form State
   const [newTitle, setNewTitle] = useState('');
@@ -1300,6 +1301,30 @@ function SlidesManager({ pwd }) {
     setEditMsg({ type: '', text: '' });
   }
 
+  async function handleEventImageUpload(idx, file) {
+    if (!file) return;
+    setUploadingIdx(idx);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await af('/api/admin/media/upload', {
+        method: 'POST',
+        body: fd
+      }, pwd);
+      if (res.ok) {
+        const data = await res.json();
+        updateTimelineEvent(idx, 'image_url', data.public_url);
+      } else {
+        const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+        alert(err.error || 'Upload failed');
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploadingIdx(null);
+    }
+  }
+
   function updateTimelineEvent(idx, field, value) {
     const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
     copy[idx] = {
@@ -1311,7 +1336,7 @@ function SlidesManager({ pwd }) {
 
   function addTimelineEvent() {
     const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
-    copy.push({ year: new Date().getFullYear(), title: 'New Event', details: 'Details...' });
+    copy.push({ year: new Date().getFullYear(), title: 'New Event', details: 'Details...', image_url: '' });
     setEditForm(prev => ({ ...prev, content_data: copy }));
   }
 
@@ -1422,7 +1447,7 @@ function SlidesManager({ pwd }) {
 
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                             {(editForm.content_data || []).map((ev, idx) => (
-                              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '80px 2fr 3fr auto', gap: '0.75rem', alignItems: 'start', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '80px 1.5fr 2fr 1.5fr auto', gap: '0.75rem', alignItems: 'start', padding: '0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <div>
                                   <label style={{ ...c.label, fontSize: '0.62rem' }}>Year</label>
                                   <input style={{ ...c.input, padding: '0.5rem' }} type="number" value={ev.year} onChange={e => updateTimelineEvent(idx, 'year', e.target.value)} />
@@ -1434,6 +1459,44 @@ function SlidesManager({ pwd }) {
                                 <div>
                                   <label style={{ ...c.label, fontSize: '0.62rem' }}>Description Details</label>
                                   <textarea style={{ ...c.textarea, padding: '0.5rem', minHeight: '38px' }} value={ev.details} onChange={e => updateTimelineEvent(idx, 'details', e.target.value)} />
+                                </div>
+                                <div>
+                                  <label style={{ ...c.label, fontSize: '0.62rem' }}>Image Asset</label>
+                                  {ev.image_url ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                      <img src={ev.image_url} alt="thumbnail" style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                      <button type="button" onClick={() => updateTimelineEvent(idx, 'image_url', '')} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, padding: '0.2rem 0.4rem' }}>
+                                        Remove
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        style={{ display: 'none' }}
+                                        id={`event-file-input-${idx}`}
+                                        onChange={e => handleEventImageUpload(idx, e.target.files[0])}
+                                        disabled={uploadingIdx !== null}
+                                      />
+                                      <label
+                                        htmlFor={`event-file-input-${idx}`}
+                                        style={{
+                                          ...c.btn,
+                                          ...c.btnGhost,
+                                          ...c.btnSm,
+                                          display: 'inline-block',
+                                          textAlign: 'center',
+                                          cursor: uploadingIdx !== null ? 'not-allowed' : 'pointer',
+                                          padding: '0.4rem 0.6rem',
+                                          width: '100%',
+                                          boxSizing: 'border-box'
+                                        }}
+                                      >
+                                        {uploadingIdx === idx ? '...' : 'Upload'}
+                                      </label>
+                                    </div>
+                                  )}
                                 </div>
                                 <button type="button" onClick={() => deleteTimelineEvent(idx)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, alignSelf: 'center', background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.1)' }}>
                                   Delete
@@ -1464,8 +1527,11 @@ function SlidesManager({ pwd }) {
                       {slide.content_type === 'personal_timeline' && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                           {(slide.content_data || []).map((ev, i) => (
-                            <span key={i} style={c.pill}>
+                            <span key={i} style={{ ...c.pill, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
                               <strong>{ev.year}</strong>: {ev.title}
+                              {ev.image_url && (
+                                <img src={ev.image_url} alt="" style={{ width: '16px', height: '16px', borderRadius: '3px', objectFit: 'cover' }} />
+                              )}
                             </span>
                           ))}
                         </div>

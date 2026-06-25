@@ -79,14 +79,14 @@ const techIcons = {
 };
 
 // ─── Horizontal Timeline Component for Carousel ───
-function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, textColorMuted }) {
+function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, textColorMuted, setLbAsset, setLbJobAssets }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const selectedEvent = events[selectedIdx];
 
   if (!events || events.length === 0) return null;
 
   return (
-    <VStack align="stretch" spacing="1.5rem" w="100%">
+    <VStack align="stretch" spacing="1.5rem" w="100%" flex="1" minH="0" justify="space-between">
       <style>{`
         @keyframes dotPingH {
           0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.75; }
@@ -231,6 +231,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
+            style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}
           >
             <Box
               p="1.25rem"
@@ -239,6 +240,8 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
               borderColor={borderLight}
               borderRadius="xl"
               w="100%"
+              flex="1"
+              overflowY="auto"
             >
               <HStack justify="space-between" align="center" mb="0.6rem">
                 <Text fontSize="1rem" fontWeight="700" color={color}>
@@ -248,9 +251,46 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                   {selectedEvent.year}
                 </Badge>
               </HStack>
-              <Text fontSize="0.9rem" color={textColorMuted} lineHeight="1.6" fontWeight="500">
-                {selectedEvent.details}
-              </Text>
+              <Flex align="start" justify="space-between" gap="1.5rem">
+                <Text fontSize="0.9rem" color={textColorMuted} lineHeight="1.6" fontWeight="500" flex="1">
+                  {selectedEvent.details}
+                </Text>
+                {selectedEvent.image_url && (
+                  <Box
+                    boxSize={{ base: '75px', md: '95px' }}
+                    minW={{ base: '75px', md: '95px' }}
+                    borderRadius="lg"
+                    overflow="hidden"
+                    cursor="pointer"
+                    onClick={() => {
+                      const asset = {
+                        id: `slide-event-${selectedIdx}`,
+                        public_url: selectedEvent.image_url,
+                        caption: selectedEvent.title || 'Event Image',
+                        filename: 'event_image.jpg',
+                        file_type: 'image'
+                      };
+                      if (setLbAsset) setLbAsset(asset);
+                      if (setLbJobAssets) setLbJobAssets([asset]);
+                    }}
+                    border="1px solid"
+                    borderColor={borderLight}
+                    transition="transform 0.18s ease, box-shadow 0.18s ease"
+                    _hover={{
+                      transform: 'scale(1.035)',
+                      boxShadow: '0 4px 18px rgba(0,0,0,0.45)'
+                    }}
+                  >
+                    <Image
+                      src={selectedEvent.image_url}
+                      alt={selectedEvent.title || 'Event Image'}
+                      w="100%"
+                      h="100%"
+                      objectFit="cover"
+                    />
+                  </Box>
+                )}
+              </Flex>
             </Box>
           </motion.div>
         )}
@@ -260,7 +300,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
 }
 
 // ─── Slide Carousel Component ───
-function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight, cardBg, textColorMuted }) {
+function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight, cardBg, textColorMuted, setLbAsset, setLbJobAssets }) {
   const [activeIdx, setActiveIdx] = useState(0);
 
   const enabledSlides = slides.filter(s => s.is_enabled);
@@ -295,9 +335,13 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
       bg={cardBg}
       position="relative"
       mb="4rem"
+      aspectRatio="4/3"
+      display="flex"
+      flexDirection="column"
+      overflow="hidden"
     >
       {/* Carousel Header */}
-      <Flex align="center" justify="space-between" mb="1.5rem" pb="1rem" borderBottom="1px solid" borderColor={borderLight}>
+      <Flex align="center" justify="space-between" mb="1.5rem" pb="1rem" borderBottom="1px solid" borderColor={borderLight} flexShrink={0}>
         <Heading
           as="h2"
           fontSize="1.1rem"
@@ -340,7 +384,7 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
       </Flex>
 
       {/* Slide body */}
-      <Box position="relative" minH="180px" w="100%">
+      <Box position="relative" w="100%" flex="1" display="flex" flexDirection="column" overflow="hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSlide.id || activeIdx}
@@ -348,10 +392,10 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -15 }}
             transition={{ duration: 0.22, ease: 'easeInOut' }}
-            style={{ width: '100%' }}
+            style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
           >
             {currentSlide.content_type === 'markdown' && (
-              <VStack align="start" spacing="1.2rem">
+              <VStack align="start" spacing="1.2rem" overflowY="auto" flex="1" pr="0.5rem">
                 <Text fontSize="1.05rem" fontWeight="650" lineHeight="1.5">
                   {currentSlide.content_data?.lead}
                 </Text>
@@ -361,7 +405,7 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
               </VStack>
             )}
 
-            {currentSlide.content_type === 'personal_timeline' && (
+             {currentSlide.content_type === 'personal_timeline' && (
               <HorizontalTimeline
                 events={currentSlide.content_data}
                 color={slideTheme.color}
@@ -369,29 +413,13 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
                 borderLight={borderLight}
                 cardBg={cardBg}
                 textColorMuted={textColorMuted}
+                setLbAsset={setLbAsset}
+                setLbJobAssets={setLbJobAssets}
               />
             )}
           </motion.div>
         </AnimatePresence>
       </Box>
-
-      {/* Indicator Dots */}
-      {enabledSlides.length > 1 && (
-        <HStack justify="center" spacing="0.5rem" mt="1.5rem">
-          {enabledSlides.map((_, idx) => (
-            <Box
-              key={idx}
-              boxSize="6px"
-              borderRadius="full"
-              bg={activeIdx === idx ? slideTheme.color : borderLight}
-              cursor="pointer"
-              onClick={() => setActiveIdx(idx)}
-              transition="all 0.2s ease"
-              _hover={{ transform: 'scale(1.2)' }}
-            />
-          ))}
-        </HStack>
-      )}
     </Box>
   );
 }
@@ -1109,6 +1137,8 @@ function Resume({ data }) {
           borderLight={borderLight}
           cardBg={cardBg}
           textColorMuted={textColorMuted}
+          setLbAsset={setLbAsset}
+          setLbJobAssets={setLbJobAssets}
         />
 
         <Divider borderColor={borderLight} my="3rem" />
