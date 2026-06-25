@@ -180,7 +180,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                           borderRadius="full"
                           border="2px solid"
                           borderColor={color}
-                          style={{ animation: 'dotPingH 1.1s ease-out infinite' }}
+                          style={{ animation: 'dotPingH 1.485s ease-out infinite' }}
                           pointerEvents="none"
                         />
                         <Box
@@ -192,7 +192,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                           borderRadius="full"
                           border="2px solid"
                           borderColor={color}
-                          style={{ animation: 'dotPingH 1.1s ease-out 0.45s infinite' }}
+                          style={{ animation: 'dotPingH 1.485s ease-out 0.61s infinite' }}
                           pointerEvents="none"
                         />
                       </>
@@ -1665,7 +1665,7 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
             w="13px" h="13px" borderRadius="full"
             border="2px solid"
             borderColor={color}
-            style={{ animation: 'dotPing 1.1s ease-out infinite' }}
+            style={{ animation: 'dotPing 1.485s ease-out infinite' }}
             pointerEvents="none"
           />
           <Box
@@ -1675,7 +1675,7 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
             w="13px" h="13px" borderRadius="full"
             border="2px solid"
             borderColor={color}
-            style={{ animation: 'dotPing 1.1s ease-out 0.45s infinite' }}
+            style={{ animation: 'dotPing 1.485s ease-out 0.61s infinite' }}
             pointerEvents="none"
           />
         </>
