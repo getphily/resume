@@ -191,13 +191,14 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
             </Box>
           </Box>
         ))}
-      </HStack>
-
-      <Flex direction={{ base: 'column-reverse', md: 'row' }} gap="1.25rem" align="start">
+      </HStack>      <Flex direction="column" gap="1.25rem" align="stretch" w="100%">
 
         {/* Map */}
         <Box
-          flex="1"
+          w="100%"
+          maxW="800px"
+          mx="auto"
+          aspectRatio="1/1"
           position="relative"
           ref={mapBoxRef}
           borderRadius="xl"
@@ -208,10 +209,10 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
         >
           <ComposableMap
             projection="geoMercator"
-            projectionConfig={{ center: [-122.2, 38.15], scale: 8800 }}
-            width={680}
-            height={740}
-            style={{ width: '100%', height: 'auto', display: 'block' }}
+            projectionConfig={{ center: [-122.45, 38.2], scale: 12500 }}
+            width={600}
+            height={600}
+            style={{ width: '100%', height: '100%', display: 'block' }}
           >
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
@@ -304,34 +305,34 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
           )}
         </Box>
 
-        {/* Industry filter sidebar */}
+        {/* Industry filter key (Horizontal layout underneath map) */}
         <Box
-          w={{ base: '100%', md: '180px' }}
-          flexShrink={0}
+          w="100%"
           border="1px solid"
           borderColor={borderLight}
           borderRadius="xl"
-          p="1rem"
+          p="1.25rem"
           bg={cardBg}
         >
-          <Text fontSize="0.63rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.1em" color={textColorMuted} mb="0.85rem">
-            Industry
+          <Text fontSize="0.68rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.1em" color={textColorMuted} mb="1rem">
+            Filter by Industry
           </Text>
-          <VStack align="stretch" spacing="0.25rem">
+          <Flex wrap="wrap" gap="0.5rem">
             <Box
               as="button"
-              display="flex" alignItems="center" justifyContent="space-between"
-              px="0.6rem" py="0.4rem" borderRadius="6px"
+              display="flex" alignItems="center" gap="0.45rem"
+              px="0.75rem" py="0.45rem" borderRadius="6px"
               fontSize="0.72rem" fontWeight={!activeIndustry ? '700' : '500'}
-              color={!activeIndustry ? 'white' : textColorMuted}
-              bg={!activeIndustry ? 'rgba(255,255,255,0.08)' : 'transparent'}
+              color={!activeIndustry ? (isDark ? 'white' : 'gray.800') : textColorMuted}
+              bg={!activeIndustry ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)') : 'transparent'}
               border="1px solid"
-              borderColor={!activeIndustry ? 'rgba(255,255,255,0.12)' : 'transparent'}
+              borderColor={!activeIndustry ? (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)') : 'transparent'}
               transition="all 0.15s" onClick={() => setActiveIndustry(null)}
-              cursor="pointer" textAlign="left" w="100%"
+              cursor="pointer"
+              _hover={{ bg: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)' }}
             >
               <span>All</span>
-              <span style={{ fontSize: '0.63rem', opacity: 0.5 }}>{employers.length}</span>
+              <Box as="span" fontSize="0.63rem" style={{ opacity: 0.55 }} flexShrink={0}>{employers.length}</Box>
             </Box>
 
             {allIndustries.map(ind => {
@@ -343,7 +344,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                   key={ind}
                   as="button"
                   display="flex" alignItems="center" gap="0.45rem"
-                  px="0.6rem" py="0.4rem" borderRadius="6px"
+                  px="0.75rem" py="0.45rem" borderRadius="6px"
                   fontSize="0.7rem" fontWeight={on ? '700' : '500'}
                   color={on ? c : textColorMuted}
                   bg={on ? `${c}18` : 'transparent'}
@@ -351,17 +352,17 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                   borderColor={on ? `${c}44` : 'transparent'}
                   transition="all 0.15s"
                   onClick={() => setActiveIndustry(on ? null : ind)}
-                  cursor="pointer" textAlign="left" w="100%"
+                  cursor="pointer"
                   sx={{ '&:hover': { bg: `${c}12`, color: c } }}
                 >
                   <Box as="span" w="7px" h="7px" borderRadius="full" bg={c} flexShrink={0}
                     style={{ boxShadow: on ? `0 0 5px ${c}` : 'none', transition: 'box-shadow 0.15s' }} />
-                  <Box as="span" flex="1" lineHeight="1.3" textAlign="left">{ind}</Box>
+                  <Box as="span" lineHeight="1.3" style={{ whiteSpace: 'nowrap' }}>{ind}</Box>
                   <Box as="span" fontSize="0.62rem" style={{ opacity: 0.55 }} flexShrink={0}>{cnt}</Box>
                 </Box>
               );
             })}
-          </VStack>
+          </Flex>
         </Box>
       </Flex>
     </Box>
