@@ -1110,6 +1110,7 @@ function Resume({ data }) {
           purpleColor={purpleColor}
           employers={data.employers}
           competencies={data.competencies}
+          cardBg={cardBg}
         />
 
         {/* Warning Badge if using fallbacks */}
@@ -2115,7 +2116,7 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
 
 // ─── Career Scope Animated Stat Bar ────────────────────────────────────────
 
-function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, competencies }) {
+function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, competencies, cardBg }) {
   const progressTrackBg = useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)');
   const ref       = useRef(null);
   const countRef  = useRef(null);
@@ -2231,9 +2232,43 @@ function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, compet
         borderColor={borderLight}
         backdropFilter="blur(8px)"
         overflow="hidden"
-        bg="linear-gradient(135deg, oklch(18% 0.025 240 / 0.06) 0%, oklch(18% 0.02 280 / 0.06) 100%)"
+        bg={cardBg}
         position="relative"
+        transition="transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
+        _hover={{
+          transform: 'translateY(-2px)',
+          boxShadow: useColorModeValue(
+            '0 20px 40px -15px rgba(0,0,0,0.06)',
+            '0 20px 40px -15px rgba(0,0,0,0.4)'
+          )
+        }}
       >
+        {/* Dynamic color shifting background overlays */}
+        <Box
+          position="absolute"
+          inset="0"
+          pointerEvents="none"
+          transition="opacity 0.8s ease-in-out"
+          opacity={statIdx === 0 ? 1 : 0}
+          bg={useColorModeValue(
+            'linear-gradient(135deg, rgba(96, 165, 250, 0.08) 0%, rgba(255, 255, 255, 0) 80%)',
+            'linear-gradient(135deg, rgba(96, 165, 250, 0.05) 0%, rgba(0, 0, 0, 0) 80%)'
+          )}
+          zIndex="1"
+        />
+        <Box
+          position="absolute"
+          inset="0"
+          pointerEvents="none"
+          transition="opacity 0.8s ease-in-out"
+          opacity={statIdx === 1 ? 1 : 0}
+          bg={useColorModeValue(
+            'linear-gradient(135deg, rgba(192, 132, 252, 0.08) 0%, rgba(255, 255, 255, 0) 80%)',
+            'linear-gradient(135deg, rgba(192, 132, 252, 0.05) 0%, rgba(0, 0, 0, 0) 80%)'
+          )}
+          zIndex="1"
+        />
+
         {/* Tiny circle in top-right showing progress */}
         <Box
           key={progKey}
@@ -2280,7 +2315,7 @@ function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, compet
         </Box>
 
         {/* Stat grid */}
-        <Box style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+        <Box position="relative" zIndex="2" style={{ opacity: visible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
           <SimpleGrid columns={{ base: 2, md: 4 }} divider={<Divider orientation="vertical" borderColor={borderLight} />}>
             {currentSet.items.map((stat, i) => (
               <VStack
