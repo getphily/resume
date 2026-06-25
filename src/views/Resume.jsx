@@ -152,6 +152,8 @@ function Resume({ data }) {
   const blueColor = useColorModeValue('blue.600', 'blue.300');
   const purpleColor = useColorModeValue('purple.600', 'purple.300');
   const cardBg = useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)');
+  const modalBg = useColorModeValue('white', 'oklch(14% 0.015 240)');
+  const progressTrackBg = useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)');
 
   // Helper functions for career color coding
   const getTimelineTheme = (itemId) => {
@@ -178,7 +180,7 @@ function Resume({ data }) {
       {lbAsset && (
         <Modal isOpen={!!lbAsset} onClose={() => setLbAsset(null)} size="4xl" isCentered>
           <ModalOverlay bg="blackAlpha.900" backdropFilter="blur(8px)" />
-          <ModalContent bg="oklch(14% 0.015 240)" border="1px solid" borderColor={borderLight} borderRadius="2xl" overflow="hidden" mx="1rem">
+          <ModalContent bg={modalBg} border="1px solid" borderColor={borderLight} borderRadius="2xl" overflow="hidden" mx="1rem">
             <ModalCloseButton color="white" zIndex="10" />
             {/* Prev / Next arrows */}
             {lbJobAssets.length > 1 && (() => {
@@ -866,7 +868,7 @@ function Resume({ data }) {
                   transform: 'translateY(-2px)',
                   color: useColorModeValue('black', 'white'),
                   borderColor: useColorModeValue('black', 'white'),
-                  boxShadow: '0 4px 12px rgba(255,255,255,0.1)'
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                 }}
               >
                 {techIcons.express}
@@ -1524,7 +1526,7 @@ function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, compet
           display="flex" alignItems="center" gap="0.75rem"
         >
           {/* Animated progress line */}
-          <Box flex={1} h="2px" bg="rgba(255,255,255,0.06)" borderRadius="full" overflow="hidden">
+          <Box flex={1} h="2px" bg={progressTrackBg} borderRadius="full" overflow="hidden">
             <Box
               key={progKey}
               h="100%"

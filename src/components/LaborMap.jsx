@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
-import { Box, Text, Heading, Flex, HStack, VStack } from '@chakra-ui/react';
+import { Box, Text, Heading, Flex, HStack, VStack, useColorMode } from '@chakra-ui/react';
+
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json';
 
@@ -93,6 +94,16 @@ function useCountUp(target, duration, trigger) {
 }
 
 export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }) {
+  const { colorMode }               = useColorMode();
+  const isDark                      = colorMode === 'dark';
+  const mapBg        = isDark ? '#080c14'                   : '#eef2f8';
+  const countyFill   = isDark ? '#0c1220'                   : '#e2e9f4';
+  const countyStroke = isDark ? 'rgba(255,255,255,0.07)'    : 'rgba(30,50,100,0.10)';
+  const statNumClr   = isDark ? 'white'                     : '#0f172a';
+  const tooltipBg    = isDark ? 'rgba(6,9,18,0.96)'         : 'rgba(248,251,255,0.97)';
+  const tooltipTxt   = isDark ? 'white'                     : '#0f172a';
+  const noteBg       = isDark ? 'rgba(8,12,20,0.85)'        : 'rgba(242,246,255,0.90)';
+
   const [activeIndustry, setActiveIndustry] = useState(null);
   const [hovered, setHovered]               = useState(null);
   const [inView,  setInView]                = useState(false);
@@ -169,7 +180,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                 fontWeight="900"
                 lineHeight="1"
                 letterSpacing="-0.04em"
-                color="white"
+                color={statNumClr}
                 style={{ fontVariantNumeric: 'tabular-nums' }}
               >
                 {n}
@@ -193,7 +204,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
           overflow="hidden"
           border="1px solid"
           borderColor={borderLight}
-          bg="#080c14"
+          bg={mapBg}
         >
           <ComposableMap
             projection="geoMercator"
@@ -211,9 +222,9 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                       key={g.rsmKey}
                       geography={g}
                       style={{
-                        default: { fill: '#0c1220', stroke: 'rgba(255,255,255,0.07)', strokeWidth: 0.5, outline: 'none' },
-                        hover:   { fill: '#0c1220', outline: 'none' },
-                        pressed: { fill: '#0c1220', outline: 'none' },
+                        default: { fill: countyFill, stroke: countyStroke, strokeWidth: 0.5, outline: 'none' },
+                        hover:   { fill: countyFill, outline: 'none' },
+                        pressed: { fill: countyFill, outline: 'none' },
                       }}
                     />
                   ))
@@ -253,7 +264,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
               transform="translateX(-50%) translateY(-100%)"
               pointerEvents="none"
               zIndex={20}
-              bg="rgba(6,9,18,0.96)"
+              bg={tooltipBg}
               backdropFilter="blur(14px)"
               border="1px solid"
               borderColor={`${dotColor(hovered)}40`}
@@ -273,7 +284,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                     {hovered.industry}
                   </Text>
                 </HStack>
-                <Text fontSize="0.84rem" fontWeight="700" color="white" lineHeight="1.3" mb="0.2rem">
+                <Text fontSize="0.84rem" fontWeight="700" color={tooltipTxt} lineHeight="1.3" mb="0.2rem">
                   {hovered.name}
                 </Text>
                 <Text fontSize="0.72rem" color={textColorMuted}>
@@ -286,7 +297,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
           {southernCount > 0 && (
             <Box position="absolute" bottom="0.75rem" right="0.75rem"
               fontSize="0.63rem" color={textColorMuted}
-              bg="rgba(8,12,20,0.85)" px="0.6rem" py="0.3rem"
+              bg={noteBg} px="0.6rem" py="0.3rem"
               borderRadius="6px" border="1px solid" borderColor={borderLight}>
               +{southernCount} employer{southernCount !== 1 ? 's' : ''} in Southern CA not shown
             </Box>
