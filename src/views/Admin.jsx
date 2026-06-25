@@ -139,10 +139,11 @@ function MediaLibrary({ pwd }) {
   const [msg,      setMsg]      = useState({ type:'', text:'' });
   const [filter,    setFilter]    = useState('all');
   const [queuePage,  setQueuePage]  = useState(20);
-  const [bulkMode,   setBulkMode]   = useState(false);
-  const [selectedIds, setSelectedIds] = useState(new Set());
-  const [bulkJob,    setBulkJob]    = useState('');
-  const [bulkMsg,    setBulkMsg]    = useState('');
+  const [bulkMode,    setBulkMode]    = useState(false);
+  const [selectedIds,  setSelectedIds]  = useState(new Set());
+  const [bulkJob,     setBulkJob]     = useState('');
+  const [bulkMsg,     setBulkMsg]     = useState('');
+  const [bulkDeleting, setBulkDeleting] = useState(false); // confirm state
   const fileRef = useRef();
 
   useEffect(()=>{ loadAssets(); loadJobs(); }, []);
@@ -295,7 +296,29 @@ function MediaLibrary({ pwd }) {
   }
 
   function selectAll() { setSelectedIds(new Set(displayed.map(a => a.id))); }
-  function clearSelection() { setSelectedIds(new Set()); }
+  function clearSelection() { setSelectedIds(new Set()); setBulkDeleting(false); }
+
+  async function bulkDelete() {
+    if (selectedIds.size === 0) return;
+    if (!bulkDeleting) { setBulkDeleting(true); return; } // first click: ask confirm
+    setBulkDeleting(false);
+    setBulkMsg('');
+    const res = await af('/api/admin/media/bulk-delete', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: [...selectedIds] }),
+    }, pwd);
+    if (res.ok) {
+      const { deleted } = await res.json();
+      setBulkMsg(`✓ ${deleted} asset${deleted!==1?'s':''} deleted`);
+      setSelectedIds(new Set());
+      setBulkMode(false);
+      loadAssets();
+    } else {
+      const e = await res.json();
+      setBulkMsg(`Error: ${e.error}`);
+    }
+  }
 
   return (
     <div>
@@ -401,6 +424,25 @@ function MediaLibrary({ pwd }) {
             onClick={bulkAssign} disabled={selectedIds.size===0}>
             Assign {selectedIds.size > 0 ? selectedIds.size : ''} selected
           </button>
+          {/* Delete — two-step confirm */}
+          {bulkDeleting ? (
+            <>
+              <span style={{fontSize:'0.8rem', color:'#f87171', fontWeight:600}}>
+                Delete {selectedIds.size} file{selectedIds.size!==1?'s':''}? This cannot be undone.
+              </span>
+              <button style={{...c.btn, ...c.btnDanger, ...c.btnSm}} onClick={bulkDelete}>
+                ✓ Confirm Delete
+              </button>
+              <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={()=>setBulkDeleting(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button style={{...c.btn, ...c.btnDanger, ...c.btnSm}}
+              onClick={bulkDelete} disabled={selectedIds.size===0}>
+              🗑 Delete {selectedIds.size > 0 ? selectedIds.size : ''} selected
+            </button>
+          )}
           <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={selectAll}>
             Select all ({displayed.length})
           </button>

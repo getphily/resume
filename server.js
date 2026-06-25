@@ -394,6 +394,39 @@ app.patch('/api/admin/media/bulk-assign', checkAdmin, async (req, res) => {
   }
 });
 
+// DELETE /api/admin/media/bulk-delete — delete many assets from storage + DB
+app.delete('/api/admin/media/bulk-delete', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0)
+    return res.status(400).json({ error: 'ids must be a non-empty array' });
+  try {
+    // 1. Fetch storage paths
+    const { data: assets, error: fetchErr } = await supabaseAdmin
+      .from('media_assets')
+      .select('id, storage_path')
+      .in('id', ids);
+    if (fetchErr) throw fetchErr;
+
+    // 2. Remove files from Storage (ignore individual failures)
+    const paths = assets.map(a => a.storage_path).filter(Boolean);
+    if (paths.length > 0) {
+      await supabaseAdmin.storage.from('media-assets').remove(paths);
+    }
+
+    // 3. Delete DB rows
+    const { error: deleteErr } = await supabaseAdmin
+      .from('media_assets')
+      .delete()
+      .in('id', ids);
+    if (deleteErr) throw deleteErr;
+
+    res.json({ deleted: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PUT /api/admin/password  — change admin password
 app.put('/api/admin/password', checkAdmin, async (req, res) => {
   if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
