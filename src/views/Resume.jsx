@@ -155,7 +155,6 @@ function Resume({ data }) {
   const purpleColor = useColorModeValue('purple.600', 'purple.300');
   const cardBg = useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)');
   const modalBg = useColorModeValue('white', 'oklch(14% 0.015 240)');
-  const progressTrackBg = useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)');
 
   // Helper functions for career color coding
   const getTimelineTheme = (itemId) => {
@@ -1379,6 +1378,7 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
 // ─── Career Scope Animated Stat Bar ────────────────────────────────────────
 
 function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, competencies }) {
+  const progressTrackBg = useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)');
   const ref       = useRef(null);
   const countRef  = useRef(null);
   const cycleRef  = useRef(null);
