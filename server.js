@@ -385,7 +385,8 @@ app.patch('/api/admin/media/bulk-assign', checkAdmin, async (req, res) => {
     const { error } = await supabaseAdmin
       .from('media_assets')
       .update({ timeline_job_id: jobId || null })
-      .in('id', ids);
+      .in('id', ids)
+      .select('id'); // avoids PostgREST "coerce to single JSON object" error on multi-row update
     if (error) throw error;
     res.json({ updated: ids.length });
   } catch (err) {
