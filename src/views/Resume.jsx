@@ -1141,7 +1141,7 @@ function Resume({ data }) {
           setLbJobAssets={setLbJobAssets}
         />
 
-        <Divider borderColor={borderLight} my="3rem" />
+
 
         {/* 3. Timeline Section */}
         <Box id="timeline" mb="5rem">
@@ -1413,7 +1413,7 @@ function Resume({ data }) {
           colorMode={colorMode}
         />
 
-        <Divider borderColor={borderLight} my="3rem" />
+
 
         {/* 4b. Education Section */}
         <Box id="education" mb="4rem">
@@ -1441,7 +1441,7 @@ function Resume({ data }) {
           </SimpleGrid>
         </Box>
 
-        <Divider borderColor={borderLight} my="4rem" />
+
 
         {/* 6b. Labor Footprint — interactive employer map */}
         <LaborMap
@@ -1451,7 +1451,7 @@ function Resume({ data }) {
           textColorMuted={textColorMuted}
         />
 
-        <Divider borderColor={borderLight} my="4rem" />
+
 
         {/* 7. Footer & Tech Stack badges */}
         <VStack spacing="2rem" as="footer" textAlign="center" pt="2rem">

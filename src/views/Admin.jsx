@@ -118,6 +118,7 @@ export default function Admin() {
         {[
           ['media','📁 Media Library'],
           ['employers','🏢 Employers'],
+          ['education','🎓 Education'],
           ['slides','🎴 Slides'],
           ['settings','⚙️ Settings']
         ].map(([id,label])=>(
@@ -127,6 +128,7 @@ export default function Admin() {
       <div style={c.page}>
         {tab==='media'      && <MediaLibrary pwd={authed} />}
         {tab==='employers'  && <EmployersManager pwd={authed} />}
+        {tab==='education'  && <EducationManager pwd={authed} />}
         {tab==='slides'     && <SlidesManager pwd={authed} />}
         {tab==='settings'   && <SettingsPanel pwd={authed} />}
       </div>
@@ -1121,6 +1123,223 @@ function EmployersManager({ pwd }) {
                                 </>
                               ) : (
                                 <button onClick={() => setDeleteConfirmId(emp.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, background: 'transparent', color: '#f87171' }}>Delete</button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                        {isEditing && editMsg.text && (
+                          <div style={{ ...(editMsg.type === 'ok' ? c.ok : c.err), fontSize: '0.78rem', marginTop: '0.4rem', textAlign: 'right' }}>{editMsg.text}</div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+// ─── Education Manager ────────────────────────────────────────────────────────
+function EducationManager({ pwd }) {
+  const [education, setEducation] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Add Education Form State
+  const [newInstitution, setNewInstitution] = useState('');
+  const [newDetails, setNewDetails] = useState('');
+  const [addMsg, setAddMsg] = useState({ type: '', text: '' });
+
+  // Edit State
+  const [editId, setEditId] = useState(null);
+  const [editInstitution, setEditInstitution] = useState('');
+  const [editDetails, setEditDetails] = useState('');
+  const [editMsg, setEditMsg] = useState({ type: '', text: '' });
+
+  // Delete Confirmation State
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const loadEducation = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/education');
+      if (res.ok) {
+        setEducation(await res.json());
+      } else {
+        setError('Failed to load education records');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEducation();
+  }, [loadEducation]);
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    setAddMsg({ type: '', text: '' });
+    if (!newInstitution || !newDetails) {
+      setAddMsg({ type: 'err', text: 'All fields are required' });
+      return;
+    }
+    try {
+      const res = await af('/api/admin/education', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ institution: newInstitution, details: newDetails })
+      }, pwd);
+      if (res.ok) {
+        setNewInstitution('');
+        setNewDetails('');
+        setAddMsg({ type: 'ok', text: 'Education record added successfully!' });
+        loadEducation();
+      } else {
+        const d = await res.json();
+        setAddMsg({ type: 'err', text: d.error || 'Failed to add education record' });
+      }
+    } catch (err) {
+      setAddMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function handleSaveEdit(id) {
+    setEditMsg({ type: '', text: '' });
+    if (!editInstitution || !editDetails) {
+      setEditMsg({ type: 'err', text: 'All fields are required' });
+      return;
+    }
+    try {
+      const res = await af(`/api/admin/education/${id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ institution: editInstitution, details: editDetails })
+      }, pwd);
+      if (res.ok) {
+        setEditId(null);
+        loadEducation();
+      } else {
+        const d = await res.json();
+        setEditMsg({ type: 'err', text: d.error || 'Failed to update' });
+      }
+    } catch (err) {
+      setEditMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      const res = await af(`/api/admin/education/${id}`, {
+        method: 'DELETE'
+      }, pwd);
+      if (res.ok) {
+        setDeleteConfirmId(null);
+        loadEducation();
+      } else {
+        const d = await res.json();
+        alert(d.error || 'Failed to delete');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function startEdit(edu) {
+    setEditId(edu.id);
+    setEditInstitution(edu.institution);
+    setEditDetails(edu.details);
+    setEditMsg({ type: '', text: '' });
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      
+      {/* Add Education Card */}
+      <div style={{ ...c.card, padding: '2rem' }}>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>🎓 Add New Education Card</div>
+        <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={c.label}>Institution / Program Name</label>
+            <input style={c.input} type="text" placeholder="e.g. University of California, Berkeley" value={newInstitution} onChange={e => setNewInstitution(e.target.value)} />
+          </div>
+          <div>
+            <label style={c.label}>Details (Degree, dates, or coursework)</label>
+            <textarea style={c.textarea} placeholder="e.g. B.A. in Labor Studies, 2018" value={newDetails} onChange={e => setNewDetails(e.target.value)} />
+          </div>
+          <button type="submit" style={{ ...c.btn, ...c.btnPrimary, alignSelf: 'flex-start' }}>+ Add Education</button>
+        </form>
+        {addMsg.text && <div style={{ ...(addMsg.type === 'ok' ? c.ok : c.err), marginTop: '0.75rem' }}>{addMsg.text}</div>}
+      </div>
+
+      {/* Education List Table */}
+      <div style={{ ...c.card, padding: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Education &amp; Credentials</div>
+          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{education.length} total records</span>
+        </div>
+
+        {loading ? (
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading education records...</div>
+        ) : error ? (
+          <div style={c.err}>{error}</div>
+        ) : education.length === 0 ? (
+          <div style={{ color: '#64748b', fontSize: '0.9rem' }}>No education records found. Add one above.</div>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', color: '#64748b', textAlign: 'left' }}>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, width: '80px' }}>ID</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, width: '250px' }}>Institution</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700 }}>Details</th>
+                  <th style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, textAlign: 'right', width: '200px' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {education.map(edu => {
+                  const isEditing = editId === edu.id;
+                  return (
+                    <tr key={edu.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)', background: isEditing ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
+                      <td style={{ padding: '1rem', color: '#475569' }}>{edu.id}</td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top' }}>
+                        {isEditing ? (
+                          <input style={c.input} type="text" value={editInstitution} onChange={e => setEditInstitution(e.target.value)} />
+                        ) : (
+                          <span style={{ fontWeight: 600 }}>{edu.institution}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', verticalAlign: 'top' }}>
+                        {isEditing ? (
+                          <textarea style={c.textarea} value={editDetails} onChange={e => setEditDetails(e.target.value)} />
+                        ) : (
+                          <span style={{ color: '#94a3b8', whiteSpace: 'pre-wrap' }}>{edu.details}</span>
+                        )}
+                      </td>
+                      <td style={{ padding: '1rem', textAlign: 'right', verticalAlign: 'top' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', alignItems: 'center' }}>
+                          {isEditing ? (
+                            <>
+                              <button onClick={() => handleSaveEdit(edu.id)} style={{ ...c.btn, ...c.btnPrimary, ...c.btnSm }}>Save</button>
+                              <button onClick={() => setEditId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
+                            </>
+                          ) : (
+                            <>
+                              <button onClick={() => startEdit(edu)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Edit</button>
+                              {deleteConfirmId === edu.id ? (
+                                <>
+                                  <button onClick={() => handleDelete(edu.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm }}>Confirm</button>
+                                  <button onClick={() => setDeleteConfirmId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
+                                </>
+                              ) : (
+                                <button onClick={() => setDeleteConfirmId(edu.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, background: 'transparent', color: '#f87171' }}>Delete</button>
                               )}
                             </>
                           )}

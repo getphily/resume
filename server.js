@@ -704,6 +704,63 @@ app.delete('/api/admin/employers/:id', checkAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/education  — create education record
+app.post('/api/admin/education', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { institution, details } = req.body;
+  if (!institution || !details) {
+    return res.status(400).json({ error: 'Missing institution or details' });
+  }
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('education')
+      .insert({ institution, details })
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/education/:id  — update education record
+app.patch('/api/admin/education/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { institution, details } = req.body;
+  try {
+    const updates = {};
+    if (institution !== undefined) updates.institution = institution;
+    if (details !== undefined) updates.details = details;
+
+    const { data, error } = await supabaseAdmin
+      .from('education')
+      .update(updates)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/education/:id  — delete education record
+app.delete('/api/admin/education/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  try {
+    const { error } = await supabaseAdmin
+      .from('education')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Fallback endpoint for Spa routing
 app.get('*', (req, res, next) => {
   if (req.path.includes('.')) {
