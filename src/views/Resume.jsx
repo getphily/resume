@@ -76,6 +76,21 @@ const techIcons = {
       <path d="M7.678 1.583a3.492 3.492 0 0 0-3.03 1.76L.265 10.997a2.035 2.035 0 0 0-.064 1.886l4.486 7.784a3.493 3.493 0 0 0 3.03 1.751l8.602-.01a3.495 3.495 0 0 0 3.026-1.759l4.39-7.655a2.025 2.025 0 0 0-.002-2.008L19.339 3.34a3.494 3.494 0 0 0-3.028-1.756Zm4.365 1.244V9.11c0 .32.226.595.54.656l6.089 1.187c-2.005 3.466-4.006 6.934-6.008 10.4-.17.296-.62.176-.62-.166v-6.286a.667.667 0 0 0-.538-.656l-6.072-1.193 5.988-10.393c.168-.29.621-.178.621.168z"/>
     </svg>
   ),
+  antigravity: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2a10 10 0 0 0-7.3 16.8L12 11l7.3 7.8A10 10 0 0 0 12 2zm0 3.5l4.5 4.8H7.5L12 5.5zM3 19h18v2H3v-2z" />
+    </svg>
+  ),
+  gemini: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2a1 1 0 0 0-1 1c0 4.4-3.6 8-8 8a1 1 0 0 0 0 2c4.4 0 8 3.6 8 8a1 1 0 0 0 2 0c0-4.4 3.6-8 8-8a1 1 0 0 0 0-2c-4.4 0-8-3.6-8-8a1 1 0 0 0-1-1z" />
+    </svg>
+  ),
+  pilot: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm0 2c-4.4 0-8 2-8 5v1h16v-1c0-3-3.6-5-8-5zm-8-3l-2-2 2-2v4zm16-4l2 2-2 2v-4z" />
+    </svg>
+  ),
 };
 
 // ─── Horizontal Timeline Component for Carousel ───
@@ -1464,9 +1479,86 @@ function Resume({ data }) {
               letterSpacing="0.12em"
               color={textColorMuted}
             >
-              Built with the stack
+              BUILT WITH
             </Text>
             <HStack spacing="0.75rem" wrap="wrap" justify="center">
+              <Link
+                href="#"
+                onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                display="flex"
+                alignItems="center"
+                gap="0.5rem"
+                px="0.88rem"
+                py="0.5rem"
+                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                border="1px solid"
+                borderColor={borderLight}
+                borderRadius="50px"
+                fontSize="0.82rem"
+                fontWeight="500"
+                transition="all 0.2s"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  color: 'oklch(75% 0.15 70)',
+                  borderColor: 'oklch(75% 0.15 70)',
+                  boxShadow: '0 4px 12px oklch(75% 0.15 70 / 0.2)'
+                }}
+              >
+                {techIcons.pilot}
+                <Text>Phil Ybarrolaza</Text>
+              </Link>
+              <Link
+                href="https://antigravity.google"
+                target="_blank"
+                rel="noopener"
+                display="flex"
+                alignItems="center"
+                gap="0.5rem"
+                px="0.88rem"
+                py="0.5rem"
+                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                border="1px solid"
+                borderColor={borderLight}
+                borderRadius="50px"
+                fontSize="0.82rem"
+                fontWeight="500"
+                transition="all 0.2s"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  color: 'oklch(70% 0.20 200)',
+                  borderColor: 'oklch(70% 0.20 200)',
+                  boxShadow: '0 4px 12px oklch(70% 0.20 200 / 0.2)'
+                }}
+              >
+                {techIcons.antigravity}
+                <Text>Antigravity AI</Text>
+              </Link>
+              <Link
+                href="https://deepmind.google"
+                target="_blank"
+                rel="noopener"
+                display="flex"
+                alignItems="center"
+                gap="0.5rem"
+                px="0.88rem"
+                py="0.5rem"
+                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                border="1px solid"
+                borderColor={borderLight}
+                borderRadius="50px"
+                fontSize="0.82rem"
+                fontWeight="500"
+                transition="all 0.2s"
+                _hover={{
+                  transform: 'translateY(-2px)',
+                  color: 'oklch(70% 0.18 290)',
+                  borderColor: 'oklch(70% 0.18 290)',
+                  boxShadow: '0 4px 12px oklch(70% 0.18 290 / 0.2)'
+                }}
+              >
+                {techIcons.gemini}
+                <Text>Gemini Foundation</Text>
+              </Link>
               <Link
                 href="https://nodejs.org/"
                 target="_blank"
