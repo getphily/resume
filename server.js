@@ -321,6 +321,83 @@ app.post('/api/admin/media/upload', checkAdmin, upload.single('file'), async (re
 });
 
 // PATCH /api/admin/media/:id  — update metadata
+// ── Bulk routes must come BEFORE /:id wildcards ───────────────────────────────
+
+// PATCH /api/admin/media/bulk-assign — assign job + optionally add keywords to many assets
+app.patch('/api/admin/media/bulk-assign', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { ids, jobId, keywords, keywordMode } = req.body;
+  // keywords: string[] of tags to add/set; keywordMode: 'append' (default) | 'replace'
+  if (!Array.isArray(ids) || ids.length === 0)
+    return res.status(400).json({ error: 'ids must be a non-empty array' });
+  try {
+    const updates = {};
+    if (jobId !== undefined) updates.timeline_job_id = jobId || null;
+
+    if (Array.isArray(keywords) && keywords.length > 0) {
+      if (keywordMode === 'replace') {
+        // Set keywords directly on all selected
+        updates.keywords = keywords;
+      } else {
+        // Append mode: fetch existing keywords and merge per-record
+        const { data: existing } = await supabaseAdmin
+          .from('media_assets').select('id, keywords').in('id', ids);
+        for (const row of (existing || [])) {
+          const merged = [...new Set([...(row.keywords || []), ...keywords])];
+          await supabaseAdmin.from('media_assets')
+            .update({ keywords: merged }).eq('id', row.id).select('id');
+        }
+        // jobId update still applies to all below
+        if (Object.keys(updates).length > 0) {
+          const { error } = await supabaseAdmin
+            .from('media_assets').update(updates).in('id', ids).select('id');
+          if (error) throw error;
+        }
+        return res.json({ updated: ids.length });
+      }
+    }
+
+    const { error } = await supabaseAdmin
+      .from('media_assets')
+      .update(updates)
+      .in('id', ids)
+      .select('id');
+    if (error) throw error;
+    res.json({ updated: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/admin/media/bulk-delete — delete many assets from storage + DB
+app.delete('/api/admin/media/bulk-delete', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || ids.length === 0)
+    return res.status(400).json({ error: 'ids must be a non-empty array' });
+  try {
+    const { data: assets, error: fetchErr } = await supabaseAdmin
+      .from('media_assets').select('id, storage_path').in('id', ids);
+    if (fetchErr) throw fetchErr;
+
+    const paths = assets.map(a => a.storage_path).filter(Boolean);
+    if (paths.length > 0) {
+      await supabaseAdmin.storage.from('media-assets').remove(paths);
+    }
+
+    const { error: deleteErr } = await supabaseAdmin
+      .from('media_assets').delete().in('id', ids);
+    if (deleteErr) throw deleteErr;
+
+    res.json({ deleted: ids.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Single-asset routes (/:id wildcards go AFTER specific paths) ──────────────
+
+// PATCH /api/admin/media/:id  — update metadata
 app.patch('/api/admin/media/:id', checkAdmin, async (req, res) => {
   if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
   try {
@@ -370,58 +447,6 @@ app.delete('/api/admin/media/:id', checkAdmin, async (req, res) => {
       .eq('id', req.params.id);
     if (deleteErr) throw deleteErr;
     res.json({ ok: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PATCH /api/admin/media/bulk-assign — assign many assets to one job at once
-app.patch('/api/admin/media/bulk-assign', checkAdmin, async (req, res) => {
-  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
-  const { ids, jobId } = req.body;
-  if (!Array.isArray(ids) || ids.length === 0)
-    return res.status(400).json({ error: 'ids must be a non-empty array' });
-  try {
-    const { error } = await supabaseAdmin
-      .from('media_assets')
-      .update({ timeline_job_id: jobId || null })
-      .in('id', ids)
-      .select('id'); // avoids PostgREST "coerce to single JSON object" error on multi-row update
-    if (error) throw error;
-    res.json({ updated: ids.length });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE /api/admin/media/bulk-delete — delete many assets from storage + DB
-app.delete('/api/admin/media/bulk-delete', checkAdmin, async (req, res) => {
-  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
-  const { ids } = req.body;
-  if (!Array.isArray(ids) || ids.length === 0)
-    return res.status(400).json({ error: 'ids must be a non-empty array' });
-  try {
-    // 1. Fetch storage paths
-    const { data: assets, error: fetchErr } = await supabaseAdmin
-      .from('media_assets')
-      .select('id, storage_path')
-      .in('id', ids);
-    if (fetchErr) throw fetchErr;
-
-    // 2. Remove files from Storage (ignore individual failures)
-    const paths = assets.map(a => a.storage_path).filter(Boolean);
-    if (paths.length > 0) {
-      await supabaseAdmin.storage.from('media-assets').remove(paths);
-    }
-
-    // 3. Delete DB rows
-    const { error: deleteErr } = await supabaseAdmin
-      .from('media_assets')
-      .delete()
-      .in('id', ids);
-    if (deleteErr) throw deleteErr;
-
-    res.json({ deleted: ids.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

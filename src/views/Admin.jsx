@@ -143,7 +143,9 @@ function MediaLibrary({ pwd }) {
   const [selectedIds,  setSelectedIds]  = useState(new Set());
   const [bulkJob,     setBulkJob]     = useState('');
   const [bulkMsg,     setBulkMsg]     = useState('');
-  const [bulkDeleting, setBulkDeleting] = useState(false); // confirm state
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [bulkKwInput,  setBulkKwInput]  = useState('');      // raw comma-separated input
+  const [bulkKwMode,   setBulkKwMode]   = useState('append'); // 'append' | 'replace'
   const fileRef = useRef();
 
   useEffect(()=>{ loadAssets(); loadJobs(); }, []);
@@ -270,16 +272,23 @@ function MediaLibrary({ pwd }) {
   async function bulkAssign() {
     if (selectedIds.size === 0) return;
     setBulkMsg('');
+    const keywords = bulkKwInput.split(',').map(k=>k.trim()).filter(Boolean);
     const res = await af('/api/admin/media/bulk-assign', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [...selectedIds], jobId: bulkJob || null }),
+      body: JSON.stringify({
+        ids: [...selectedIds],
+        jobId: bulkJob || undefined,
+        keywords: keywords.length ? keywords : undefined,
+        keywordMode: bulkKwMode,
+      }),
     }, pwd);
     if (res.ok) {
       const { updated } = await res.json();
-      setBulkMsg(`✓ ${updated} asset${updated!==1?'s':''} assigned`);
+      setBulkMsg(`✓ ${updated} asset${updated!==1?'s':''} updated`);
       setSelectedIds(new Set());
       setBulkMode(false);
+      setBulkKwInput('');
       loadAssets();
     } else {
       const e = await res.json();
@@ -296,7 +305,7 @@ function MediaLibrary({ pwd }) {
   }
 
   function selectAll() { setSelectedIds(new Set(displayed.map(a => a.id))); }
-  function clearSelection() { setSelectedIds(new Set()); setBulkDeleting(false); }
+  function clearSelection() { setSelectedIds(new Set()); setBulkDeleting(false); setBulkKwInput(''); }
 
   async function bulkDelete() {
     if (selectedIds.size === 0) return;
@@ -409,46 +418,75 @@ function MediaLibrary({ pwd }) {
       {bulkMode && (
         <div style={{
           background:'rgba(96,165,250,0.08)', border:'1px solid rgba(96,165,250,0.25)',
-          borderRadius:'12px', padding:'0.85rem 1.2rem', marginBottom:'1.25rem',
-          display:'flex', gap:'0.75rem', alignItems:'center', flexWrap:'wrap',
+          borderRadius:'12px', padding:'0.9rem 1.2rem', marginBottom:'1.25rem',
+          display:'flex', flexDirection:'column', gap:'0.75rem',
         }}>
-          <span style={{fontSize:'0.82rem', fontWeight:700, color:'#60a5fa', minWidth:'80px'}}>
-            {selectedIds.size} selected
-          </span>
-          <select style={{...c.select, flex:1, minWidth:'180px', maxWidth:'280px', fontSize:'0.8rem', padding:'0.4rem 0.75rem'}}
-            value={bulkJob} onChange={e=>setBulkJob(e.target.value)}>
-            <option value=''>— Clear assignment —</option>
-            {jobs.map(j=><option key={j.id} value={j.id}>{j.role} @ {j.company}</option>)}
-          </select>
-          <button style={{...c.btn, ...c.btnPrimary, ...c.btnSm}}
-            onClick={bulkAssign} disabled={selectedIds.size===0}>
-            Assign {selectedIds.size > 0 ? selectedIds.size : ''} selected
-          </button>
-          {/* Delete — two-step confirm */}
-          {bulkDeleting ? (
-            <>
-              <span style={{fontSize:'0.8rem', color:'#f87171', fontWeight:600}}>
-                Delete {selectedIds.size} file{selectedIds.size!==1?'s':''}? This cannot be undone.
-              </span>
-              <button style={{...c.btn, ...c.btnDanger, ...c.btnSm}} onClick={bulkDelete}>
-                ✓ Confirm Delete
-              </button>
-              <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={()=>setBulkDeleting(false)}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button style={{...c.btn, ...c.btnDanger, ...c.btnSm}}
-              onClick={bulkDelete} disabled={selectedIds.size===0}>
-              🗑 Delete {selectedIds.size > 0 ? selectedIds.size : ''} selected
+          {/* Row 1: count + job assign + delete */}
+          <div style={{display:'flex', gap:'0.75rem', alignItems:'center', flexWrap:'wrap'}}>
+            <span style={{fontSize:'0.82rem', fontWeight:700, color:'#60a5fa', minWidth:'80px'}}>
+              {selectedIds.size} selected
+            </span>
+            <select style={{...c.select, flex:1, minWidth:'180px', maxWidth:'260px', fontSize:'0.8rem', padding:'0.4rem 0.75rem'}}
+              value={bulkJob} onChange={e=>setBulkJob(e.target.value)}>
+              <option value=''>— Job (no change) —</option>
+              <option value='__clear__'>Clear assignment</option>
+              {jobs.map(j=><option key={j.id} value={j.id}>{j.role} @ {j.company}</option>)}
+            </select>
+            <button style={{...c.btn, ...c.btnPrimary, ...c.btnSm}}
+              onClick={bulkAssign} disabled={selectedIds.size===0}>
+              Apply to {selectedIds.size > 0 ? selectedIds.size : ''} selected
             </button>
-          )}
-          <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={selectAll}>
-            Select all ({displayed.length})
-          </button>
-          <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={clearSelection}>
-            Clear
-          </button>
+            {bulkDeleting ? (
+              <>
+                <span style={{fontSize:'0.8rem', color:'#f87171', fontWeight:600}}>
+                  Delete {selectedIds.size} file{selectedIds.size!==1?'s':''}? Cannot be undone.
+                </span>
+                <button style={{...c.btn, ...c.btnDanger, ...c.btnSm}} onClick={bulkDelete}>✓ Confirm</button>
+                <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={()=>setBulkDeleting(false)}>Cancel</button>
+              </>
+            ) : (
+              <button style={{...c.btn, ...c.btnDanger, ...c.btnSm}}
+                onClick={bulkDelete} disabled={selectedIds.size===0}>
+                🗑 Delete {selectedIds.size > 0 ? selectedIds.size : ''}
+              </button>
+            )}
+            <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={selectAll}>Select all ({displayed.length})</button>
+            <button style={{...c.btn, ...c.btnGhost, ...c.btnSm}} onClick={clearSelection}>Clear</button>
+          </div>
+
+          {/* Row 2: keywords */}
+          <div style={{display:'flex', gap:'0.6rem', alignItems:'center', flexWrap:'wrap',
+            paddingTop:'0.65rem', borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+            <span style={{fontSize:'0.75rem', color:'#64748b', fontWeight:600, whiteSpace:'nowrap'}}>
+              Keywords:
+            </span>
+            <input
+              style={{...c.input, flex:1, minWidth:'200px', fontSize:'0.8rem', padding:'0.4rem 0.75rem'}}
+              placeholder="tag1, tag2, tag3 — comma separated"
+              value={bulkKwInput}
+              onChange={e=>setBulkKwInput(e.target.value)}
+              onKeyDown={e=>e.key==='Enter' && bulkAssign()}
+            />
+            <div style={{display:'flex', gap:'0.35rem'}}>
+              {['append','replace'].map(mode=>(
+                <button key={mode}
+                  style={{
+                    ...c.btn, ...c.btnSm,
+                    background: bulkKwMode===mode ? 'rgba(96,165,250,0.2)' : 'rgba(255,255,255,0.04)',
+                    color: bulkKwMode===mode ? '#60a5fa' : '#64748b',
+                    border: `1px solid ${bulkKwMode===mode?'rgba(96,165,250,0.4)':'rgba(255,255,255,0.08)'}`,
+                    textTransform:'capitalize',
+                  }}
+                  onClick={()=>setBulkKwMode(mode)}>
+                  {mode}
+                </button>
+              ))}
+            </div>
+            <span style={{fontSize:'0.68rem', color:'#334155'}}>
+              {bulkKwMode==='append' ? 'Add to existing keywords' : 'Replace all keywords'}
+            </span>
+          </div>
+
           {bulkMsg && <span style={{fontSize:'0.8rem', color: bulkMsg.startsWith('✓') ? '#4ade80' : '#f87171'}}>{bulkMsg}</span>}
         </div>
       )}
