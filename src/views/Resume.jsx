@@ -1165,12 +1165,19 @@ function Resume({ data }) {
                     className="animated-glow-card"
                     flex="1"
                     minW="0"
-                    border="1px solid"
-                    borderColor={borderLight}
-                    borderRadius="2xl"
-                    bg={cardBg}
                     position="relative"
                   >
+                    <Box
+                      w="100%"
+                      h="100%"
+                      border="1px solid"
+                      borderColor={borderLight}
+                      borderRadius="2xl"
+                      bg={cardBg}
+                      overflow="hidden"
+                      position="relative"
+                      zIndex="1"
+                    >
                     {/* Clickable header — stacks vertically on mobile, row on md+ */}
                     <Flex
                       direction={['column', 'column', 'row']}
@@ -1353,6 +1360,7 @@ function Resume({ data }) {
                     </Collapse>
                   </Box>
                 </Box>
+              </Box>
               );
             })}
           </Box>
