@@ -2539,6 +2539,9 @@ function EmployerGeography({ employers, borderLight, blueColor, cardBg, textColo
       <HStack justify="space-between" align="center" mb={open ? '1.5rem' : '0'} cursor="pointer" onClick={() => setOpen(o => !o)}>
         <VStack align="start" spacing="0.1rem">
           <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em">
+            Employers
+          </Heading>
+          <Heading as="h3" fontSize="1rem" fontWeight="700" color={brandPrimary} mt="0.25rem" mb="-0.25rem">
             Labor Footprint
           </Heading>
           <Text fontSize="0.85rem" color={textColorMuted}>
