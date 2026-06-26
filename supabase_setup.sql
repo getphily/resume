@@ -89,6 +89,23 @@ CREATE TABLE IF NOT EXISTS education (
 ALTER TABLE education ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access for education" ON education FOR SELECT USING (true);
 
+-- 7. Create Testimonials Table
+CREATE TABLE IF NOT EXISTS testimonials (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    title TEXT NOT NULL,
+    company TEXT,
+    content TEXT NOT NULL,
+    linkedin_url TEXT,
+    sort_order INTEGER DEFAULT 0,
+    is_enabled BOOLEAN DEFAULT true
+);
+
+-- Enable RLS & Select policy for Testimonials
+ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "testimonials_public_read" ON testimonials FOR SELECT USING (true);
+CREATE POLICY "testimonials_service_only" ON testimonials FOR ALL USING (auth.role() = 'service_role');
+
 
 -- ==========================================
 -- SEED DATA STATEMENTS
@@ -699,3 +716,8 @@ INSERT INTO slides (title, content_type, content_data, is_enabled, sort_order) V
   {"year": 2026, "title": "Present Day", "details": "Integrating full-stack web development with senior labor organizing."}
 ]'::jsonb, true, 2);
 
+-- Seed Testimonials
+TRUNCATE testimonials RESTART IDENTITY CASCADE;
+INSERT INTO testimonials (name, title, company, content, linkedin_url, sort_order) VALUES
+('Jane Doe', 'Senior Organizer', 'SEIU 1021', 'Phil is an incredible leader who knows how to build consensus and drive real results. Working with him was a masterclass in strategic communications.', 'https://linkedin.com', 1),
+('John Smith', 'Communications Director', 'Teamsters', 'I have never met someone so capable of blending traditional labor organizing with modern digital campaigns. Highly recommended.', 'https://linkedin.com', 2);

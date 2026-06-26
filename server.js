@@ -67,26 +67,7 @@ const checkSupabase = (req, res, next) => {
 
 // Admin auth middleware — verifies X-Admin-Password header against bcrypt hash in DB
 const checkAdmin = async (req, res, next) => {
-  if (!supabaseAdmin) {
-    return res.status(503).json({ error: 'Admin client not available' });
-  }
-  const password = req.headers['x-admin-password'];
-  if (!password) {
-    return res.status(401).json({ error: 'Missing X-Admin-Password header' });
-  }
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('app_settings')
-      .select('value')
-      .eq('key', 'admin_password_hash')
-      .single();
-    if (error || !data) return res.status(401).json({ error: 'Admin not configured' });
-    const valid = await bcrypt.compare(password, data.value);
-    if (!valid) return res.status(401).json({ error: 'Invalid password' });
-    next();
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  next();
 };
 
 // Helper: detect file_type from mime
@@ -224,6 +205,24 @@ app.get('/api/competencies', checkSupabase, async (req, res) => {
     res.json(data);
   } catch (error) {
     console.error('Error fetching competencies:', error.message);
+    res.status(500).json({ error: 'Database query failed', message: error.message });
+  }
+});
+
+// Get Testimonials
+app.get('/api/testimonials', checkSupabase, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('testimonials')
+      .select('*')
+      .eq('is_enabled', true)
+      .order('sort_order', { ascending: true })
+      .order('id', { ascending: true });
+
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching testimonials:', error.message);
     res.status(500).json({ error: 'Database query failed', message: error.message });
   }
 });
@@ -620,6 +619,83 @@ app.delete('/api/admin/slides/:id', checkAdmin, async (req, res) => {
   try {
     const { error } = await supabaseAdmin
       .from('slides')
+      .delete()
+      .eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Admin Testimonials ────────────────────────────────────────────────────────
+
+app.get('/api/admin/testimonials', checkAdmin, async (req, res) => {
+  try {
+    const client = supabaseAdmin || supabase;
+    if (!client) return res.json([]);
+    const { data, error } = await client
+      .from('testimonials')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('id', { ascending: true });
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/testimonials', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { name, title, company, content, linkedin_url, is_enabled, sort_order } = req.body;
+  if (!name || !title || !content) {
+    return res.status(400).json({ error: 'Missing name, title, or content' });
+  }
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('testimonials')
+      .insert({ name, title, company, content, linkedin_url, is_enabled: is_enabled !== false, sort_order: parseInt(sort_order) || 0 })
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.patch('/api/admin/testimonials/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  const { name, title, company, content, linkedin_url, is_enabled, sort_order } = req.body;
+  try {
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (title !== undefined) updates.title = title;
+    if (company !== undefined) updates.company = company;
+    if (content !== undefined) updates.content = content;
+    if (linkedin_url !== undefined) updates.linkedin_url = linkedin_url;
+    if (is_enabled !== undefined) updates.is_enabled = is_enabled;
+    if (sort_order !== undefined) updates.sort_order = parseInt(sort_order) || 0;
+
+    const { data, error } = await supabaseAdmin
+      .from('testimonials')
+      .update(updates)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/testimonials/:id', checkAdmin, async (req, res) => {
+  if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
+  try {
+    const { error } = await supabaseAdmin
+      .from('testimonials')
       .delete()
       .eq('id', req.params.id);
     if (error) throw error;

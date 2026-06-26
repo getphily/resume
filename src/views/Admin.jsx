@@ -17,11 +17,12 @@ const c = {
   btnSm: { padding:'0.3rem 0.7rem', fontSize:'0.75rem' },
   header: { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0.9rem 2rem', borderBottom:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.02)', position:'sticky', top:0, zIndex:50 },
   logo: { fontSize:'1.1rem', fontWeight:800 },
-  tabBar: { display:'flex', gap:'0.4rem', padding:'1.25rem 2rem 0', borderBottom:'1px solid rgba(255,255,255,0.07)' },
-  tab: { padding:'0.55rem 1.1rem', borderRadius:'8px 8px 0 0', border:'none', cursor:'pointer', fontWeight:600, fontSize:'0.85rem', transition:'all 0.2s' },
-  tabOn: { background:'rgba(66,153,225,0.15)', color:'#60a5fa', borderBottom:'2px solid #60a5fa' },
-  tabOff: { background:'transparent', color:'#475569' },
-  page: { padding:'2rem', maxWidth:'1200px', margin:'0 auto' },
+  layoutWrapper: { display: 'flex', flexDirection: 'row', minHeight: 'calc(100vh - 65px)' },
+  tabBar: { display:'flex', flexDirection:'column', gap:'0.6rem', padding:'2rem 1rem', width: '250px', flexShrink: 0, borderRight:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.01)' },
+  tab: { padding:'0.8rem 1.1rem', borderRadius:'8px', border:'none', cursor:'pointer', fontWeight:600, fontSize:'0.9rem', transition:'all 0.2s', textAlign:'left' },
+  tabOn: { background:'rgba(66,153,225,0.15)', color:'#60a5fa' },
+  tabOff: { background:'transparent', color:'#64748b' },
+  page: { padding:'2rem', flex: 1, maxWidth:'1200px', overflowY: 'auto' },
   card: { background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'14px', overflow:'hidden' },
   label: { display:'block', fontSize:'0.7rem', fontWeight:700, color:'#64748b', textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:'0.35rem' },
   pill: { display:'inline-flex', alignItems:'center', gap:'0.3rem', padding:'0.2rem 0.6rem', borderRadius:'999px', fontSize:'0.73rem', background:'rgba(96,165,250,0.15)', color:'#93c5fd', border:'1px solid rgba(96,165,250,0.25)', margin:'0.15rem' },
@@ -114,23 +115,27 @@ export default function Admin() {
             onClick={()=>{ sessionStorage.removeItem('adminPwd'); setAuthed(null); }}>Sign Out</button>
         </div>
       </header>
-      <div style={c.tabBar}>
-        {[
-          ['media','📁 Media Library'],
-          ['employers','🏢 Employers'],
-          ['education','🎓 Education'],
-          ['slides','🎴 Slides'],
-          ['settings','⚙️ Settings']
-        ].map(([id,label])=>(
-          <button key={id} style={{...c.tab, ...(tab===id?c.tabOn:c.tabOff)}} onClick={()=>setTab(id)}>{label}</button>
-        ))}
-      </div>
-      <div style={c.page}>
-        {tab==='media'      && <MediaLibrary pwd={authed} />}
-        {tab==='employers'  && <EmployersManager pwd={authed} />}
-        {tab==='education'  && <EducationManager pwd={authed} />}
-        {tab==='slides'     && <SlidesManager pwd={authed} />}
-        {tab==='settings'   && <SettingsPanel pwd={authed} />}
+      <div style={c.layoutWrapper}>
+        <div style={c.tabBar}>
+          {[
+            ['media','📁 Media Library'],
+            ['employers','🏢 Employers'],
+            ['education','🎓 Education'],
+            ['slides','🎴 Slides'],
+            ['testimonials','💬 Testimonials'],
+            ['settings','⚙️ Settings']
+          ].map(([id,label])=>(
+            <button key={id} style={{...c.tab, ...(tab===id?c.tabOn:c.tabOff)}} onClick={()=>setTab(id)}>{label}</button>
+          ))}
+        </div>
+        <div style={c.page}>
+          {tab==='media'      && <MediaLibrary pwd={authed} />}
+          {tab==='employers'  && <EmployersManager pwd={authed} />}
+          {tab==='education'  && <EducationManager pwd={authed} />}
+          {tab==='slides'     && <SlidesManager pwd={authed} />}
+          {tab==='testimonials'&& <TestimonialsManager pwd={authed} />}
+          {tab==='settings'   && <SettingsPanel pwd={authed} />}
+        </div>
       </div>
     </div>
   );
@@ -1361,12 +1366,87 @@ function EducationManager({ pwd }) {
   );
 }
 
+// ─── Media Picker Modal ───────────────────────────────────────────────────────
+function MediaPickerModal({ pwd, isOpen, onClose, onSelect }) {
+  const [assets, setAssets] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef();
+
+  useEffect(() => {
+    if (isOpen) {
+      af('/api/media', {}, pwd).then(r => r.json()).then(setAssets);
+    }
+  }, [isOpen, pwd]);
+
+  if (!isOpen) return null;
+
+  async function handleUpload(e) {
+    if (!e.target.files.length) return;
+    setUploading(true);
+    const fd = new FormData();
+    fd.append('file', e.target.files[0]);
+    try {
+      const res = await af('/api/admin/media/upload', { method: 'POST', body: fd }, pwd);
+      if (res.ok) {
+        const newAsset = await res.json();
+        onSelect(newAsset.public_url);
+      } else {
+        alert('Upload failed');
+      }
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)'
+    }} onClick={onClose}>
+      <div style={{
+        background: '#0d1225', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px',
+        width: '90%', maxWidth: '800px', maxHeight: '90vh',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden'
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontWeight: 700, fontSize: '1.2rem' }}>Select Image</div>
+          <button style={{ padding: '0.3rem 0.7rem', fontSize: '0.75rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#94a3b8', cursor: 'pointer' }} onClick={onClose}>✕</button>
+        </div>
+        
+        <div style={{ padding: '1.5rem', flex: 1, overflowY: 'auto' }}>
+          <div style={{
+            border: '2px dashed rgba(96,165,250,0.3)', borderRadius: '12px', padding: '1.5rem', textAlign: 'center',
+            cursor: 'pointer', marginBottom: '1.5rem', background: 'rgba(96,165,250,0.05)'
+          }} onClick={() => fileRef.current.click()}>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleUpload} />
+            <div style={{ fontWeight: 700, color: '#e2e8f0' }}>{uploading ? 'Uploading...' : 'Click here to upload a new image to the library'}</div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '0.75rem' }}>
+            {assets.filter(a => a.file_type === 'image').map(asset => (
+              <div key={asset.id} style={{
+                aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', cursor: 'pointer',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }} onClick={() => onSelect(asset.public_url)}>
+                <img src={asset.public_url} alt={asset.filename} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+              </div>
+            ))}
+          </div>
+          {assets.length === 0 && <div style={{ textAlign: 'center', color: '#64748b' }}>No images in library.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Slides Manager ──────────────────────────────────────────────────────────
 function SlidesManager({ pwd }) {
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [pickingImageForIdx, setPickingImageForIdx] = useState(null);
 
   // Add Slide Form State
   const [newTitle, setNewTitle] = useState('');
@@ -1520,30 +1600,6 @@ function SlidesManager({ pwd }) {
     setEditMsg({ type: '', text: '' });
   }
 
-  async function handleEventImageUpload(idx, file) {
-    if (!file) return;
-    setUploadingIdx(idx);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      const res = await af('/api/admin/media/upload', {
-        method: 'POST',
-        body: fd
-      }, pwd);
-      if (res.ok) {
-        const data = await res.json();
-        updateTimelineEvent(idx, 'image_url', data.public_url);
-      } else {
-        const err = await res.json().catch(() => ({ error: 'Upload failed' }));
-        alert(err.error || 'Upload failed');
-      }
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setUploadingIdx(null);
-    }
-  }
-
   function updateTimelineEvent(idx, field, value) {
     const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
     copy[idx] = {
@@ -1689,32 +1745,19 @@ function SlidesManager({ pwd }) {
                                       </button>
                                     </div>
                                   ) : (
-                                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                                      <input
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        id={`event-file-input-${idx}`}
-                                        onChange={e => handleEventImageUpload(idx, e.target.files[0])}
-                                        disabled={uploadingIdx !== null}
-                                      />
-                                      <label
-                                        htmlFor={`event-file-input-${idx}`}
-                                        style={{
-                                          ...c.btn,
-                                          ...c.btnGhost,
-                                          ...c.btnSm,
-                                          display: 'inline-block',
-                                          textAlign: 'center',
-                                          cursor: uploadingIdx !== null ? 'not-allowed' : 'pointer',
-                                          padding: '0.4rem 0.6rem',
-                                          width: '100%',
-                                          boxSizing: 'border-box'
-                                        }}
-                                      >
-                                        {uploadingIdx === idx ? '...' : 'Upload'}
-                                      </label>
-                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => setPickingImageForIdx(idx)}
+                                      style={{
+                                        ...c.btn,
+                                        ...c.btnGhost,
+                                        ...c.btnSm,
+                                        padding: '0.4rem 0.6rem',
+                                        width: '100%'
+                                      }}
+                                    >
+                                      Select Image
+                                    </button>
                                   )}
                                 </div>
                                 <button type="button" onClick={() => deleteTimelineEvent(idx)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, alignSelf: 'center', background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.1)' }}>
@@ -1774,6 +1817,239 @@ function SlidesManager({ pwd }) {
             })}
           </div>
         )}
+      </div>
+      
+      <MediaPickerModal
+        pwd={pwd}
+        isOpen={pickingImageForIdx !== null}
+        onClose={() => setPickingImageForIdx(null)}
+        onSelect={(url) => {
+          updateTimelineEvent(pickingImageForIdx, 'image_url', url);
+          setPickingImageForIdx(null);
+        }}
+      />
+    </div>
+  );
+}
+
+// ─── Testimonials Manager ──────────────────────────────────────────────────────
+function TestimonialsManager({ pwd }) {
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  
+  const [newName, setNewName] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newCompany, setNewCompany] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [newLinkedinUrl, setNewLinkedinUrl] = useState('');
+  const [addMsg, setAddMsg] = useState({ type: '', text: '' });
+  
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editTitle, setEditTitle] = useState('');
+  const [editCompany, setEditCompany] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editLinkedinUrl, setEditLinkedinUrl] = useState('');
+  const [editMsg, setEditMsg] = useState({ type: '', text: '' });
+  
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  const fetchTestimonials = useCallback(async () => {
+    try {
+      const res = await af('/api/admin/testimonials', {}, pwd);
+      if (res.ok) {
+        const data = await res.json();
+        setTestimonials(data);
+      } else {
+        throw new Error('Failed to fetch testimonials');
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [pwd]);
+
+  useEffect(() => { fetchTestimonials(); }, [fetchTestimonials]);
+
+  async function handleAdd(e) {
+    e.preventDefault();
+    setAddMsg({ type: '', text: '' });
+    if (!newName || !newTitle || !newContent) return setAddMsg({ type: 'err', text: 'Name, title, and content are required' });
+    try {
+      const res = await af('/api/admin/testimonials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName, title: newTitle, company: newCompany, content: newContent, linkedin_url: newLinkedinUrl })
+      }, pwd);
+      if (res.ok) {
+        setAddMsg({ type: 'ok', text: 'Testimonial added' });
+        setNewName(''); setNewTitle(''); setNewCompany(''); setNewContent(''); setNewLinkedinUrl('');
+        fetchTestimonials();
+      } else {
+        const d = await res.json();
+        setAddMsg({ type: 'err', text: d.error || 'Failed to add' });
+      }
+    } catch (err) {
+      setAddMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function saveEdit(id) {
+    setEditMsg({ type: '', text: '' });
+    try {
+      const res = await af(`/api/admin/testimonials/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, title: editTitle, company: editCompany, content: editContent, linkedin_url: editLinkedinUrl })
+      }, pwd);
+      if (res.ok) {
+        setEditId(null);
+        fetchTestimonials();
+      } else {
+        const d = await res.json();
+        setEditMsg({ type: 'err', text: d.error || 'Failed to update' });
+      }
+    } catch (err) {
+      setEditMsg({ type: 'err', text: err.message });
+    }
+  }
+
+  async function handleDelete(id) {
+    try {
+      const res = await af(`/api/admin/testimonials/${id}`, { method: 'DELETE' }, pwd);
+      if (res.ok) fetchTestimonials();
+      else alert('Failed to delete testimonial');
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function toggleStatus(testimonial) {
+    try {
+      const res = await af(`/api/admin/testimonials/${testimonial.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_enabled: !testimonial.is_enabled })
+      }, pwd);
+      if (res.ok) fetchTestimonials();
+    } catch (err) { alert(err.message); }
+  }
+  
+  async function moveRow(idx, direction) {
+    if (direction === -1 && idx === 0) return;
+    if (direction === 1 && idx === testimonials.length - 1) return;
+    const items = [...testimonials];
+    const temp = items[idx];
+    items[idx] = items[idx + direction];
+    items[idx + direction] = temp;
+    setTestimonials(items);
+    await Promise.all(items.map((it, i) =>
+      af(`/api/admin/testimonials/${it.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sort_order: i + 1 })
+      }, pwd)
+    ));
+    fetchTestimonials();
+  }
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div style={c.err}>Error: {error}</div>;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+      <div style={{ ...c.card, padding: '2rem' }}>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: '1.25rem' }}>💬 Add Testimonial</div>
+        <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label style={c.label}>Name</label>
+              <input style={c.input} type="text" placeholder="Jane Doe" value={newName} onChange={e => setNewName(e.target.value)} />
+            </div>
+            <div>
+              <label style={c.label}>Title</label>
+              <input style={c.input} type="text" placeholder="Senior Organizer" value={newTitle} onChange={e => setNewTitle(e.target.value)} />
+            </div>
+            <div>
+              <label style={c.label}>Company (Optional)</label>
+              <input style={c.input} type="text" placeholder="SEIU 1021" value={newCompany} onChange={e => setNewCompany(e.target.value)} />
+            </div>
+          </div>
+          <div>
+            <label style={c.label}>Testimonial Content</label>
+            <textarea style={{...c.textarea, minHeight: '80px'}} value={newContent} onChange={e => setNewContent(e.target.value)} placeholder="Phil is an incredible leader..."></textarea>
+          </div>
+          <div>
+            <label style={c.label}>LinkedIn URL (Optional)</label>
+            <input style={c.input} type="text" placeholder="https://linkedin.com/in/..." value={newLinkedinUrl} onChange={e => setNewLinkedinUrl(e.target.value)} />
+          </div>
+          <button type="submit" style={{ ...c.btn, ...c.btnPrimary, alignSelf: 'flex-start' }}>+ Add Testimonial</button>
+        </form>
+        {addMsg.text && <div style={{ marginTop: '0.75rem', ...(addMsg.type === 'ok' ? c.ok : c.err) }}>{addMsg.text}</div>}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {testimonials.map((t, idx) => {
+          const isEditing = editId === t.id;
+          return (
+            <div key={t.id} style={{ ...c.card, padding: '1.5rem', display: 'flex', gap: '1.5rem', opacity: t.is_enabled ? 1 : 0.5, borderLeft: t.is_enabled ? '4px solid #60a5fa' : '4px solid #475569' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                <button type="button" onClick={() => moveRow(idx, -1)} disabled={idx === 0} style={{ ...c.btn, ...c.btnGhost, padding: '0.2rem 0.5rem', opacity: idx === 0 ? 0.3 : 1 }}>▲</button>
+                <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 600 }}>{idx + 1}</div>
+                <button type="button" onClick={() => moveRow(idx, 1)} disabled={idx === testimonials.length - 1} style={{ ...c.btn, ...c.btnGhost, padding: '0.2rem 0.5rem', opacity: idx === testimonials.length - 1 ? 0.3 : 1 }}>▼</button>
+              </div>
+              
+              <div style={{ flex: 1 }}>
+                {isEditing ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                      <input style={c.input} value={editName} onChange={e => setEditName(e.target.value)} placeholder="Name" />
+                      <input style={c.input} value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Title" />
+                      <input style={c.input} value={editCompany} onChange={e => setEditCompany(e.target.value)} placeholder="Company" />
+                    </div>
+                    <textarea style={{...c.textarea, minHeight: '80px'}} value={editContent} onChange={e => setEditContent(e.target.value)} placeholder="Content"></textarea>
+                    <input style={c.input} value={editLinkedinUrl} onChange={e => setEditLinkedinUrl(e.target.value)} placeholder="LinkedIn URL" />
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button onClick={() => saveEdit(t.id)} style={{ ...c.btn, ...c.btnPrimary, ...c.btnSm }}>Save</button>
+                      <button onClick={() => setEditId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
+                    </div>
+                    {editMsg.text && <div style={{ ...(editMsg.type === 'ok' ? c.ok : c.err) }}>{editMsg.text}</div>}
+                  </div>
+                ) : (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
+                      <div>
+                        <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#fff' }}>{t.name}</div>
+                        <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{t.title}{t.company ? ` @ ${t.company}` : ''}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={() => toggleStatus(t)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>{t.is_enabled ? 'Disable' : 'Enable'}</button>
+                        <button onClick={() => {
+                          setEditId(t.id); setEditName(t.name); setEditTitle(t.title); setEditCompany(t.company || '');
+                          setEditContent(t.content); setEditLinkedinUrl(t.linkedin_url || ''); setEditMsg({ type: '', text: '' });
+                        }} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Edit</button>
+                        {deleteConfirmId === t.id ? (
+                          <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(239,68,68,0.1)', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
+                            <span style={{ fontSize: '0.75rem', color: '#f87171', alignSelf: 'center' }}>Delete?</span>
+                            <button onClick={() => handleDelete(t.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm }}>Yes</button>
+                            <button onClick={() => setDeleteConfirmId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>No</button>
+                          </div>
+                        ) : (
+                          <button onClick={() => setDeleteConfirmId(t.id)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.1)' }}>Delete</button>
+                        )}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>"{t.content}"</div>
+                    {t.linkedin_url && <a href={t.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.8rem', color: '#60a5fa', textDecoration: 'none' }}>🔗 View on LinkedIn</a>}
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        {testimonials.length === 0 && <div style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No testimonials added yet.</div>}
       </div>
     </div>
   );

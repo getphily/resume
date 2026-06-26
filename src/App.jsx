@@ -11,6 +11,7 @@ import {
   fallbackSkills,
   fallbackEducation,
   fallbackSlides,
+  fallbackTestimonials,
 } from './data/fallbacks';
 import { fallbackEmployers } from './data/employers';
 import { fallbackCompetencies } from './data/competencies';
@@ -27,6 +28,7 @@ function App() {
     competencies: [],
     slogan: '',
     slides: [],
+    testimonials: [],
     loading: true,
     usingFallbacks: false,
   });
@@ -41,7 +43,7 @@ function App() {
         };
 
         // Fetch all endpoints in parallel
-        const [timeline, podcasts, portfolio, socials, skills, education, sloganRes, slides] = await Promise.all([
+        const [timeline, podcasts, portfolio, socials, skills, education, sloganRes, slides, testimonials] = await Promise.all([
           fetchEndpoint('/api/timeline'),
           fetchEndpoint('/api/podcasts'),
           fetchEndpoint('/api/portfolio'),
@@ -50,6 +52,7 @@ function App() {
           fetchEndpoint('/api/education'),
           fetchEndpoint('/api/slogan').catch(() => ({ slogan: '' })),
           fetchEndpoint('/api/slides').catch(() => fallbackSlides),
+          fetchEndpoint('/api/testimonials').catch(() => fallbackTestimonials),
         ]);
 
         // Gracefully fetch employers. If table doesn't exist, use fallback list.
@@ -81,6 +84,7 @@ function App() {
           competencies,
           slogan: sloganRes?.slogan || '',
           slides: slides && slides.length > 0 ? slides : fallbackSlides,
+          testimonials: testimonials && testimonials.length > 0 ? testimonials : fallbackTestimonials,
           loading: false,
           usingFallbacks: false,
         });
@@ -99,6 +103,7 @@ function App() {
           competencies: fallbackCompetencies,
           slogan: '',
           slides: fallbackSlides,
+          testimonials: fallbackTestimonials,
           loading: false,
           usingFallbacks: true,
         });

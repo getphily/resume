@@ -40,7 +40,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
-import { FaLinkedin, FaInstagram, FaYoutube } from 'react-icons/fa';
+import { FaLinkedin, FaInstagram, FaYoutube, FaFileDownload, FaCalendarAlt } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import SkillOrbMap from '../components/SkillOrbMap';
 
@@ -1093,6 +1093,48 @@ function Resume({ data }) {
                 <Box as="span" color={borderLight}>|</Box>
                 <Link href="mailto:phil@redwoodempiremedia.com" _hover={{ color: brandPrimary }}>phil@redwoodempiremedia.com</Link>
               </Text>
+
+              {/* Call to Actions (CTAs) */}
+              <HStack spacing="1rem" mt="1.25rem" wrap="wrap" justify={{ base: 'center', md: 'start' }}>
+                <Button
+                  leftIcon={<FaFileDownload />}
+                  variant="solid"
+                  bg={brandPrimary}
+                  color="white"
+                  borderRadius="full"
+                  px="1.5rem"
+                  fontSize="0.82rem"
+                  fontWeight="700"
+                  _hover={{
+                    bg: brandSecondary,
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'lg'
+                  }}
+                  _active={{ transform: 'translateY(0)' }}
+                  transition="all 0.2s"
+                >
+                  Download Resume
+                </Button>
+                <Button
+                  leftIcon={<FaCalendarAlt />}
+                  variant="outline"
+                  borderColor={brandPrimary}
+                  color={useColorModeValue(brandPrimary, 'white')}
+                  borderRadius="full"
+                  px="1.5rem"
+                  fontSize="0.82rem"
+                  fontWeight="700"
+                  _hover={{
+                    bg: 'whiteAlpha.100',
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'lg'
+                  }}
+                  _active={{ transform: 'translateY(0)' }}
+                  transition="all 0.2s"
+                >
+                  Book a Meeting
+                </Button>
+              </HStack>
             </VStack>
 
             {/* Profile Image with Gradient Border */}
@@ -1412,6 +1454,19 @@ function Resume({ data }) {
           </Box>
         </Box>
 
+
+
+        {/* 3.5 Testimonials Section */}
+        {data.testimonials && data.testimonials.length > 0 && (
+          <TestimonialsSection
+            testimonials={data.testimonials}
+            borderLight={borderLight}
+            cardBg={cardBg}
+            textColorMuted={textColorMuted}
+            brandPrimary={brandPrimary}
+            brandSecondary={brandSecondary}
+          />
+        )}
 
 
         {/* 4. Skills & Core Competencies — Full Redesign */}
@@ -2650,6 +2705,72 @@ function SkillsInsightsPanel({ colorMode, borderLight, cardBg, textColorMuted })
 
       </VStack>
     </Suspense>
+  );
+}
+
+// ─── Testimonials Section ──────────────────────────────────────────────────────
+
+function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted, brandPrimary, brandSecondary }) {
+  if (!testimonials || testimonials.length === 0) return null;
+
+  return (
+    <Box id="testimonials" mb="6rem">
+      <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="2rem" letterSpacing="-0.01em">
+        Testimonials
+      </Heading>
+      
+      {/* We use a masonry-like css columns approach for varied heights, or simple grid */}
+      <Box sx={{ columnCount: { base: 1, md: 2, lg: 3 }, columnGap: '1.5rem' }}>
+        {testimonials.map((t) => (
+          <Box
+            key={t.id}
+            bg={cardBg}
+            border="1px solid"
+            borderColor={borderLight}
+            borderRadius="12px"
+            p="1.5rem"
+            mb="1.5rem"
+            display="inline-block"
+            w="100%"
+            boxShadow="sm"
+            _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
+            transition="all 0.2s"
+          >
+            <Flex gap="0.75rem" mb="1rem">
+              <Box fontSize="2rem" color={brandPrimary} lineHeight="1" opacity={0.4}>
+                &ldquo;
+              </Box>
+              <Text fontSize="0.95rem" lineHeight="1.6" fontStyle="italic" color={textColorMuted}>
+                {t.content}
+              </Text>
+            </Flex>
+            <Divider mb="1rem" borderColor={borderLight} />
+            <Flex justify="space-between" align="center">
+              <Box>
+                <Text fontWeight="700" fontSize="0.95rem">{t.name}</Text>
+                <Text fontSize="0.8rem" color={textColorMuted}>
+                  {t.title}{t.company ? ` @ ${t.company}` : ''}
+                </Text>
+              </Box>
+              {t.linkedin_url && (
+                <Link href={t.linkedin_url} isExternal title="View on LinkedIn">
+                  <Box
+                    as="svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    boxSize="20px"
+                    color="#0a66c2"
+                    _hover={{ opacity: 0.8 }}
+                  >
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </Box>
+                </Link>
+              )}
+            </Flex>
+          </Box>
+        ))}
+      </Box>
+    </Box>
   );
 }
 

@@ -374,3 +374,23 @@ export const fallbackSlides = [
   }
 ];
 
+export const fallbackTestimonials = [
+  {
+    id: 1,
+    name: 'Jane Doe',
+    title: 'Senior Organizer',
+    company: 'SEIU 1021',
+    content: 'Phil is an incredible leader who knows how to build consensus and drive real results. Working with him was a masterclass in strategic communications.',
+    linkedin_url: 'https://linkedin.com',
+    sort_order: 1
+  },
+  {
+    id: 2,
+    name: 'John Smith',
+    title: 'Communications Director',
+    company: 'Teamsters',
+    content: 'I have never met someone so capable of blending traditional labor organizing with modern digital campaigns. Highly recommended.',
+    linkedin_url: 'https://linkedin.com',
+    sort_order: 2
+  }
+];
