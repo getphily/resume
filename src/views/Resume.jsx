@@ -1524,12 +1524,17 @@ function Resume({ data }) {
 
 
         {/* 6b. Labor Footprint — interactive employer map */}
-        <LaborMap
-          employers={data.employers}
-          borderLight={borderLight}
-          cardBg={cardBg}
-          textColorMuted={textColorMuted}
-        />
+        <Box id="employers">
+          <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="1.5rem" letterSpacing="-0.01em">
+            Employers
+          </Heading>
+          <LaborMap
+            employers={data.employers}
+            borderLight={borderLight}
+            cardBg={cardBg}
+            textColorMuted={textColorMuted}
+          />
+        </Box>
 
 
 
@@ -2537,13 +2542,10 @@ function EmployerGeography({ employers, borderLight, blueColor, cardBg, textColo
   })).filter(g => g.employers.length > 0);
 
   return (
-    <Box id="employers" mb="4rem">
+    <Box mb="4rem">
       <HStack justify="space-between" align="center" mb={open ? '1.5rem' : '0'} cursor="pointer" onClick={() => setOpen(o => !o)}>
         <VStack align="start" spacing="0.1rem">
           <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em">
-            Employers
-          </Heading>
-          <Heading as="h3" fontSize="1rem" fontWeight="700" color={brandPrimary} mt="0.25rem" mb="-0.25rem">
             Labor Footprint
           </Heading>
           <Text fontSize="0.85rem" color={textColorMuted}>
