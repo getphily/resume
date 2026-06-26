@@ -1097,6 +1097,9 @@ function Resume({ data }) {
               {/* Call to Actions (CTAs) */}
               <HStack spacing="1rem" mt="1.25rem" wrap="wrap" justify={{ base: 'center', md: 'start' }}>
                 <Button
+                  as="a"
+                  href="/Phil_Ybarrolaza_Resume.pdf"
+                  download="Phil_Ybarrolaza_Resume.pdf"
                   leftIcon={<FaFileDownload />}
                   variant="solid"
                   bg={brandPrimary}
@@ -1116,6 +1119,10 @@ function Resume({ data }) {
                   Download Resume
                 </Button>
                 <Button
+                  as="a"
+                  href="https://calendar.app.google/z7bjVcmc2qxZnEru7"
+                  target="_blank"
+                  rel="noopener"
                   leftIcon={<FaCalendarAlt />}
                   variant="outline"
                   borderColor={brandPrimary}
@@ -2746,12 +2753,17 @@ function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted
             </Flex>
             <Divider mb="1rem" borderColor={borderLight} />
             <Flex justify="space-between" align="center">
-              <Box>
-                <Text fontWeight="700" fontSize="0.95rem">{t.name}</Text>
-                <Text fontSize="0.8rem" color={textColorMuted}>
-                  {t.title}{t.company ? ` @ ${t.company}` : ''}
-                </Text>
-              </Box>
+              <Flex gap="1rem" align="center">
+                {t.image_url && (
+                  <Image src={t.image_url} alt={`${t.name} avatar`} boxSize="45px" borderRadius="full" objectFit="cover" border="2px solid" borderColor={borderLight} />
+                )}
+                <Box>
+                  <Text fontWeight="700" fontSize="0.95rem">{t.name}</Text>
+                  <Text fontSize="0.8rem" color={textColorMuted}>
+                    {t.title}{t.company ? ` @ ${t.company}` : ''}
+                  </Text>
+                </Box>
+              </Flex>
               {t.linkedin_url && (
                 <Link href={t.linkedin_url} isExternal title="View on LinkedIn">
                   <Box

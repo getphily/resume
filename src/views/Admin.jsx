@@ -1843,7 +1843,10 @@ function TestimonialsManager({ pwd }) {
   const [newCompany, setNewCompany] = useState('');
   const [newContent, setNewContent] = useState('');
   const [newLinkedinUrl, setNewLinkedinUrl] = useState('');
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [addMsg, setAddMsg] = useState({ type: '', text: '' });
+  
+  const [pickingImageFor, setPickingImageFor] = useState(null); // 'new' or editId
   
   const [editId, setEditId] = useState(null);
   const [editName, setEditName] = useState('');
@@ -1851,6 +1854,7 @@ function TestimonialsManager({ pwd }) {
   const [editCompany, setEditCompany] = useState('');
   const [editContent, setEditContent] = useState('');
   const [editLinkedinUrl, setEditLinkedinUrl] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
   const [editMsg, setEditMsg] = useState({ type: '', text: '' });
   
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
@@ -1881,11 +1885,11 @@ function TestimonialsManager({ pwd }) {
       const res = await af('/api/admin/testimonials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newName, title: newTitle, company: newCompany, content: newContent, linkedin_url: newLinkedinUrl })
+        body: JSON.stringify({ name: newName, title: newTitle, company: newCompany, content: newContent, linkedin_url: newLinkedinUrl, image_url: newImageUrl })
       }, pwd);
       if (res.ok) {
         setAddMsg({ type: 'ok', text: 'Testimonial added' });
-        setNewName(''); setNewTitle(''); setNewCompany(''); setNewContent(''); setNewLinkedinUrl('');
+        setNewName(''); setNewTitle(''); setNewCompany(''); setNewContent(''); setNewLinkedinUrl(''); setNewImageUrl('');
         fetchTestimonials();
       } else {
         const d = await res.json();
@@ -1902,7 +1906,7 @@ function TestimonialsManager({ pwd }) {
       const res = await af(`/api/admin/testimonials/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: editName, title: editTitle, company: editCompany, content: editContent, linkedin_url: editLinkedinUrl })
+        body: JSON.stringify({ name: editName, title: editTitle, company: editCompany, content: editContent, linkedin_url: editLinkedinUrl, image_url: editImageUrl })
       }, pwd);
       if (res.ok) {
         setEditId(null);
@@ -1985,6 +1989,18 @@ function TestimonialsManager({ pwd }) {
             <label style={c.label}>LinkedIn URL (Optional)</label>
             <input style={c.input} type="text" placeholder="https://linkedin.com/in/..." value={newLinkedinUrl} onChange={e => setNewLinkedinUrl(e.target.value)} />
           </div>
+          <div>
+            <label style={c.label}>Profile Picture (Optional)</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              {newImageUrl && <img src={newImageUrl} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />}
+              <button type="button" onClick={() => setPickingImageFor('new')} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>
+                {newImageUrl ? 'Change Image' : 'Select Image'}
+              </button>
+              {newImageUrl && (
+                <button type="button" onClick={() => setNewImageUrl('')} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm, color: '#f87171' }}>Clear</button>
+              )}
+            </div>
+          </div>
           <button type="submit" style={{ ...c.btn, ...c.btnPrimary, alignSelf: 'flex-start' }}>+ Add Testimonial</button>
         </form>
         {addMsg.text && <div style={{ marginTop: '0.75rem', ...(addMsg.type === 'ok' ? c.ok : c.err) }}>{addMsg.text}</div>}
@@ -2011,6 +2027,16 @@ function TestimonialsManager({ pwd }) {
                     </div>
                     <textarea style={{...c.textarea, minHeight: '80px'}} value={editContent} onChange={e => setEditContent(e.target.value)} placeholder="Content"></textarea>
                     <input style={c.input} value={editLinkedinUrl} onChange={e => setEditLinkedinUrl(e.target.value)} placeholder="LinkedIn URL" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>Profile Picture:</span>
+                      {editImageUrl && <img src={editImageUrl} alt="avatar" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />}
+                      <button type="button" onClick={() => setPickingImageFor(t.id)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>
+                        {editImageUrl ? 'Change' : 'Select'}
+                      </button>
+                      {editImageUrl && (
+                        <button type="button" onClick={() => setEditImageUrl('')} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm, color: '#f87171' }}>Clear</button>
+                      )}
+                    </div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button onClick={() => saveEdit(t.id)} style={{ ...c.btn, ...c.btnPrimary, ...c.btnSm }}>Save</button>
                       <button onClick={() => setEditId(null)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Cancel</button>
@@ -2021,14 +2047,19 @@ function TestimonialsManager({ pwd }) {
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#fff' }}>{t.name}</div>
-                        <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{t.title}{t.company ? ` @ ${t.company}` : ''}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                          {t.image_url && <img src={t.image_url} alt="" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />}
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '1.1rem', color: '#fff' }}>{t.name}</div>
+                            <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{t.title}{t.company ? ` @ ${t.company}` : ''}</div>
+                          </div>
+                        </div>
                       </div>
                       <div style={{ display: 'flex', gap: '0.5rem' }}>
                         <button onClick={() => toggleStatus(t)} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>{t.is_enabled ? 'Disable' : 'Enable'}</button>
                         <button onClick={() => {
                           setEditId(t.id); setEditName(t.name); setEditTitle(t.title); setEditCompany(t.company || '');
-                          setEditContent(t.content); setEditLinkedinUrl(t.linkedin_url || ''); setEditMsg({ type: '', text: '' });
+                          setEditContent(t.content); setEditLinkedinUrl(t.linkedin_url || ''); setEditImageUrl(t.image_url || ''); setEditMsg({ type: '', text: '' });
                         }} style={{ ...c.btn, ...c.btnGhost, ...c.btnSm }}>Edit</button>
                         {deleteConfirmId === t.id ? (
                           <div style={{ display: 'flex', gap: '0.5rem', background: 'rgba(239,68,68,0.1)', padding: '0.2rem 0.5rem', borderRadius: '6px' }}>
@@ -2051,6 +2082,20 @@ function TestimonialsManager({ pwd }) {
         })}
         {testimonials.length === 0 && <div style={{ textAlign: 'center', color: '#64748b', padding: '2rem' }}>No testimonials added yet.</div>}
       </div>
+
+      <MediaPickerModal
+        pwd={pwd}
+        isOpen={pickingImageFor !== null}
+        onClose={() => setPickingImageFor(null)}
+        onSelect={(url) => {
+          if (pickingImageFor === 'new') {
+            setNewImageUrl(url);
+          } else {
+            setEditImageUrl(url);
+          }
+          setPickingImageFor(null);
+        }}
+      />
     </div>
   );
 }

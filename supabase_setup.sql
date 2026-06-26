@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS testimonials (
     title TEXT NOT NULL,
     company TEXT,
     content TEXT NOT NULL,
+    image_url TEXT,
     linkedin_url TEXT,
     sort_order INTEGER DEFAULT 0,
     is_enabled BOOLEAN DEFAULT true

@@ -648,14 +648,14 @@ app.get('/api/admin/testimonials', checkAdmin, async (req, res) => {
 
 app.post('/api/admin/testimonials', checkAdmin, async (req, res) => {
   if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
-  const { name, title, company, content, linkedin_url, is_enabled, sort_order } = req.body;
+  const { name, title, company, content, linkedin_url, image_url, is_enabled, sort_order } = req.body;
   if (!name || !title || !content) {
     return res.status(400).json({ error: 'Missing name, title, or content' });
   }
   try {
     const { data, error } = await supabaseAdmin
       .from('testimonials')
-      .insert({ name, title, company, content, linkedin_url, is_enabled: is_enabled !== false, sort_order: parseInt(sort_order) || 0 })
+      .insert({ name, title, company, content, linkedin_url, image_url, is_enabled: is_enabled !== false, sort_order: parseInt(sort_order) || 0 })
       .select()
       .single();
     if (error) throw error;
@@ -667,7 +667,7 @@ app.post('/api/admin/testimonials', checkAdmin, async (req, res) => {
 
 app.patch('/api/admin/testimonials/:id', checkAdmin, async (req, res) => {
   if (!supabaseAdmin) return res.status(503).json({ error: 'Admin client unavailable' });
-  const { name, title, company, content, linkedin_url, is_enabled, sort_order } = req.body;
+  const { name, title, company, content, linkedin_url, image_url, is_enabled, sort_order } = req.body;
   try {
     const updates = {};
     if (name !== undefined) updates.name = name;
@@ -675,6 +675,7 @@ app.patch('/api/admin/testimonials/:id', checkAdmin, async (req, res) => {
     if (company !== undefined) updates.company = company;
     if (content !== undefined) updates.content = content;
     if (linkedin_url !== undefined) updates.linkedin_url = linkedin_url;
+    if (image_url !== undefined) updates.image_url = image_url;
     if (is_enabled !== undefined) updates.is_enabled = is_enabled;
     if (sort_order !== undefined) updates.sort_order = parseInt(sort_order) || 0;
 
