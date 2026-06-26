@@ -2718,7 +2718,24 @@ function SkillsInsightsPanel({ colorMode, borderLight, cardBg, textColorMuted })
 // ─── Testimonials Section ──────────────────────────────────────────────────────
 
 function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted, brandPrimary, brandSecondary }) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (!testimonials || testimonials.length <= 2) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 2) % testimonials.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [testimonials]);
+
   if (!testimonials || testimonials.length === 0) return null;
+
+  const currentPair = testimonials.length > 2 
+    ? [
+        testimonials[currentIndex],
+        testimonials[(currentIndex + 1) % testimonials.length],
+      ].filter(Boolean)
+    : testimonials;
 
   return (
     <Box id="testimonials" mb="6rem">
@@ -2726,9 +2743,17 @@ function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted
         Testimonials
       </Heading>
       
-      {/* We use a masonry-like css columns approach for varied heights, or simple grid */}
-      <Box sx={{ columnCount: { base: 1, md: 2, lg: 3 }, columnGap: '1.5rem' }}>
-        {testimonials.map((t) => (
+      <Box position="relative" minH={{ base: "450px", md: "300px" }}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+          >
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1.5rem">
+              {currentPair.map((t, idx) => (
           <Box
             key={t.id}
             bg={cardBg}
@@ -2792,7 +2817,10 @@ function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted
               )}
             </Flex>
           </Box>
-        ))}
+              ))}
+            </SimpleGrid>
+          </motion.div>
+        </AnimatePresence>
       </Box>
     </Box>
   );
