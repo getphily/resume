@@ -1104,7 +1104,7 @@ function Resume({ data }) {
                   variant="solid"
                   bg={brandPrimary}
                   color="white"
-                  borderRadius="full"
+                  borderRadius="12px"
                   px="1.5rem"
                   fontSize="0.82rem"
                   fontWeight="700"
@@ -1127,7 +1127,7 @@ function Resume({ data }) {
                   variant="outline"
                   borderColor={brandPrimary}
                   color={useColorModeValue(brandPrimary, 'white')}
-                  borderRadius="full"
+                  borderRadius="12px"
                   px="1.5rem"
                   fontSize="0.82rem"
                   fontWeight="700"
@@ -2735,27 +2735,39 @@ function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted
             border="1px solid"
             borderColor={borderLight}
             borderRadius="12px"
-            p="1.5rem"
+            p="1.75rem"
             mb="1.5rem"
             display="inline-block"
             w="100%"
             boxShadow="sm"
-            _hover={{ boxShadow: 'md', transform: 'translateY(-2px)' }}
-            transition="all 0.2s"
+            _hover={{ boxShadow: 'md', transform: 'translateY(-4px)', borderColor: brandPrimary }}
+            transition="all 0.3s ease"
+            position="relative"
+            overflow="hidden"
           >
-            <Flex gap="0.75rem" mb="1rem">
-              <Box fontSize="2rem" color={brandPrimary} lineHeight="1" opacity={0.4}>
-                &ldquo;
-              </Box>
-              <Text fontSize="0.95rem" lineHeight="1.6" fontStyle="italic" color={textColorMuted}>
-                {t.content}
+            <Box
+              position="absolute"
+              top="-10px"
+              right="10px"
+              fontSize="6rem"
+              color={brandPrimary}
+              opacity={0.05}
+              lineHeight="1"
+              fontFamily="serif"
+              pointerEvents="none"
+            >
+              &rdquo;
+            </Box>
+            <Flex gap="0.75rem" mb="1.5rem" position="relative" zIndex={1}>
+              <Text fontSize="0.95rem" lineHeight="1.7" color={textColorMuted}>
+                "{t.content}"
               </Text>
             </Flex>
             <Divider mb="1rem" borderColor={borderLight} />
             <Flex justify="space-between" align="center">
               <Flex gap="1rem" align="center">
                 {t.image_url && (
-                  <Image src={t.image_url} alt={`${t.name} avatar`} boxSize="45px" borderRadius="full" objectFit="cover" border="2px solid" borderColor={borderLight} />
+                  <Image src={t.image_url} alt={`${t.name} avatar`} boxSize="50px" borderRadius="full" objectFit="cover" border="2px solid" borderColor={brandPrimary} />
                 )}
                 <Box>
                   <Text fontWeight="700" fontSize="0.95rem">{t.name}</Text>
