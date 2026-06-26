@@ -898,6 +898,8 @@ function Resume({ data }) {
             <Link href="#timeline" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Timeline</Link>
             <Link href="#skills" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Skills & Edu</Link>
             <Link href="#portfolio" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Portfolio</Link>
+            <Link href="#employers" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Employers</Link>
+            <Link href="#testimonials" fontSize="0.9rem" fontWeight="600" opacity="0.8" _hover={{ opacity: 1 }}>Testimonials</Link>
             <HStack spacing="0.75rem">
               {data.socials?.primary?.linkedin && (
                 <IconButton
@@ -2535,7 +2537,7 @@ function EmployerGeography({ employers, borderLight, blueColor, cardBg, textColo
   })).filter(g => g.employers.length > 0);
 
   return (
-    <Box mb="4rem">
+    <Box id="employers" mb="4rem">
       <HStack justify="space-between" align="center" mb={open ? '1.5rem' : '0'} cursor="pointer" onClick={() => setOpen(o => !o)}>
         <VStack align="start" spacing="0.1rem">
           <Heading as="h2" fontSize="1.5rem" fontWeight="800" letterSpacing="-0.01em">
