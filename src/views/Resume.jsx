@@ -1541,7 +1541,7 @@ function Resume({ data }) {
 
         {/* 7. Footer & Tech Stack badges */}
         <VStack spacing="2rem" as="footer" textAlign="center" pt="2rem">
-          <VStack spacing="0.75rem">
+          <VStack spacing="0.75rem" w="100%">
             <Text
               fontSize="0.75rem"
               fontWeight="700"
