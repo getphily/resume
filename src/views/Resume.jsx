@@ -1986,13 +1986,14 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
   const { colorMode } = useColorMode();
   const isDark = colorMode === 'dark';
 
-  // Consolidate Labor Relations categories dynamically from 18 to 4 main groups
+  // Consolidate Labor Relations categories dynamically from 18 to 5 main groups
   const consolidatedLaborCategories = useMemo(() => {
     const categories = {
-      'Collective Bargaining & Contract Architecture': [],
+      'Collective Bargaining & Negotiations': [],
+      'Contract Architecture & Economics': [],
       'Grievance & Dispute Resolution': [],
-      'Campaigns & Workforce Organizing': [],
-      'Governance, Compliance & Operations': []
+      'Workforce Organizing & Mobilization': [],
+      'Political Action & Union Governance': []
     };
 
     const laborIds = ['strategic_core', 'core_professional', 'skills_list'];
@@ -2001,15 +2002,18 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
       if (!laborIds.includes(c.group_type)) return;
       
       const cat = c.category.toLowerCase();
+      const name = c.name.toLowerCase();
       
-      if (cat.includes('bargaining') || cat.includes('contract') || cat.includes('cba') || cat.includes('wage opener')) {
-        categories['Collective Bargaining & Contract Architecture'].push(c);
-      } else if (cat.includes('grievance') || cat.includes('conflict') || cat.includes('resolution') || cat.includes('advocacy') || cat.includes('protection') || cat.includes('just cause')) {
+      if (cat.includes('bargaining') || name.includes('negotiation') || name.includes('sunshine') || name.includes('tentative') || name.includes('fmcs') || name.includes('mediation')) {
+        categories['Collective Bargaining & Negotiations'].push(c);
+      } else if (cat.includes('contract') || cat.includes('cba') || cat.includes('wage opener') || cat.includes('compensation') || cat.includes('financial') || name.includes('mou') || name.includes('lou') || name.includes('wage') || name.includes('audit') || name.includes('990')) {
+        categories['Contract Architecture & Economics'].push(c);
+      } else if (cat.includes('grievance') || cat.includes('conflict') || cat.includes('resolution') || cat.includes('advocacy') || cat.includes('protection') || cat.includes('just cause') || cat.includes('compliance') || cat.includes('regulatory') || cat.includes('policy') || name.includes('nlrb') || name.includes('statutory') || name.includes('fmla') || name.includes('cfra') || name.includes('osha') || name.includes('weingarten') || name.includes('defense') || name.includes('workers')) {
         categories['Grievance & Dispute Resolution'].push(c);
-      } else if (cat.includes('organizing') || cat.includes('campaign') || cat.includes('mobilization') || cat.includes('political') || cat.includes('coalition')) {
-        categories['Campaigns & Workforce Organizing'].push(c);
+      } else if (cat.includes('organizing') || cat.includes('campaign') || cat.includes('mobilization') || name.includes('mapping') || name.includes('twr') || name.includes('density') || name.includes('orientation') || name.includes('recruit') || name.includes('onboarding')) {
+        categories['Workforce Organizing & Mobilization'].push(c);
       } else {
-        categories['Governance, Compliance & Operations'].push(c);
+        categories['Political Action & Union Governance'].push(c);
       }
     });
 
