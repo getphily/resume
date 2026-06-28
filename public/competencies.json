@@ -213,70 +213,70 @@
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Collective Bargaining Agreements (CBA)",
-    "description": null,
+    "description": "Drafting, structuring, and maintaining comprehensive labor agreements covering wages, working conditions, benefits, and grievance procedures.",
     "sort_order": 1
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Successor Contract Negotiations",
-    "description": null,
+    "description": "Leading bargaining committee sessions to renew, extend, or renegotiate contract terms, managing moving proposals from initial package to final document.",
     "sort_order": 2
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Memorandums of Understanding (MOU)",
-    "description": null,
+    "description": "Drafting and negotiating specialized side-letters and mid-term agreements to address changing operational needs or temporary agreements.",
     "sort_order": 3
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Letters of Understanding (LOU)",
-    "description": null,
+    "description": "Formulating clarifying letters to establish mutual agreement on contract interpretations, resolving ambiguities in active provisions.",
     "sort_order": 4
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Sunshine Proposals",
-    "description": null,
+    "description": "Preparing, publicizing, and presenting initial bargaining packages to public bodies or management in compliance with statutory notice rules.",
     "sort_order": 5
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Tentative Agreements (TA)",
-    "description": null,
+    "description": "Securing signed tentative agreements on individual contract articles, ensuring alignment on language details before full contract submission.",
     "sort_order": 6
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Federal Mediation & Conciliation Service (FMCS)",
-    "description": null,
+    "description": "Utilizing federal mediation processes, filing dispute notices, and collaborating with mediators to resolve high-stakes bargaining impasses.",
     "sort_order": 7
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Bargaining Unit Restructuring",
-    "description": null,
+    "description": "Auditing and renegotiating unit scope, classifications, and department configurations during employer reorganizations or expansions.",
     "sort_order": 8
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Contract Ratification",
-    "description": null,
+    "description": "Managing ratification campaigns, educating members on contract changes, and coordinating vote logistics to finalize agreements.",
     "sort_order": 9
   },
   {
     "group_type": "skills_list",
     "category": "Labor Relations & Collective Bargaining",
     "name": "Strike Sanctions & Dispute Notices",
-    "description": null,
+    "description": "Filing legally required dispute notices, securing strike authorizations, and organizing strike preparation committees.",
     "sort_order": 10
   },
   {

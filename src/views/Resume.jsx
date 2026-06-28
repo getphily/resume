@@ -2253,6 +2253,7 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 <CompetencyGroup
                   categories={laborCategories}
                   scheme="blue"
+                  pathColor={brandPrimary}
                   borderLight={borderLight}
                   cardBg={cardBg}
                   textColorMuted={textColorMuted}
@@ -2284,6 +2285,7 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 <CompetencyGroup
                   categories={digitalCategories}
                   scheme="purple"
+                  pathColor={brandSecondary}
                   borderLight={borderLight}
                   cardBg={cardBg}
                   textColorMuted={textColorMuted}
@@ -2298,11 +2300,11 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
 }
 
 
-function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg, textColorMuted }) {
+function CompetencyGroup({ categories, scheme, pathColor, borderLight, cardBg, textColorMuted }) {
   const [expanded, setExpanded] = useState(null);
   const catEntries = Object.entries(categories);
 
-  const themeColor = scheme === 'blue' ? '#3182ce' : '#805ad5';
+  const themeColor = pathColor || (scheme === 'blue' ? '#3182ce' : '#805ad5');
 
   const handleKeyDown = (e, itemName) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -2325,6 +2327,11 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
           borderRadius="xl"
           overflow="hidden"
           bg={cardBg}
+          transition="border-color 0.22s, box-shadow 0.22s"
+          _hover={{
+            borderColor: themeColor.replace(')', ' / 0.35)'),
+            boxShadow: `0 4px 20px ${themeColor.replace(')', ' / 0.07)')}`
+          }}
         >
           {/* Category Header */}
           <Box
@@ -2333,8 +2340,8 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
             borderBottom="1px solid"
             borderColor={borderLight}
             bg={useColorModeValue(
-              scheme === 'blue' ? 'rgba(59, 130, 246, 0.04)' : 'rgba(147, 51, 234, 0.04)',
-              scheme === 'blue' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(147, 51, 234, 0.08)'
+              themeColor.replace(')', ' / 0.04)'),
+              themeColor.replace(')', ' / 0.08)')
             )}
             backdropFilter="blur(4px)"
           >
@@ -2342,7 +2349,16 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
               <Text fontSize="0.72rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.06em">
                 {category}
               </Text>
-              <Badge colorScheme={scheme} borderRadius="full" fontSize="0.6rem" fontWeight="700">
+              <Badge
+                variant="subtle"
+                bg={themeColor.replace(')', ' / 0.12)')}
+                color={themeColor}
+                borderRadius="full"
+                fontSize="0.62rem"
+                fontWeight="800"
+                px="0.45rem"
+                py="0.1rem"
+              >
                 {items.length}
               </Badge>
             </HStack>
