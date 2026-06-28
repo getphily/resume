@@ -593,7 +593,7 @@ function Resume({ data }) {
   const borderLight = useColorModeValue('oklch(90% 0.01 240)', 'oklch(28% 0.015 240 / 0.7)');
   const textColorMuted = useColorModeValue('oklch(50% 0.01 240)', 'oklch(65% 0.01 240)');
   const brandPrimary = useColorModeValue('oklch(55% 0.16 260)', 'oklch(75% 0.15 200)');
-  const brandSecondary = useColorModeValue('oklch(50% 0.18 200)', 'oklch(65% 0.20 280)');
+  const brandSecondary = useColorModeValue('oklch(60% 0.18 300)', 'oklch(65% 0.20 280)');
   const blueColor = useColorModeValue('blue.600', 'blue.300');
   const purpleColor = useColorModeValue('purple.600', 'purple.300');
   const cardBg = useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)');
@@ -624,6 +624,11 @@ function Resume({ data }) {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
+        }
+
+        @keyframes bounceIcon {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-3px); }
         }
 
         .animated-glow-card {
@@ -1114,7 +1119,10 @@ function Resume({ data }) {
                   _hover={{
                     bg: brandSecondary,
                     transform: 'translateY(-2px)',
-                    boxShadow: 'lg'
+                    boxShadow: 'lg',
+                    "svg, .chakra-button__icon": {
+                      animation: 'bounceIcon 0.6s ease-in-out infinite'
+                    }
                   }}
                   _active={{ transform: 'translateY(0)' }}
                   transition="all 0.2s"
@@ -1137,7 +1145,10 @@ function Resume({ data }) {
                   _hover={{
                     bg: 'whiteAlpha.100',
                     transform: 'translateY(-2px)',
-                    boxShadow: 'lg'
+                    boxShadow: 'lg',
+                    "svg, .chakra-button__icon": {
+                      animation: 'bounceIcon 0.6s ease-in-out infinite'
+                    }
                   }}
                   _active={{ transform: 'translateY(0)' }}
                   transition="all 0.2s"
@@ -1969,11 +1980,14 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
             boxShadow={viewMode === 'list' ? 'sm' : 'none'}
             _hover={{
               bg: viewMode === 'list' ? brandPrimary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'list' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+              color: viewMode === 'list' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
+              "span": {
+                animation: 'bounceIcon 0.6s ease-in-out infinite'
+              }
             }}
             transition="all 0.15s"
           >
-            📋 List
+            <Box as="span" display="inline-block" mr="0.3rem">📋</Box> List
           </Button>
           <Button
             size="xs"
@@ -1992,11 +2006,14 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
             boxShadow={viewMode === 'map' ? 'sm' : 'none'}
             _hover={{
               bg: viewMode === 'map' ? brandSecondary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'map' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+              color: viewMode === 'map' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
+              "span": {
+                animation: 'bounceIcon 0.6s ease-in-out infinite'
+              }
             }}
             transition="all 0.15s"
           >
-            🌐 Skill Map
+            <Box as="span" display="inline-block" mr="0.3rem">🌐</Box> Skill Map
           </Button>
           <Button
             size="xs"
@@ -2015,11 +2032,14 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
             boxShadow={viewMode === 'insights' ? 'sm' : 'none'}
             _hover={{
               bg: viewMode === 'insights' ? brandPrimary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'insights' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+              color: viewMode === 'insights' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
+              "span": {
+                animation: 'bounceIcon 0.6s ease-in-out infinite'
+              }
             }}
             transition="all 0.15s"
           >
-            📊 Insights
+            <Box as="span" display="inline-block" mr="0.3rem">📊</Box> Insights
           </Button>
           <Button
             size="xs"
@@ -2038,11 +2058,14 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
             boxShadow={viewMode === 'tree' ? 'sm' : 'none'}
             _hover={{
               bg: viewMode === 'tree' ? brandSecondary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'tree' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+              color: viewMode === 'tree' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
+              "span": {
+                animation: 'bounceIcon 0.6s ease-in-out infinite'
+              }
             }}
             transition="all 0.15s"
           >
-            🌳 Skills Tree
+            <Box as="span" display="inline-block" mr="0.3rem">🌳</Box> Skills Tree
           </Button>
         </HStack>
       </Flex>
