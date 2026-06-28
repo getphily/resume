@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import { Box, Text, Heading, Flex, HStack, VStack, Button, useColorMode, useColorModeValue } from '@chakra-ui/react';
 import { animate } from 'framer-motion';
@@ -106,6 +106,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
   const noteBg       = isDark ? 'rgba(8,12,20,0.85)'        : 'rgba(242,246,255,0.90)';
 
   const [activeIndustry, setActiveIndustry] = useState(null);
+  const [selectedEmployer, setSelectedEmployer] = useState(null);
   const [hovered, setHovered]               = useState(null);
   const [inView,  setInView]                = useState(false);
   const [revealed, setRevealed]             = useState(false);
@@ -126,7 +127,8 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     }
     inactivityTimerRef.current = setTimeout(() => {
       setActiveIndustry(null);
-      animateZoom([-122.45, 38.2], 12500);
+      setSelectedEmployer(null);
+      animateZoom([-122.45, 38.2], 12500, false);
     }, 30000);
   };
 
@@ -138,7 +140,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     };
   }, []);
 
-  const animateZoom = (targetCenter, targetScale) => {
+  const animateZoom = (targetCenter, targetScale, isPanelOpen = false) => {
     if (animRef.current) {
       animRef.current.stop();
     }
@@ -147,12 +149,18 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     const startLng = centerRef.current[0];
     const startLat = centerRef.current[1];
 
+    let finalTargetLng = targetCenter[0];
+    if (isPanelOpen) {
+      // Shift target center right geographically (which pans map left on screen)
+      finalTargetLng += (90 * 180) / (targetScale * Math.PI);
+    }
+
     animRef.current = animate(0, 1, {
       duration: 0.8,
       ease: [0.16, 1, 0.3, 1], // easeOutExpo
       onUpdate: (progress) => {
         const currentScale = startScale + (targetScale - startScale) * progress;
-        const currentLng = startLng + (targetCenter[0] - startLng) * progress;
+        const currentLng = startLng + (finalTargetLng - startLng) * progress;
         const currentLat = startLat + (targetCenter[1] - startLat) * progress;
 
         scaleRef.current = currentScale;
@@ -171,9 +179,10 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     resetInactivityTimer();
     const nextInd = activeIndustry === ind ? null : ind;
     setActiveIndustry(nextInd);
+    setSelectedEmployer(null);
     
     if (nextInd) {
-      const industryEmployers = norcal.filter(e => e.industry === nextInd);
+      const industryEmployers = mapped.filter(e => e.industry === nextInd);
       if (industryEmployers.length > 0) {
         const avgLng = industryEmployers.reduce((sum, e) => sum + e.coords[0], 0) / industryEmployers.length;
         const avgLat = industryEmployers.reduce((sum, e) => sum + e.coords[1], 0) / industryEmployers.length;
@@ -193,10 +202,10 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
           ? Math.min(Math.max(12500 / maxRange, 15000), 40000) 
           : 35000;
           
-        animateZoom([avgLng, avgLat], targetScale);
+        animateZoom([avgLng, avgLat], targetScale, true);
       }
     } else {
-      animateZoom([-122.45, 38.2], 12500);
+      animateZoom([-122.45, 38.2], 12500, false);
       if (inactivityTimerRef.current) {
         clearTimeout(inactivityTimerRef.current);
       }
@@ -219,16 +228,18 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     return () => obs.disconnect();
   }, []);
 
-  const mapped = employers.map(emp => {
-    const base = COORDS[emp.location];
-    if (!base) return null;
-    const [jx, jy] = jitter(emp.id);
-    return { ...emp, coords: [base[0] + jx, base[1] + jy] };
-  }).filter(Boolean);
+  const mapped = useMemo(() => {
+    return employers.map(emp => {
+      const base = COORDS[emp.location];
+      if (!base) return null;
+      const [jx, jy] = jitter(emp.id);
+      return { ...emp, coords: [base[0] + jx, base[1] + jy] };
+    }).filter(Boolean);
+  }, [employers]);
 
-  const norcal        = mapped.filter(e => e.coords[1] > 36.5);
-  const southernCount = mapped.filter(e => e.coords[1] <= 36.5).length;
-  const allIndustries = [...new Set(employers.map(e => e.industry))].sort();
+  const norcal = useMemo(() => mapped.filter(e => e.coords[1] > 36.5), [mapped]);
+  const socal  = useMemo(() => mapped.filter(e => e.coords[1] <= 36.5), [mapped]);
+  const allIndustries = useMemo(() => [...new Set(employers.map(e => e.industry))].sort(), [employers]);
 
   const cntEmployers  = useCountUp(employers.length,     1400, inView);
   const cntIndustries = useCountUp(allIndustries.length, 1100, inView);
@@ -237,15 +248,32 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
   const dotColor = e => INDUSTRY_COLORS[e.industry] || '#64748b';
   const dimmed   = e => !!(activeIndustry && e.industry !== activeIndustry);
 
-  function handleEnter(emp, el) {
-    const circ = el.getBoundingClientRect();
-    const box  = mapBoxRef.current.getBoundingClientRect();
-    setHovered({
-      ...emp,
-      px: circ.left + circ.width / 2 - box.left,
-      py: circ.top  - box.top,
-    });
-  }
+  const getRenderCoords = (emp) => {
+    const isSocal = emp.coords[1] <= 36.5;
+    if (!isSocal) return emp.coords;
+    
+    const idx = socal.findIndex(e => e.id === emp.id);
+    const totalSocal = socal.length;
+    
+    const startLng = -123.1;
+    const endLng = -121.5;
+    const step = totalSocal > 1 ? (endLng - startLng) / (totalSocal - 1) : 0;
+    const targetLngZoomedOut = startLng + idx * step;
+    
+    if (projectionScale < 12600) {
+      return [targetLngZoomedOut, 36.95];
+    }
+    if (projectionScale > 34000) {
+      return emp.coords;
+    }
+    
+    const t = Math.min(Math.max((projectionScale - 12500) / (35000 - 12500), 0), 1);
+    const interpolatedLng = targetLngZoomedOut + (emp.coords[0] - targetLngZoomedOut) * t;
+    const interpolatedLat = 36.95 + (emp.coords[1] - 36.95) * t;
+    return [interpolatedLng, interpolatedLat];
+  };
+
+  const gradId = (ind) => `grad-${ind.replace(/[^a-zA-Z0-9]/g, '')}`;
 
   return (
     <Box
@@ -328,6 +356,22 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
             height={600}
             style={{ width: '100%', height: '100%', display: 'block' }}
           >
+            <defs>
+              <style>{`
+                @keyframes pulseGlow {
+                  0% { r: 6px; opacity: 0.8; stroke-width: 1.5px; }
+                  70% { r: 16px; opacity: 0; stroke-width: 0.5px; }
+                  100% { r: 16px; opacity: 0; stroke-width: 0px; }
+                }
+              `}</style>
+              {Object.entries(INDUSTRY_COLORS).map(([ind, color]) => (
+                <radialGradient key={ind} id={gradId(ind)} cx="35%" cy="35%" r="60%">
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="40%" stopColor={color} />
+                  <stop offset="100%" stopColor={color} />
+                </radialGradient>
+              ))}
+            </defs>
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
                 geographies
@@ -346,79 +390,181 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
               }
             </Geographies>
 
-            {norcal.map((emp, i) => {
+            {mapped.map((emp, i) => {
               const col  = dotColor(emp);
               const dim  = dimmed(emp);
               const hot  = hovered?.id === emp.id;
+              const isActive = selectedEmployer?.id === emp.id || (activeIndustry && emp.industry === activeIndustry);
+              const coords = getRenderCoords(emp);
+              const gid = gradId(emp.industry);
+              
               return (
-                <Marker key={emp.id} coordinates={emp.coords}>
+                <Marker key={emp.id} coordinates={coords}>
+                  {/* Pulsing ring for active/focused dots */}
+                  {!dim && isActive && (
+                    <circle
+                      r={hot ? 14 : 9}
+                      fill="none"
+                      stroke={col}
+                      strokeWidth={1.5}
+                      style={{
+                        animation: 'pulseGlow 2s infinite ease-out',
+                        transformOrigin: 'center',
+                      }}
+                    />
+                  )}
                   <circle
                     r={hot ? 8 : dim ? 2.5 : 5}
-                    fill={col}
+                    fill={`url(#${gid})`}
                     fillOpacity={hot ? 1 : dim ? 0.12 : 0.88}
                     style={{
-                      filter: dim ? 'none' : `drop-shadow(0 0 ${hot ? 10 : 5}px ${col})`,
-                      transition: `r 0.22s ease, fill-opacity 0.22s ease, filter 0.22s ease, opacity 0.45s ease ${Math.min(i * 10, 700)}ms`,
-                      opacity: revealed ? 1 : 0,
+                      filter: dim ? 'none' : `drop-shadow(0 0 ${hot ? 8 : 4}px ${col})`,
+                      transition: 'r 0.22s ease, fill-opacity 0.22s ease, filter 0.22s ease',
                       cursor: 'pointer',
                     }}
-                    onMouseEnter={e => handleEnter(emp, e.currentTarget)}
+                    onMouseEnter={() => setHovered(emp)}
                     onMouseLeave={() => setHovered(null)}
                     onClick={() => {
                       resetInactivityTimer();
-                      animateZoom(emp.coords, 35000);
+                      setSelectedEmployer(emp);
+                      animateZoom(emp.coords, 35000, true);
                     }}
                   />
                 </Marker>
               );
             })}
+
+            {/* Label for Southern CA dots when zoomed out */}
+            {projectionScale < 13000 && socal.length > 0 && (
+              <Marker coordinates={[-122.3, 37.04]}>
+                <text
+                  textAnchor="middle"
+                  fill={textColorMuted}
+                  fontSize="0.55rem"
+                  fontWeight="800"
+                  letterSpacing="0.06em"
+                  opacity={0.65}
+                >
+                  SOUTHERN CA EMPLOYERS (CLICK TO ZOOM)
+                </text>
+              </Marker>
+            )}
           </ComposableMap>
 
-          {/* Tooltip */}
-          {hovered && (
+          {/* Dynamic Overlay Panel on the right */}
+          {(activeIndustry || selectedEmployer) && (
             <Box
               position="absolute"
-              left={`${hovered.px}px`}
-              top={`${hovered.py - 10}px`}
-              transform="translateX(-50%) translateY(-100%)"
-              pointerEvents="none"
-              zIndex={20}
-              bg={tooltipBg}
+              top="1rem"
+              right="1rem"
+              bottom="1rem"
+              w={{ base: '180px', sm: '230px' }}
+              bg={useColorModeValue('rgba(255, 255, 255, 0.88)', 'rgba(8, 12, 20, 0.88)')}
               backdropFilter="blur(14px)"
               border="1px solid"
-              borderColor={`${dotColor(hovered)}40`}
-              borderRadius="8px"
-              overflow="hidden"
-              boxShadow={`0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px ${dotColor(hovered)}18`}
-              minW="185px"
-              maxW="245px"
+              borderColor={borderLight}
+              borderRadius="xl"
+              boxShadow="2xl"
+              zIndex={15}
+              p="1rem"
+              display="flex"
+              flexDirection="column"
+              animation="fadeInRight 0.3s ease"
             >
-              <style>{`@keyframes ftUp{from{opacity:0;transform:translateX(-50%) translateY(calc(-100% + 8px))}to{opacity:1;transform:translateX(-50%) translateY(-100%)}}`}</style>
-              <Box position="absolute" left={0} top={0} bottom={0} w="3px" bg={dotColor(hovered)} />
-              <Box pl="1rem" pr="0.85rem" py="0.7rem">
-                <HStack spacing="0.4rem" mb="0.35rem">
-                  <Box w="6px" h="6px" borderRadius="full" bg={dotColor(hovered)} flexShrink={0}
-                    style={{ boxShadow: `0 0 6px ${dotColor(hovered)}` }} />
-                  <Text fontSize="0.6rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.09em" color={dotColor(hovered)} noOfLines={1}>
-                    {hovered.industry}
-                  </Text>
-                </HStack>
-                <Text fontSize="0.84rem" fontWeight="700" color={tooltipTxt} lineHeight="1.3" mb="0.2rem">
-                  {hovered.name}
+              <style>{`@keyframes fadeInRight { from { opacity: 0; transform: translateX(15px); } to { opacity: 1; transform: translateX(0); } }`}</style>
+              
+              <Flex justify="space-between" align="center" mb="0.75rem" pb="0.4rem" borderBottom="1px solid" borderColor={borderLight}>
+                <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.05em" color={textColorMuted}>
+                  {selectedEmployer ? 'Employer Profile' : 'Industry List'}
                 </Text>
-                <Text fontSize="0.72rem" color={textColorMuted}>
-                  {hovered.location}
-                </Text>
-              </Box>
-            </Box>
-          )}
+                <Box 
+                  as="button" 
+                  onClick={() => {
+                    setActiveIndustry(null);
+                    setSelectedEmployer(null);
+                    animateZoom([-122.45, 38.2], 12500, false);
+                    if (inactivityTimerRef.current) {
+                      clearTimeout(inactivityTimerRef.current);
+                    }
+                  }}
+                  fontSize="0.8rem" 
+                  fontWeight="bold" 
+                  color="gray.400" 
+                  _hover={{ color: 'red.400' }}
+                >
+                  ✕
+                </Box>
+              </Flex>
 
-          {southernCount > 0 && (
-            <Box position="absolute" bottom="0.75rem" right="0.75rem"
-              fontSize="0.63rem" color={textColorMuted}
-              bg={noteBg} px="0.6rem" py="0.3rem"
-              borderRadius="6px" border="1px solid" borderColor={borderLight}>
-              +{southernCount} employer{southernCount !== 1 ? 's' : ''} in Southern CA not shown
+              <Box flex="1" overflowY="auto" pr="0.15rem" css={{
+                '&::-webkit-scrollbar': { width: '4px' },
+                '&::-webkit-scrollbar-track': { background: 'transparent' },
+                '&::-webkit-scrollbar-thumb': { background: '#cbd5e0', borderRadius: '2px' },
+              }}>
+                {selectedEmployer ? (
+                  <VStack align="stretch" spacing="0.65rem">
+                    <Box>
+                      <Text fontSize="0.88rem" fontWeight="800" lineHeight="1.2">{selectedEmployer.name}</Text>
+                      <Text fontSize="0.63rem" color={textColorMuted} fontWeight="bold" textTransform="uppercase" mt="0.15rem">
+                        {selectedEmployer.industry}
+                      </Text>
+                    </Box>
+                    
+                    <Box fontSize="0.7rem">
+                      <Text fontWeight="bold">Location:</Text>
+                      <Text color={textColorMuted}>{selectedEmployer.location}</Text>
+                    </Box>
+
+                    {selectedEmployer.details && (
+                      <Box fontSize="0.7rem">
+                        <Text fontWeight="bold">Details:</Text>
+                        <Text color={textColorMuted}>{selectedEmployer.details}</Text>
+                      </Box>
+                    )}
+
+                    {activeIndustry && (
+                      <Button 
+                        size="xs" 
+                        fontSize="0.65rem"
+                        h="1.5rem"
+                        mt="0.5rem" 
+                        variant="outline"
+                        onClick={() => setSelectedEmployer(null)}
+                      >
+                        Back to List
+                      </Button>
+                    )}
+                  </VStack>
+                ) : (
+                  <VStack align="stretch" spacing="0.4rem">
+                    <Text fontSize="0.72rem" fontWeight="800" mb="0.25rem" color={INDUSTRY_COLORS[activeIndustry]} noOfLines={1}>
+                      {activeIndustry}
+                    </Text>
+                    {mapped
+                      .filter(e => e.industry === activeIndustry)
+                      .map(emp => (
+                        <Box
+                          key={emp.id}
+                          p="0.4rem"
+                          borderRadius="md"
+                          border="1px solid"
+                          borderColor={borderLight}
+                          bg={useColorModeValue('white', 'gray.800')}
+                          cursor="pointer"
+                          onClick={() => {
+                            setSelectedEmployer(emp);
+                            animateZoom(emp.coords, 35000, true);
+                          }}
+                          _hover={{ borderColor: INDUSTRY_COLORS[activeIndustry], transform: 'translateX(2px)' }}
+                          transition="all 0.15s"
+                        >
+                          <Text fontSize="0.74rem" fontWeight="700" noOfLines={1}>{emp.name}</Text>
+                          <Text fontSize="0.62rem" color={textColorMuted}>{emp.location}</Text>
+                        </Box>
+                      ))}
+                  </VStack>
+                )}
+              </Box>
             </Box>
           )}
 
@@ -431,7 +577,8 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
               colorScheme="blue"
               onClick={() => {
                 setActiveIndustry(null);
-                animateZoom([-122.45, 38.2], 12500);
+                setSelectedEmployer(null);
+                animateZoom([-122.45, 38.2], 12500, false);
                 if (inactivityTimerRef.current) {
                   clearTimeout(inactivityTimerRef.current);
                 }
