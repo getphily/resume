@@ -1966,6 +1966,10 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
             transform: 'translateY(-50%)',
             w: 0, h: 0,
             borderTop: '6px solid transparent',
+            borderBottom: '6px solid transparent',
+            borderRight: `6px solid`,
+            borderRightColor: 'gray.900',
+          }}
         >
           <Text fontSize="0.82rem" fontWeight="700" color="white" letterSpacing="0.02em">
             {info.totalMonths} month{info.totalMonths !== 1 ? 's' : ''}
