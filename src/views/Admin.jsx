@@ -1446,7 +1446,7 @@ function SlidesManager({ pwd }) {
   const [slides, setSlides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [pickingImageForIdx, setPickingImageForIdx] = useState(null);
+  const [pickingImageFor, setPickingImageFor] = useState(null); // { eventIdx: number, imgIdx: number }
 
   // Add Slide Form State
   const [newTitle, setNewTitle] = useState('');
@@ -1609,9 +1609,29 @@ function SlidesManager({ pwd }) {
     setEditForm(prev => ({ ...prev, content_data: copy }));
   }
 
+  function updateTimelineEventImage(eventIdx, imgIdx, url) {
+    const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
+    const ev = copy[eventIdx] || {};
+    let urls = Array.isArray(ev.image_urls) ? [...ev.image_urls] : (ev.image_url ? [ev.image_url] : []);
+    
+    if (url) {
+      urls[imgIdx] = url;
+    } else {
+      urls.splice(imgIdx, 1);
+    }
+    urls = urls.filter(Boolean);
+    
+    copy[eventIdx] = {
+      ...ev,
+      image_urls: urls,
+      image_url: urls[0] || ''
+    };
+    setEditForm(prev => ({ ...prev, content_data: copy }));
+  }
+
   function addTimelineEvent() {
     const copy = [...(Array.isArray(editForm.content_data) ? editForm.content_data : [])];
-    copy.push({ year: new Date().getFullYear(), title: 'New Event', details: 'Details...', image_url: '' });
+    copy.push({ year: new Date().getFullYear(), title: 'New Event', details: 'Details...', image_url: '', image_urls: [] });
     setEditForm(prev => ({ ...prev, content_data: copy }));
   }
 
@@ -1736,29 +1756,46 @@ function SlidesManager({ pwd }) {
                                   <textarea style={{ ...c.textarea, padding: '0.5rem', minHeight: '38px' }} value={ev.details} onChange={e => updateTimelineEvent(idx, 'details', e.target.value)} />
                                 </div>
                                 <div>
-                                  <label style={{ ...c.label, fontSize: '0.62rem' }}>Image Asset</label>
-                                  {ev.image_url ? (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                      <img src={ev.image_url} alt="thumbnail" style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
-                                      <button type="button" onClick={() => updateTimelineEvent(idx, 'image_url', '')} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, padding: '0.2rem 0.4rem' }}>
-                                        Remove
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => setPickingImageForIdx(idx)}
-                                      style={{
-                                        ...c.btn,
-                                        ...c.btnGhost,
-                                        ...c.btnSm,
-                                        padding: '0.4rem 0.6rem',
-                                        width: '100%'
-                                      }}
-                                    >
-                                      Select Image
-                                    </button>
-                                  )}
+                                  <label style={{ ...c.label, fontSize: '0.62rem' }}>Image Assets (Max 3)</label>
+                                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                    {(() => {
+                                      const urls = Array.isArray(ev.image_urls) ? ev.image_urls : (ev.image_url ? [ev.image_url] : []);
+                                      return (
+                                        <>
+                                          {urls.map((url, imgIdx) => (
+                                            <div key={imgIdx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', background: 'rgba(255,255,255,0.03)', padding: '0.25rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                              <img src={url} alt="thumbnail" style={{ width: '38px', height: '38px', borderRadius: '6px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
+                                              <button type="button" onClick={() => updateTimelineEventImage(idx, imgIdx, '')} style={{ ...c.btn, ...c.btnDanger, fontSize: '0.55rem', padding: '0.1rem 0.3rem', height: 'auto', minHeight: 0 }}>
+                                                Remove
+                                              </button>
+                                            </div>
+                                          ))}
+                                          {urls.length < 3 && (
+                                            <button
+                                              type="button"
+                                              onClick={() => setPickingImageFor({ eventIdx: idx, imgIdx: urls.length })}
+                                              style={{
+                                                ...c.btn,
+                                                ...c.btnGhost,
+                                                ...c.btnSm,
+                                                padding: '0',
+                                                height: '38px',
+                                                width: '38px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: '1.2rem',
+                                                lineHeight: 1
+                                              }}
+                                              title="Add Image"
+                                            >
+                                              +
+                                            </button>
+                                          )}
+                                        </>
+                                      );
+                                    })()}
+                                  </div>
                                 </div>
                                 <button type="button" onClick={() => deleteTimelineEvent(idx)} style={{ ...c.btn, ...c.btnDanger, ...c.btnSm, alignSelf: 'center', background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.1)' }}>
                                   Delete
@@ -1788,14 +1825,17 @@ function SlidesManager({ pwd }) {
 
                       {slide.content_type === 'personal_timeline' && (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          {(slide.content_data || []).map((ev, i) => (
-                            <span key={i} style={{ ...c.pill, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                              <strong>{ev.year}</strong>: {ev.title}
-                              {ev.image_url && (
-                                <img src={ev.image_url} alt="" style={{ width: '16px', height: '16px', borderRadius: '3px', objectFit: 'cover' }} />
-                              )}
-                            </span>
-                          ))}
+                          {(slide.content_data || []).map((ev, i) => {
+                            const urls = Array.isArray(ev.image_urls) ? ev.image_urls : (ev.image_url ? [ev.image_url] : []);
+                            return (
+                              <span key={i} style={{ ...c.pill, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <strong>{ev.year}</strong>: {ev.title}
+                                {urls.map((url, uidx) => (
+                                  <img key={uidx} src={url} alt="" style={{ width: '16px', height: '16px', borderRadius: '3px', objectFit: 'cover' }} />
+                                ))}
+                              </span>
+                            );
+                          })}
                         </div>
                       )}
 
@@ -1821,11 +1861,13 @@ function SlidesManager({ pwd }) {
       
       <MediaPickerModal
         pwd={pwd}
-        isOpen={pickingImageForIdx !== null}
-        onClose={() => setPickingImageForIdx(null)}
+        isOpen={pickingImageFor !== null}
+        onClose={() => setPickingImageFor(null)}
         onSelect={(url) => {
-          updateTimelineEvent(pickingImageForIdx, 'image_url', url);
-          setPickingImageForIdx(null);
+          if (pickingImageFor) {
+            updateTimelineEventImage(pickingImageFor.eventIdx, pickingImageFor.imgIdx, url);
+          }
+          setPickingImageFor(null);
         }}
       />
     </div>

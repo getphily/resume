@@ -97,9 +97,38 @@ const techIcons = {
 // ─── Horizontal Timeline Component for Carousel ───
 function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, textColorMuted, setLbAsset, setLbJobAssets }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const selectedEvent = events[selectedIdx];
+  const [isDesc, setIsDesc] = useState(false);
+  const detailBg = useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)');
 
   if (!events || events.length === 0) return null;
+
+  const sortedEvents = useMemo(() => {
+    const copy = [...events];
+    return copy.sort((a, b) => {
+      const yearA = parseInt(a.year) || 0;
+      const yearB = parseInt(b.year) || 0;
+      return isDesc ? yearB - yearA : yearA - yearB;
+    });
+  }, [events, isDesc]);
+
+  const selectedEvent = sortedEvents[selectedIdx] || sortedEvents[0] || null;
+
+  const toggleSort = () => {
+    const currentEvent = sortedEvents[selectedIdx];
+    setIsDesc(prev => {
+      const nextDesc = !prev;
+      const nextSorted = [...events].sort((a, b) => {
+        const yearA = parseInt(a.year) || 0;
+        const yearB = parseInt(b.year) || 0;
+        return nextDesc ? yearB - yearA : yearA - yearB;
+      });
+      const nextIdx = nextSorted.findIndex(e => e.year === currentEvent?.year && e.title === currentEvent?.title);
+      if (nextIdx !== -1) {
+        setSelectedIdx(nextIdx);
+      }
+      return nextDesc;
+    });
+  };
 
   return (
     <VStack align="stretch" spacing="1.5rem" w="100%" flex="1" minH="0" justify="space-between">
@@ -109,6 +138,25 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
           100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
         }
       `}</style>
+
+      {/* Sort Toggle Bar */}
+      <Flex justify="flex-end" mb="-0.75rem" zIndex="3" position="relative">
+        <Button
+          size="xs"
+          variant="outline"
+          borderColor={borderLight}
+          color={textColorMuted}
+          _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100'), color: color }}
+          onClick={toggleSort}
+          leftIcon={<span>⇅</span>}
+          borderRadius="full"
+          px="0.75rem"
+          fontSize="0.75rem"
+          fontWeight="700"
+        >
+          Sort: {isDesc ? 'Newest First' : 'Oldest First'}
+        </Button>
+      </Flex>
       
       {/* Horizontal timeline track and nodes */}
       <Box
@@ -137,7 +185,6 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
             transform="translateY(-50%)"
           />
 
-          {/* Nodes Container */}
           <HStack
             spacing="3.5rem"
             px="1.25rem"
@@ -146,7 +193,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
             align="center"
             h="100%"
           >
-            {events.map((ev, idx) => {
+            {sortedEvents.map((ev, idx) => {
               const isSelected = selectedIdx === idx;
               return (
                 <Flex
@@ -251,7 +298,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
           >
             <Box
               p="1.25rem"
-              bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
+              bg={detailBg}
               border="1px solid"
               borderColor={borderLight}
               borderRadius="xl"
@@ -267,45 +314,56 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                   {selectedEvent.year}
                 </Badge>
               </HStack>
-              <Flex align="start" justify="space-between" gap="1.5rem">
+              <Flex direction={{ base: 'column', md: 'row' }} align="stretch" justify="space-between" gap="1.5rem">
                 <Text fontSize="0.9rem" color={textColorMuted} lineHeight="1.6" fontWeight="500" flex="1">
                   {selectedEvent.details}
                 </Text>
-                {selectedEvent.image_url && (
-                  <Box
-                    boxSize={{ base: '75px', md: '95px' }}
-                    minW={{ base: '75px', md: '95px' }}
-                    borderRadius="lg"
-                    overflow="hidden"
-                    cursor="pointer"
-                    onClick={() => {
-                      const asset = {
-                        id: `slide-event-${selectedIdx}`,
-                        public_url: selectedEvent.image_url,
-                        caption: selectedEvent.title || 'Event Image',
-                        filename: 'event_image.jpg',
-                        file_type: 'image'
-                      };
-                      if (setLbAsset) setLbAsset(asset);
-                      if (setLbJobAssets) setLbJobAssets([asset]);
-                    }}
-                    border="1px solid"
-                    borderColor={borderLight}
-                    transition="transform 0.18s ease, box-shadow 0.18s ease"
-                    _hover={{
-                      transform: 'scale(1.035)',
-                      boxShadow: '0 4px 18px rgba(0,0,0,0.45)'
-                    }}
-                  >
-                    <Image
-                      src={selectedEvent.image_url}
-                      alt={selectedEvent.title || 'Event Image'}
-                      w="100%"
-                      h="100%"
-                      objectFit="cover"
-                    />
-                  </Box>
-                )}
+                {(() => {
+                  const urls = Array.isArray(selectedEvent.image_urls) ? selectedEvent.image_urls : (selectedEvent.image_url ? [selectedEvent.image_url] : []);
+                  if (urls.length === 0) return null;
+                  
+                  const allAssets = urls.map((url, uidx) => ({
+                    id: `slide-event-${selectedIdx}-${uidx}`,
+                    public_url: url,
+                    caption: `${selectedEvent.title || 'Event Image'} (${uidx + 1}/${urls.length})`,
+                    filename: `event_image_${uidx + 1}.jpg`,
+                    file_type: 'image'
+                  }));
+
+                  return (
+                    <Flex direction="row" gap="0.75rem" justify={{ base: 'start', md: 'end' }} align="center" wrap="wrap" minW="fit-content">
+                      {urls.map((url, uidx) => (
+                        <Box
+                          key={uidx}
+                          boxSize={{ base: '75px', md: '95px' }}
+                          minW={{ base: '75px', md: '95px' }}
+                          borderRadius="lg"
+                          overflow="hidden"
+                          cursor="pointer"
+                          onClick={() => {
+                            if (setLbAsset) setLbAsset(allAssets[uidx]);
+                            if (setLbJobAssets) setLbJobAssets(allAssets);
+                          }}
+                          border="1px solid"
+                          borderColor={borderLight}
+                          transition="transform 0.18s ease, box-shadow 0.18s ease"
+                          _hover={{
+                            transform: 'scale(1.035)',
+                            boxShadow: '0 4px 18px rgba(0,0,0,0.45)'
+                          }}
+                        >
+                          <Image
+                            src={url}
+                            alt={`${selectedEvent.title || 'Event Image'} ${uidx + 1}`}
+                            w="100%"
+                            h="100%"
+                            objectFit="cover"
+                          />
+                        </Box>
+                      ))}
+                    </Flex>
+                  );
+                })()}
               </Flex>
             </Box>
           </motion.div>
