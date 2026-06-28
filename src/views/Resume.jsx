@@ -1555,6 +1555,9 @@ function Resume({ data }) {
 
 
         {/* 4. Skills & Core Competencies — Full Redesign */}
+        <Heading as="h2" fontSize="1.5rem" fontWeight="800" mb="2rem" letterSpacing="-0.01em">
+          Skills
+        </Heading>
         <SkillsSection
           skills={data.skills}
           competencies={data.competencies}
