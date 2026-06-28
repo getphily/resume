@@ -1966,10 +1966,6 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
             transform: 'translateY(-50%)',
             w: 0, h: 0,
             borderTop: '6px solid transparent',
-            borderBottom: '6px solid transparent',
-            borderRight: `6px solid`,
-            borderRightColor: 'gray.900',
-          }}
         >
           <Text fontSize="0.82rem" fontWeight="700" color="white" letterSpacing="0.02em">
             {info.totalMonths} month{info.totalMonths !== 1 ? 's' : ''}
@@ -1982,39 +1978,76 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
 
 function SkillsSection({ skills, competencies, timeline = [], borderLight, cardBg, textColorMuted, brandPrimary, brandSecondary, blueColor, purpleColor }) {
 
-  const [tabIdx, setTabIdx] = useState(0);
   const [viewMode, setViewMode] = useState('list');
   const { colorMode } = useColorMode();
   const isDark = colorMode === 'dark';
 
-  const groupedCompetencies = useMemo(() => {
-    const out = {};
+  // Consolidate Labor Relations categories dynamically from 18 to 4 main groups
+  const consolidatedLaborCategories = useMemo(() => {
+    const categories = {
+      'Collective Bargaining & Contract Architecture': [],
+      'Grievance & Dispute Resolution': [],
+      'Campaigns & Workforce Organizing': [],
+      'Governance, Compliance & Operations': []
+    };
+
+    const laborIds = ['strategic_core', 'core_professional', 'skills_list'];
+    
     (competencies || []).forEach(c => {
-      if (!out[c.group_type]) out[c.group_type] = {};
-      if (!out[c.group_type][c.category]) out[c.group_type][c.category] = [];
-      out[c.group_type][c.category].push(c);
+      if (!laborIds.includes(c.group_type)) return;
+      
+      const cat = c.category.toLowerCase();
+      
+      if (cat.includes('bargaining') || cat.includes('contract') || cat.includes('cba') || cat.includes('wage opener')) {
+        categories['Collective Bargaining & Contract Architecture'].push(c);
+      } else if (cat.includes('grievance') || cat.includes('conflict') || cat.includes('resolution') || cat.includes('advocacy') || cat.includes('protection') || cat.includes('just cause')) {
+        categories['Grievance & Dispute Resolution'].push(c);
+      } else if (cat.includes('organizing') || cat.includes('campaign') || cat.includes('mobilization') || cat.includes('political') || cat.includes('coalition')) {
+        categories['Campaigns & Workforce Organizing'].push(c);
+      } else {
+        categories['Governance, Compliance & Operations'].push(c);
+      }
     });
-    return out;
+
+    // Remove empty categories
+    return Object.fromEntries(
+      Object.entries(categories).filter(([_, items]) => items.length > 0)
+    );
   }, [competencies]);
 
-  // Merge all labor categories into one flat map
-  const laborCategories = useMemo(() => {
-    const merged = {};
-    LABOR_GROUPS.forEach(grp => {
-      Object.entries(groupedCompetencies[grp] || {}).forEach(([cat, items]) => {
-        merged[cat] = items;
-      });
-    });
-    return merged;
-  }, [groupedCompetencies]);
+  // Consolidate Digital Media & Communications categories dynamically from 7 to 3 main groups
+  const consolidatedDigitalCategories = useMemo(() => {
+    const categories = {
+      'Creative Media & Studio Production': [],
+      'Web Development & Coding': [],
+      'Campaign Systems & Operations': []
+    };
 
-  const digitalCategories = groupedCompetencies['technical_skills'] || {};
+    (competencies || []).forEach(c => {
+      if (c.group_type !== 'technical_skills') return;
+      
+      const cat = c.category.toLowerCase();
+      const name = c.name.toLowerCase();
+      
+      if (cat.includes('media') || cat.includes('video') || cat.includes('audio') || cat.includes('graphic') || cat.includes('editing') || cat.includes('streaming') || cat.includes('studio') || cat.includes('production') || cat.includes('design')) {
+        categories['Creative Media & Studio Production'].push(c);
+      } else if (cat.includes('coding') || cat.includes('software engineering') || cat.includes('web development') || name.includes('seo') || name.includes('front-end') || name.includes('architecture') || name.includes('state management')) {
+        categories['Web Development & Coding'].push(c);
+      } else {
+        categories['Campaign Systems & Operations'].push(c);
+      }
+    });
+
+    return Object.fromEntries(
+      Object.entries(categories).filter(([_, items]) => items.length > 0)
+    );
+  }, [competencies]);
 
   const leadershipSkills = (skills || []).filter(s => s.category === 'leadership');
   const commsSkills = (skills || []).filter(s => s.category === 'comms');
 
-  const laborCount = Object.values(laborCategories).reduce((n, items) => n + items.length, 0);
-  const digitalCount = Object.values(digitalCategories).reduce((n, items) => n + items.length, 0);
+  const laborCount = Object.values(consolidatedLaborCategories).reduce((n, items) => n + items.length, 0);
+  const digitalCount = Object.values(consolidatedDigitalCategories).reduce((n, items) => n + items.length, 0);
 
   return (
     <Box
@@ -2049,64 +2082,60 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           spacing="0.25rem"
           bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.03)')}
           p="0.25rem"
-          borderRadius="xl"
+          borderRadius="full"
           border="1px solid"
           borderColor={borderLight}
-          alignSelf={{ base: 'start', sm: 'auto' }}
-          role="tablist"
-          aria-label="Skills view options"
         >
+          {/* Active indicator background pill */}
+          <motion.div
+            layoutId="activeViewBackdrop"
+            style={{
+              position: 'absolute',
+              top: '0.25rem',
+              bottom: '0.25rem',
+              left: '0.25rem',
+              width: 'calc(25% - 0.31rem)',
+              borderRadius: '9999px',
+              background: useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.08)'),
+              zIndex: 0
+            }}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+            animate={{
+              left: viewMode === 'list' ? '0.25rem' :
+                    viewMode === 'map' ? '25%' :
+                    viewMode === 'tree' ? '50%' : '75%'
+            }}
+          />
+
           {[
             { id: 'list', label: 'List' },
-            { id: 'map', label: 'Skill Map' },
-            { id: 'insights', label: 'Insights' },
-            { id: 'tree', label: 'Skills Tree' }
-          ].map((opt) => {
-            const isActive = viewMode === opt.id;
-            const themeClr = opt.id === 'list' || opt.id === 'insights' ? brandPrimary : brandSecondary;
+            { id: 'map', label: 'Map' },
+            { id: 'tree', label: 'Tree' },
+            { id: 'insights', label: 'Insights' }
+          ].map(opt => {
+            const active = viewMode === opt.id;
             return (
               <Button
                 key={opt.id}
-                role="tab"
-                aria-selected={isActive}
                 size="xs"
+                variant="ghost"
                 onClick={() => setViewMode(opt.id)}
-                fontSize="0.75rem"
-                fontWeight="700"
-                borderRadius="lg"
-                px="0.9rem"
-                variant="unstyled"
-                position="relative"
-                h="1.75rem"
-                display="inline-flex"
-                alignItems="center"
-                justifyContent="center"
-                color={isActive ? (isDark ? 'gray.900' : 'white') : textColorMuted}
-                transition="color 0.22s"
-                _hover={{
-                  color: isActive ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
-                }}
+                fontWeight={active ? "800" : "600"}
+                color={active ? (isDark ? "white" : "gray.900") : textColorMuted}
+                borderRadius="full"
+                px="0.85rem"
+                py="0.3rem"
+                h="1.6rem"
+                _hover={{ bg: 'transparent' }}
+                _active={{ bg: 'transparent' }}
                 _focusVisible={{
                   outline: '2px solid',
-                  outlineColor: themeClr,
-                  outlineOffset: '2px'
+                  outlineColor: brandPrimary,
+                  outlineOffset: '-2px'
                 }}
+                position="relative"
+                zIndex={1}
               >
-                {isActive && (
-                  <Box
-                    as={motion.div}
-                    layoutId="activeViewBackdrop"
-                    position="absolute"
-                    top="0"
-                    left="0"
-                    right="0"
-                    bottom="0"
-                    bg={themeClr}
-                    borderRadius="lg"
-                    zIndex={0}
-                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  />
-                )}
                 <Box as="span" position="relative" zIndex={1}>
                   {opt.label}
                 </Box>
@@ -2135,164 +2164,95 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
             textColorMuted={textColorMuted}
           />
         ) : (
-          <Tabs index={tabIdx} onChange={setTabIdx} variant="soft-rounded" size="sm" isLazy>
-            <TabList
-              display="inline-flex"
-              bg={useColorModeValue('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.02)')}
-              p="0.25rem"
-              borderRadius="xl"
-              border="1px solid"
-              borderColor={borderLight}
-              gap="0.3rem"
-              mb="1.75rem"
-              wrap="wrap"
-            >
-              <Tab
-                _selected={{ bg: brandPrimary, color: isDark ? 'gray.900' : 'white', boxShadow: 'sm' }}
-                _hover={{ bg: useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)') }}
-                fontWeight="700"
-                fontSize="0.8rem"
-                bg="transparent"
-                px="1rem"
-                py="0.4rem"
-                borderRadius="lg"
-                color={textColorMuted}
-                transition="all 0.2s"
-                _focusVisible={{
-                  outline: '2px solid',
-                  outlineColor: brandPrimary,
-                  outlineOffset: '2px'
-                }}
-              >
-                <Box
-                  w="6px"
-                  h="6px"
-                  borderRadius="full"
-                  bg={tabIdx === 0 ? (isDark ? 'gray.900' : 'white') : brandPrimary}
-                  mr="0.5rem"
-                  style={{
-                    boxShadow: tabIdx === 0 ? 'none' : `0 0 6px ${brandPrimary}`,
-                    transition: 'all 0.2s'
-                  }}
-                />
-                Labor Relations
-                <Badge
-                  ml="0.5rem"
-                  bg={tabIdx === 0 ? (isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.25)") : useColorModeValue("rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.15)")}
-                  color={tabIdx === 0 ? (isDark ? "gray.900" : "white") : brandPrimary}
-                  borderRadius="full"
-                  fontSize="0.65rem"
-                >
-                  {laborCount + leadershipSkills.length}
-                </Badge>
-              </Tab>
-              <Tab
-                _selected={{ bg: brandSecondary, color: isDark ? 'gray.900' : 'white', boxShadow: 'sm' }}
-                _hover={{ bg: useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)') }}
-                fontWeight="700"
-                fontSize="0.8rem"
-                bg="transparent"
-                px="1rem"
-                py="0.4rem"
-                borderRadius="lg"
-                color={textColorMuted}
-                transition="all 0.2s"
-                _focusVisible={{
-                  outline: '2px solid',
-                  outlineColor: brandSecondary,
-                  outlineOffset: '2px'
-                }}
-              >
-                <Box
-                  w="6px"
-                  h="6px"
-                  borderRadius="full"
-                  bg={tabIdx === 1 ? (isDark ? 'gray.900' : 'white') : brandSecondary}
-                  mr="0.5rem"
-                  style={{
-                    boxShadow: tabIdx === 1 ? 'none' : `0 0 6px ${brandSecondary}`,
-                    transition: 'all 0.2s'
-                  }}
-                />
-                Digital Media &amp; Communications
-                <Badge
-                  ml="0.5rem"
-                  bg={tabIdx === 1 ? (isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.25)") : useColorModeValue("rgba(147, 51, 234, 0.08)", "rgba(147, 51, 234, 0.15)")}
-                  color={tabIdx === 1 ? (isDark ? "gray.900" : "white") : brandSecondary}
-                  borderRadius="full"
-                  fontSize="0.65rem"
-                >
-                  {digitalCount + commsSkills.length}
-                </Badge>
-              </Tab>
-            </TabList>
-
-            <TabPanels>
-              {/* Tab 0: Labor Relations */}
-              <TabPanel px="0" pt="0">
+          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing="2.5rem" mt="0.5rem">
+            {/* Left Column: Labor Relations */}
+            <Box>
+              {/* Column Header */}
+              <VStack align="stretch" spacing="1rem" mb="1.5rem">
+                <HStack justify="space-between" align="baseline" pb="0.5rem" borderBottom="1px solid" borderColor={borderLight}>
+                  <Heading as="h3" fontSize="0.95rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" color={blueColor}>
+                    Labor Relations
+                  </Heading>
+                  <Text fontSize="0.75rem" fontWeight="700" color={textColorMuted}>
+                    {laborCount + leadershipSkills.length} Skills
+                  </Text>
+                </HStack>
+                
                 {/* Quick-ref pills */}
                 {leadershipSkills.length > 0 && (
                   <Box
-                    mb="1.5rem"
                     p="1rem"
                     bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
                     border="1px solid"
                     borderColor={borderLight}
                     borderRadius="xl"
                   >
-                    <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
-                      Core Skills
+                    <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
+                      Core Strategic Focus
                     </Text>
                     <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
                       {leadershipSkills.map(s => (
-                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.76rem">{s.name}</Tag>
+                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.72rem" fontWeight="700" borderRadius="md">{s.name}</Tag>
                       ))}
                     </HStack>
                   </Box>
                 )}
-                <CompetencyGroup
-                  categories={laborCategories}
-                  scheme="blue"
-                  pathColor={brandPrimary}
-                  borderLight={borderLight}
-                  cardBg={cardBg}
-                  textColorMuted={textColorMuted}
-                />
-              </TabPanel>
+              </VStack>
 
-              {/* Tab 1: Digital Media & Communications */}
-              <TabPanel px="0" pt="0">
+              <CompetencyGroup
+                categories={consolidatedLaborCategories}
+                scheme="blue"
+                pathColor={brandPrimary}
+                borderLight={borderLight}
+                cardBg={cardBg}
+                textColorMuted={textColorMuted}
+              />
+            </Box>
+
+            {/* Right Column: Digital Media & Communications */}
+            <Box>
+              {/* Column Header */}
+              <VStack align="stretch" spacing="1rem" mb="1.5rem">
+                <HStack justify="space-between" align="baseline" pb="0.5rem" borderBottom="1px solid" borderColor={borderLight}>
+                  <Heading as="h3" fontSize="0.95rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" color={purpleColor}>
+                    Digital Media &amp; Communications
+                  </Heading>
+                  <Text fontSize="0.75rem" fontWeight="700" color={textColorMuted}>
+                    {digitalCount + commsSkills.length} Skills
+                  </Text>
+                </HStack>
+
                 {/* Quick-ref pills */}
                 {commsSkills.length > 0 && (
                   <Box
-                    mb="1.5rem"
                     p="1rem"
                     bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
                     border="1px solid"
                     borderColor={borderLight}
                     borderRadius="xl"
                   >
-                    <Text fontSize="0.7rem" fontWeight="700" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
-                      Core Skills
+                    <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
+                      Core Technical Focus
                     </Text>
                     <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
                       {commsSkills.map(s => (
-                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.76rem">{s.name}</Tag>
+                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.72rem" fontWeight="700" borderRadius="md">{s.name}</Tag>
                       ))}
                     </HStack>
                   </Box>
                 )}
-                <CompetencyGroup
-                  categories={digitalCategories}
-                  scheme="purple"
-                  pathColor={brandSecondary}
-                  borderLight={borderLight}
-                  cardBg={cardBg}
-                  textColorMuted={textColorMuted}
-                />
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+              </VStack>
+
+              <CompetencyGroup
+                categories={consolidatedDigitalCategories}
+                scheme="purple"
+                pathColor={brandSecondary}
+                borderLight={borderLight}
+                cardBg={cardBg}
+                textColorMuted={textColorMuted}
+              />
+            </Box>
+          </SimpleGrid>
         )}
       </Box>
     </Box>
@@ -2318,7 +2278,7 @@ function CompetencyGroup({ categories, scheme, pathColor, borderLight, cardBg, t
   }
 
   return (
-    <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1.25rem">
+    <VStack align="stretch" spacing="1.25rem">
       {catEntries.map(([category, items]) => (
         <Box
           key={category}
@@ -2441,11 +2401,9 @@ function CompetencyGroup({ categories, scheme, pathColor, borderLight, cardBg, t
           </VStack>
         </Box>
       ))}
-    </SimpleGrid>
+    </VStack>
   );
 }
-
-// ─── Career Scope Animated Stat Bar ────────────────────────────────────────
 
 function CareerScopeBar({ borderLight, blueColor, purpleColor, employers, competencies, cardBg }) {
   const progressTrackBg = useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.06)');
