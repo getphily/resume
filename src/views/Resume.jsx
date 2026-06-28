@@ -1551,241 +1551,149 @@ function Resume({ data }) {
             >
               BUILT WITH
             </Text>
-            <HStack spacing="0.75rem" wrap="wrap" justify="center">
-              <Link
-                href="#"
-                onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(75% 0.15 70)',
-                  borderColor: 'oklch(75% 0.15 70)',
-                  boxShadow: '0 4px 12px oklch(75% 0.15 70 / 0.2)'
-                }}
-              >
-                {techIcons.pilot}
-                <Text>Phil Ybarrolaza</Text>
-              </Link>
-              <Link
-                href="https://antigravity.google"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(70% 0.20 200)',
-                  borderColor: 'oklch(70% 0.20 200)',
-                  boxShadow: '0 4px 12px oklch(70% 0.20 200 / 0.2)'
-                }}
-              >
-                {techIcons.antigravity}
-                <Text>Antigravity AI</Text>
-              </Link>
-              <Link
-                href="https://deepmind.google"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(70% 0.18 290)',
-                  borderColor: 'oklch(70% 0.18 290)',
-                  boxShadow: '0 4px 12px oklch(70% 0.18 290 / 0.2)'
-                }}
-              >
-                {techIcons.gemini}
-                <Text>Gemini Foundation</Text>
-              </Link>
-              <Link
-                href="https://nodejs.org/"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(65% 0.15 140)',
-                  borderColor: 'oklch(65% 0.15 140)',
-                  boxShadow: '0 4px 12px oklch(65% 0.15 140 / 0.2)'
-                }}
-              >
-                {techIcons.node}
-                <Text>Node.js</Text>
-              </Link>
-              <Link
-                href="https://expressjs.com/"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: useColorModeValue('black', 'white'),
-                  borderColor: useColorModeValue('black', 'white'),
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                }}
-              >
-                {techIcons.express}
-                <Text>Express</Text>
-              </Link>
-              <Link
-                href="https://supabase.com/"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(72% 0.18 150)',
-                  borderColor: 'oklch(72% 0.18 150)',
-                  boxShadow: '0 4px 12px oklch(72% 0.18 150 / 0.2)'
-                }}
-              >
-                {techIcons.supabase}
-                <Text>Supabase</Text>
-              </Link>
-              <Link
-                href="https://react.dev/"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(75% 0.15 200)',
-                  borderColor: 'oklch(75% 0.15 200)',
-                  boxShadow: '0 4px 12px oklch(75% 0.15 200 / 0.2)'
-                }}
-              >
-                {techIcons.react}
-                <Text>React</Text>
-              </Link>
-              <Link
-                href="https://vite.dev/"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(65% 0.20 280)',
-                  borderColor: 'oklch(65% 0.20 280)',
-                  boxShadow: '0 4px 12px oklch(65% 0.20 280 / 0.2)'
-                }}
-              >
-                {techIcons.vite}
-                <Text>Vite</Text>
-              </Link>
-              <Link
-                href="https://v2.chakra-ui.com/"
-                target="_blank"
-                rel="noopener"
-                display="flex"
-                alignItems="center"
-                gap="0.5rem"
-                px="0.88rem"
-                py="0.5rem"
-                bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
-                border="1px solid"
-                borderColor={borderLight}
-                borderRadius="50px"
-                fontSize="0.82rem"
-                fontWeight="500"
-                transition="all 0.2s"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  color: 'oklch(68% 0.17 185)',
-                  borderColor: 'oklch(68% 0.17 185)',
-                  boxShadow: '0 4px 12px oklch(68% 0.17 185 / 0.2)'
-                }}
-              >
-                {techIcons.chakraui}
-                <Text>Chakra UI</Text>
-              </Link>
-            </HStack>
+            {(() => {
+              const builtWithBadges = [
+                {
+                  id: 'pilot',
+                  label: 'Phil Ybarrolaza',
+                  href: '#',
+                  onClick: (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+                  icon: techIcons.pilot,
+                  hoverColor: 'oklch(75% 0.15 70)',
+                },
+                {
+                  id: 'antigravity',
+                  label: 'Antigravity AI',
+                  href: 'https://antigravity.google',
+                  icon: techIcons.antigravity,
+                  hoverColor: 'oklch(70% 0.20 200)',
+                },
+                {
+                  id: 'gemini',
+                  label: 'Gemini Foundation',
+                  href: 'https://deepmind.google',
+                  icon: techIcons.gemini,
+                  hoverColor: 'oklch(70% 0.18 290)',
+                },
+                {
+                  id: 'node',
+                  label: 'Node.js',
+                  href: 'https://nodejs.org/',
+                  icon: techIcons.node,
+                  hoverColor: 'oklch(65% 0.15 140)',
+                },
+                {
+                  id: 'express',
+                  label: 'Express',
+                  href: 'https://expressjs.com/',
+                  icon: techIcons.express,
+                  hoverColor: isDark ? 'white' : 'black',
+                },
+                {
+                  id: 'supabase',
+                  label: 'Supabase',
+                  href: 'https://supabase.com/',
+                  icon: techIcons.supabase,
+                  hoverColor: 'oklch(72% 0.18 150)',
+                },
+                {
+                  id: 'react',
+                  label: 'React',
+                  href: 'https://react.dev/',
+                  icon: techIcons.react,
+                  hoverColor: 'oklch(75% 0.15 200)',
+                },
+                {
+                  id: 'vite',
+                  label: 'Vite',
+                  href: 'https://vite.dev/',
+                  icon: techIcons.vite,
+                  hoverColor: 'oklch(65% 0.20 280)',
+                },
+                {
+                  id: 'chakra',
+                  label: 'Chakra UI',
+                  href: 'https://v2.chakra-ui.com/',
+                  icon: techIcons.chakraui,
+                  hoverColor: 'oklch(68% 0.17 185)',
+                }
+              ];
+
+              return (
+                <Box
+                  w="100%"
+                  maxW="100%"
+                  mx="auto"
+                  overflow="hidden"
+                  position="relative"
+                  py="0.75rem"
+                  style={{
+                    WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
+                    maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
+                  }}
+                >
+                  <motion.div
+                    style={{
+                      display: 'flex',
+                      gap: '1.5rem',
+                      width: 'max-content',
+                    }}
+                    animate={{
+                      x: ['0%', '-50%'],
+                    }}
+                    transition={{
+                      x: {
+                        repeat: Infinity,
+                        repeatType: 'loop',
+                        duration: 32,
+                        ease: 'linear',
+                      },
+                    }}
+                  >
+                    {[...Array(2)].map((_, listIdx) => (
+                      <HStack key={listIdx} spacing="1.5rem" mr="1.5rem" flexShrink={0}>
+                        {builtWithBadges.map((badge) => {
+                          const hoverShadow = badge.hoverColor.startsWith('oklch')
+                            ? `0 4px 12px ${badge.hoverColor.replace(')', ' / 0.25)')}`
+                            : `0 4px 12px ${badge.hoverColor === 'white' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'}`;
+                          return (
+                            <Link
+                              key={badge.id}
+                              href={badge.href}
+                              onClick={badge.onClick}
+                              target={badge.href === '#' ? undefined : "_blank"}
+                              rel={badge.href === '#' ? undefined : "noopener"}
+                              display="flex"
+                              alignItems="center"
+                              gap="0.5rem"
+                              px="0.88rem"
+                              py="0.5rem"
+                              bg={useColorModeValue('white', 'oklch(18% 0.015 240 / 0.65)')}
+                              border="1px solid"
+                              borderColor={borderLight}
+                              borderRadius="50px"
+                              fontSize="0.82rem"
+                              fontWeight="500"
+                              transition="all 0.2s"
+                              flexShrink={0}
+                              _hover={{
+                                transform: 'translateY(-2px)',
+                                color: badge.hoverColor,
+                                borderColor: badge.hoverColor,
+                                boxShadow: hoverShadow,
+                              }}
+                            >
+                              {badge.icon}
+                              <Text>{badge.label}</Text>
+                            </Link>
+                          );
+                        })}
+                      </HStack>
+                    ))}
+                  </motion.div>
+                </Box>
+              );
+            })()}
           </VStack>
 
           <VStack spacing="0.4rem" fontSize="0.85rem" color={textColorMuted}>
