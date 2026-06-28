@@ -318,8 +318,25 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
 // ─── Slide Carousel Component ───
 function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight, cardBg, textColorMuted, setLbAsset, setLbJobAssets }) {
   const [activeIdx, setActiveIdx] = useState(0);
+  const [height, setHeight] = useState(0);
+  const elementRef = useRef(null);
 
   const enabledSlides = slides.filter(s => s.is_enabled);
+
+  useEffect(() => {
+    if (!elementRef.current) return;
+    
+    setHeight(elementRef.current.scrollHeight);
+
+    const observer = new ResizeObserver((entries) => {
+      if (entries[0]) {
+        setHeight(entries[0].contentRect.height);
+      }
+    });
+
+    observer.observe(elementRef.current);
+    return () => observer.disconnect();
+  }, [activeIdx]);
 
   if (enabledSlides.length === 0) return null;
 
@@ -340,7 +357,6 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
     color: brandSecondary,
     scheme: 'purple'
   };
-
   return (
     <Box
       w="100%"
@@ -351,7 +367,6 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
       bg={cardBg}
       position="relative"
       mb="4rem"
-      aspectRatio="4/3"
       display="flex"
       flexDirection="column"
       overflow="hidden"
@@ -400,42 +415,50 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
       </Flex>
 
       {/* Slide body */}
-      <Box position="relative" w="100%" flex="1" display="flex" flexDirection="column" overflow="hidden">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide.id || activeIdx}
-            initial={{ opacity: 0, x: 15 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -15 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}
-          >
-            {currentSlide.content_type === 'markdown' && (
-              <VStack align="start" spacing="1.2rem" overflowY="auto" flex="1" pr="0.5rem">
-                <Text fontSize="1.05rem" fontWeight="650" lineHeight="1.5">
-                  {currentSlide.content_data?.lead}
-                </Text>
-                <Text fontSize="1rem" color={textColorMuted} lineHeight="1.65">
-                  {currentSlide.content_data?.body}
-                </Text>
-              </VStack>
-            )}
+      <motion.div
+        animate={{ height: height || 'auto' }}
+        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+        style={{ overflow: 'hidden', position: 'relative', width: '100%' }}
+      >
+        <div ref={elementRef} style={{ width: '100%' }}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={currentSlide.id || activeIdx}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: 'easeInOut' }}
+              style={{ width: '100%', display: 'flex', flexDirection: 'column' }}
+            >
+              {currentSlide.content_type === 'markdown' && (
+                <VStack align="start" spacing="1.2rem" pb="0.5rem">
+                  <Text fontSize="1.05rem" fontWeight="650" lineHeight="1.5">
+                    {currentSlide.content_data?.lead}
+                  </Text>
+                  <Text fontSize="1rem" color={textColorMuted} lineHeight="1.65">
+                    {currentSlide.content_data?.body}
+                  </Text>
+                </VStack>
+              )}
 
-             {currentSlide.content_type === 'personal_timeline' && (
-              <HorizontalTimeline
-                events={currentSlide.content_data}
-                color={slideTheme.color}
-                scheme={slideTheme.scheme}
-                borderLight={borderLight}
-                cardBg={cardBg}
-                textColorMuted={textColorMuted}
-                setLbAsset={setLbAsset}
-                setLbJobAssets={setLbJobAssets}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </Box>
+              {currentSlide.content_type === 'personal_timeline' && (
+                <Box pb="0.5rem">
+                  <HorizontalTimeline
+                    events={currentSlide.content_data}
+                    color={slideTheme.color}
+                    scheme={slideTheme.scheme}
+                    borderLight={borderLight}
+                    cardBg={cardBg}
+                    textColorMuted={textColorMuted}
+                    setLbAsset={setLbAsset}
+                    setLbJobAssets={setLbJobAssets}
+                  />
+                </Box>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.div>
     </Box>
   );
 }
