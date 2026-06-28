@@ -1261,6 +1261,7 @@ function Resume({ data }) {
             {data.timeline.map((item, idx) => {
               const isExpanded = expandedCards[item.id] || false;
               const theme = getTimelineTheme(item.id);
+              const isCardHovered = hoveredCardId === item.id;
               const employers = Array.isArray(item.employer_list) ? item.employer_list : [];
               const skills   = Array.isArray(item.job_skills)    ? item.job_skills    : [];
               return (
@@ -1386,9 +1387,13 @@ function Resume({ data }) {
                             boxSize="28px"
                             borderRadius="full"
                             border="1px solid"
-                            borderColor={isExpanded ? theme.altColor : borderLight}
-                            bg={isExpanded ? theme.altColor.replace(')', ' / 0.15)') : cardBg}
-                            color={isExpanded ? theme.altColor : theme.altColor.replace(')', ' / 0.55)')}
+                            borderColor={isExpanded || isCardHovered ? theme.altColor : borderLight}
+                            bg={isExpanded 
+                              ? theme.altColor.replace(')', ' / 0.15)') 
+                              : isCardHovered 
+                                ? useColorModeValue('gray.50', 'oklch(22% 0.015 240)') 
+                                : cardBg}
+                            color={isExpanded || isCardHovered ? theme.altColor : theme.altColor.replace(')', ' / 0.55)')}
                             transition="all 0.22s ease"
                             _hover={{
                               borderColor: theme.altColor,
