@@ -631,6 +631,42 @@ function Resume({ data }) {
           50% { transform: translateY(-3px); }
         }
 
+        @keyframes emanateChevrons {
+          0% {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.8);
+          }
+          20% {
+            opacity: 0.65;
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(16px) scale(0.9);
+          }
+        }
+
+        .ghostly-chevrons {
+          opacity: 0;
+          transition: opacity 0.22s ease-in-out;
+        }
+
+        .animated-glow-card:hover .ghostly-chevrons {
+          opacity: 0.75;
+        }
+
+        .ghostly-chevrons svg {
+          animation: emanateChevrons 1.5s infinite linear;
+        }
+        .ghostly-chevrons .chev-1 {
+          animation-delay: 0s;
+        }
+        .ghostly-chevrons .chev-2 {
+          animation-delay: 0.5s;
+        }
+        .ghostly-chevrons .chev-3 {
+          animation-delay: 1s;
+        }
+
         .animated-glow-card {
           position: relative;
           transition: all 0.28s ease !important;
@@ -1323,6 +1359,7 @@ function Resume({ data }) {
                         </Tag>
                         {/* Interactive Chevron Button */}
                         <Flex
+                          position="relative"
                           align="center"
                           justify="center"
                           boxSize="28px"
@@ -1344,6 +1381,31 @@ function Resume({ data }) {
                             w="16px"
                             h="16px"
                           />
+                          {!isExpanded && (
+                            <Box
+                              className="ghostly-chevrons"
+                              position="absolute"
+                              top="28px"
+                              left="50%"
+                              transform="translateX(-50%)"
+                              w="20px"
+                              h="36px"
+                              pointerEvents="none"
+                              display="flex"
+                              flexDirection="column"
+                              alignItems="center"
+                              justifyContent="flex-start"
+                              color={theme.color}
+                              style={{
+                                maskImage: 'linear-gradient(to bottom, black, transparent)',
+                                WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)',
+                              }}
+                            >
+                              <ChevronDownIcon w="12px" h="12px" className="chev-1" />
+                              <ChevronDownIcon w="12px" h="12px" className="chev-2" />
+                              <ChevronDownIcon w="12px" h="12px" className="chev-3" />
+                            </Box>
+                          )}
                         </Flex>
                       </HStack>
                     </Flex>
