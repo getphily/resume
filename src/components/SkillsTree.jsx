@@ -66,6 +66,12 @@ const isDescendant = (parent, childId) => {
   return false;
 };
 
+const isLaborNode = (nodeId) => {
+  if (nodeId === 'root') return false;
+  const laborRoot = treeData.children[0];
+  return isDescendant(laborRoot, nodeId);
+};
+
 const findNode = (root, id) => {
   if (root.id === id) return root;
   if (root.children) {
@@ -77,8 +83,8 @@ const findNode = (root, id) => {
   return null;
 };
 
-const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focusedNodeId, focusedNodeObj }) => {
-  const nodeBg = useColorModeValue('white', 'gray.800');
+const TreeNode = ({ node, isRoot, borderLight, brandPrimary, brandSecondary, onNodeClick, focusedNodeId, focusedNodeObj }) => {
+  const nodeBg = useColorModeValue('rgba(255, 255, 255, 0.72)', 'rgba(26, 32, 44, 0.72)');
   const textColor = useColorModeValue('gray.800', 'white');
 
   // Check if this node is in the active path of the focused branch
@@ -87,34 +93,57 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
     return isDescendant(node, focusedNodeId) || (focusedNodeObj && isDescendant(focusedNodeObj, node.id));
   }, [node, focusedNodeId, focusedNodeObj]);
 
+  const isLabor = useMemo(() => isLaborNode(node.id), [node.id]);
+  const activeColor = isLabor ? brandPrimary : brandSecondary;
+  const isFocused = focusedNodeId === node.id;
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onNodeClick(node.id);
+    }
+  };
+
   return (
     <Flex id={`subtree-${node.id}`} align="flex-start" position="relative" _notLast={{ mb: "1rem" }}>
       {/* Node Box */}
       <Flex align="center">
         <motion.div 
-          whileHover={{ scale: 1.05 }} 
-          whileTap={{ scale: 0.95 }} 
-          style={{ zIndex: 2, opacity: inFocusPath ? 1 : 0.22, transition: 'opacity 0.4s ease' }}
+          whileHover={{ scale: 1.03 }} 
+          whileTap={{ scale: 0.97 }} 
+          style={{ zIndex: 2, opacity: inFocusPath ? 1 : 0.25, transition: 'opacity 0.4s ease' }}
         >
           <Box
+            as="button"
+            role="tab"
+            aria-selected={isFocused}
+            tabIndex={0}
             px="1rem"
             py="0.75rem"
             bg={isRoot ? brandPrimary : nodeBg}
-            border="2px solid"
-            borderColor={isRoot ? brandPrimary : borderLight}
-            borderRadius="md"
-            boxShadow="sm"
+            backdropFilter={isRoot ? 'none' : 'blur(12px)'}
+            border="1.5px solid"
+            borderColor={isRoot ? brandPrimary : isFocused ? activeColor : borderLight}
+            borderRadius="lg"
+            boxShadow={isFocused ? `0 0 14px ${activeColor}55` : 'sm'}
             position="relative"
             minW="180px"
             maxW="250px"
             textAlign="center"
-            _hover={{ borderColor: brandPrimary, boxShadow: 'md' }}
-            transition="border-color 0.2s, box-shadow 0.2s"
-            cursor="pointer"
+            display="block"
+            w="100%"
             onClick={(e) => {
               e.stopPropagation();
               onNodeClick(node.id);
             }}
+            onKeyDown={handleKeyDown}
+            _hover={{ borderColor: isRoot ? brandPrimary : activeColor, boxShadow: 'md' }}
+            _focusVisible={{
+              outline: '2px solid',
+              outlineColor: isRoot ? brandPrimary : activeColor,
+              outlineOffset: '2px'
+            }}
+            transition="border-color 0.2s, box-shadow 0.2s"
           >
             <Text 
               fontWeight={isRoot ? "800" : "600"} 
@@ -131,11 +160,11 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
         {node.children && node.children.length > 0 && (
           <Box 
             w="2rem" 
-            h="2px" 
-            bg={borderLight} 
+            h="1.5px" 
+            bg={inFocusPath && focusedNodeId ? activeColor : borderLight} 
             zIndex={1} 
             opacity={inFocusPath ? 1 : 0.15}
-            transition="opacity 0.4s ease"
+            transition="opacity 0.4s ease, background-color 0.4s ease"
           />
         )}
       </Flex>
@@ -152,6 +181,9 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
               isDescendant(child, focusedNodeId) || 
               (focusedNodeObj && isDescendant(focusedNodeObj, child.id));
             const lineOpacity = childInFocus ? 1 : 0.15;
+            const childIsLabor = isLaborNode(child.id);
+            const childActiveColor = childIsLabor ? brandPrimary : brandSecondary;
+            const lineColor = childInFocus && focusedNodeId ? childActiveColor : borderLight;
             
             return (
               <Flex key={child.id} align="center" position="relative" mt={isFirst ? 0 : "1rem"}>
@@ -159,15 +191,15 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
                 {/* Horizontal branch line connecting to this child */}
                 <Box 
                   w="2rem" 
-                  h="2px" 
-                  bg={borderLight} 
+                  h="1.5px" 
+                  bg={lineColor} 
                   position="absolute" 
                   left="-2rem" 
                   top="50%" 
                   transform="translateY(-50%)" 
                   zIndex={1} 
                   opacity={lineOpacity}
-                  transition="opacity 0.4s ease"
+                  transition="opacity 0.4s ease, background-color 0.4s ease"
                 />
                 
                 {/* Vertical branch line segments */}
@@ -176,11 +208,11 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
                   left="-2rem"
                   top={isFirst ? "50%" : 0}
                   bottom={isLast ? "50%" : 0}
-                  w="2px"
-                  bg={borderLight}
+                  w="1.5px"
+                  bg={lineColor}
                   zIndex={1}
                   opacity={lineOpacity}
-                  transition="opacity 0.4s ease"
+                  transition="opacity 0.4s ease, background-color 0.4s ease"
                 />
 
                 <TreeNode 
@@ -188,6 +220,7 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
                   isRoot={false} 
                   borderLight={borderLight} 
                   brandPrimary={brandPrimary} 
+                  brandSecondary={brandSecondary}
                   onNodeClick={onNodeClick}
                   focusedNodeId={focusedNodeId}
                   focusedNodeObj={focusedNodeObj}
@@ -201,7 +234,7 @@ const TreeNode = ({ node, isRoot, borderLight, brandPrimary, onNodeClick, focuse
   );
 };
 
-export default function SkillsTree({ borderLight, brandPrimary }) {
+export default function SkillsTree({ borderLight, brandPrimary, brandSecondary }) {
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState({ x: 20, y: 50, scale: 0.95 });
   const [focusedNodeId, setFocusedNodeId] = useState(null);
@@ -342,6 +375,7 @@ export default function SkillsTree({ borderLight, brandPrimary }) {
           isRoot={true} 
           borderLight={borderLight} 
           brandPrimary={brandPrimary} 
+          brandSecondary={brandSecondary}
           onNodeClick={handleNodeClick}
           focusedNodeId={focusedNodeId}
           focusedNodeObj={focusedNodeObj}

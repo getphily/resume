@@ -2045,118 +2045,74 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           </Text>
         </Box>
         <HStack
-          spacing="0.4rem"
-          bg={useColorModeValue('rgba(0,0,0,0.02)', 'rgba(255,255,255,0.02)')}
+          position="relative"
+          spacing="0.25rem"
+          bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.03)')}
           p="0.25rem"
-          borderRadius="lg"
+          borderRadius="xl"
           border="1px solid"
           borderColor={borderLight}
           alignSelf={{ base: 'start', sm: 'auto' }}
+          role="tablist"
+          aria-label="Skills view options"
         >
-          <Button
-            size="xs"
-            onClick={() => setViewMode('list')}
-            fontSize="0.75rem"
-            fontWeight="700"
-            borderRadius="md"
-            px="0.75rem"
-            variant="unstyled"
-            display="inline-flex"
-            alignItems="center"
-            justifyContent="center"
-            h="1.6rem"
-            bg={viewMode === 'list' ? brandPrimary : 'transparent'}
-            color={viewMode === 'list' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
-            boxShadow={viewMode === 'list' ? 'sm' : 'none'}
-            _hover={{
-              bg: viewMode === 'list' ? brandPrimary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'list' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
-              "span": {
-                animation: 'bounceIcon 0.6s ease-in-out infinite'
-              }
-            }}
-            transition="all 0.15s"
-          >
-            <Box as="span" display="inline-block" mr="0.3rem">📋</Box> List
-          </Button>
-          <Button
-            size="xs"
-            onClick={() => setViewMode('map')}
-            fontSize="0.75rem"
-            fontWeight="700"
-            borderRadius="md"
-            px="0.75rem"
-            variant="unstyled"
-            display="inline-flex"
-            alignItems="center"
-            justifyContent="center"
-            h="1.6rem"
-            bg={viewMode === 'map' ? brandSecondary : 'transparent'}
-            color={viewMode === 'map' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
-            boxShadow={viewMode === 'map' ? 'sm' : 'none'}
-            _hover={{
-              bg: viewMode === 'map' ? brandSecondary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'map' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
-              "span": {
-                animation: 'bounceIcon 0.6s ease-in-out infinite'
-              }
-            }}
-            transition="all 0.15s"
-          >
-            <Box as="span" display="inline-block" mr="0.3rem">🌐</Box> Skill Map
-          </Button>
-          <Button
-            size="xs"
-            onClick={() => setViewMode('insights')}
-            fontSize="0.75rem"
-            fontWeight="700"
-            borderRadius="md"
-            px="0.75rem"
-            variant="unstyled"
-            display="inline-flex"
-            alignItems="center"
-            justifyContent="center"
-            h="1.6rem"
-            bg={viewMode === 'insights' ? brandPrimary : 'transparent'}
-            color={viewMode === 'insights' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
-            boxShadow={viewMode === 'insights' ? 'sm' : 'none'}
-            _hover={{
-              bg: viewMode === 'insights' ? brandPrimary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'insights' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
-              "span": {
-                animation: 'bounceIcon 0.6s ease-in-out infinite'
-              }
-            }}
-            transition="all 0.15s"
-          >
-            <Box as="span" display="inline-block" mr="0.3rem">📊</Box> Insights
-          </Button>
-          <Button
-            size="xs"
-            onClick={() => setViewMode('tree')}
-            fontSize="0.75rem"
-            fontWeight="700"
-            borderRadius="md"
-            px="0.75rem"
-            variant="unstyled"
-            display="inline-flex"
-            alignItems="center"
-            justifyContent="center"
-            h="1.6rem"
-            bg={viewMode === 'tree' ? brandSecondary : 'transparent'}
-            color={viewMode === 'tree' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
-            boxShadow={viewMode === 'tree' ? 'sm' : 'none'}
-            _hover={{
-              bg: viewMode === 'tree' ? brandSecondary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
-              color: viewMode === 'tree' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800'),
-              "span": {
-                animation: 'bounceIcon 0.6s ease-in-out infinite'
-              }
-            }}
-            transition="all 0.15s"
-          >
-            <Box as="span" display="inline-block" mr="0.3rem">🌳</Box> Skills Tree
-          </Button>
+          {[
+            { id: 'list', label: 'List' },
+            { id: 'map', label: 'Skill Map' },
+            { id: 'insights', label: 'Insights' },
+            { id: 'tree', label: 'Skills Tree' }
+          ].map((opt) => {
+            const isActive = viewMode === opt.id;
+            const themeClr = opt.id === 'list' || opt.id === 'insights' ? brandPrimary : brandSecondary;
+            return (
+              <Button
+                key={opt.id}
+                role="tab"
+                aria-selected={isActive}
+                size="xs"
+                onClick={() => setViewMode(opt.id)}
+                fontSize="0.75rem"
+                fontWeight="700"
+                borderRadius="lg"
+                px="0.9rem"
+                variant="unstyled"
+                position="relative"
+                h="1.75rem"
+                display="inline-flex"
+                alignItems="center"
+                justifyContent="center"
+                color={isActive ? (isDark ? 'gray.900' : 'white') : textColorMuted}
+                transition="color 0.22s"
+                _hover={{
+                  color: isActive ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+                }}
+                _focusVisible={{
+                  outline: '2px solid',
+                  outlineColor: themeClr,
+                  outlineOffset: '2px'
+                }}
+              >
+                {isActive && (
+                  <Box
+                    as={motion.div}
+                    layoutId="activeViewBackdrop"
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    right="0"
+                    bottom="0"
+                    bg={themeClr}
+                    borderRadius="lg"
+                    zIndex={0}
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <Box as="span" position="relative" zIndex={1}>
+                  {opt.label}
+                </Box>
+              </Button>
+            );
+          })}
         </HStack>
       </Flex>
 
@@ -2169,6 +2125,7 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           <SkillsTree
             borderLight={borderLight}
             brandPrimary={brandPrimary}
+            brandSecondary={brandSecondary}
           />
         ) : viewMode === 'insights' ? (
           <SkillsInsightsPanel
@@ -2201,8 +2158,24 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 borderRadius="lg"
                 color={textColorMuted}
                 transition="all 0.2s"
+                _focusVisible={{
+                  outline: '2px solid',
+                  outlineColor: brandPrimary,
+                  outlineOffset: '2px'
+                }}
               >
-                🔵 Labor Relations
+                <Box
+                  w="6px"
+                  h="6px"
+                  borderRadius="full"
+                  bg={tabIdx === 0 ? (isDark ? 'gray.900' : 'white') : brandPrimary}
+                  mr="0.5rem"
+                  style={{
+                    boxShadow: tabIdx === 0 ? 'none' : `0 0 6px ${brandPrimary}`,
+                    transition: 'all 0.2s'
+                  }}
+                />
+                Labor Relations
                 <Badge
                   ml="0.5rem"
                   bg={tabIdx === 0 ? (isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.25)") : useColorModeValue("rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.15)")}
@@ -2224,8 +2197,24 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 borderRadius="lg"
                 color={textColorMuted}
                 transition="all 0.2s"
+                _focusVisible={{
+                  outline: '2px solid',
+                  outlineColor: brandSecondary,
+                  outlineOffset: '2px'
+                }}
               >
-                🟣 Digital Media &amp; Communications
+                <Box
+                  w="6px"
+                  h="6px"
+                  borderRadius="full"
+                  bg={tabIdx === 1 ? (isDark ? 'gray.900' : 'white') : brandSecondary}
+                  mr="0.5rem"
+                  style={{
+                    boxShadow: tabIdx === 1 ? 'none' : `0 0 6px ${brandSecondary}`,
+                    transition: 'all 0.2s'
+                  }}
+                />
+                Digital Media &amp; Communications
                 <Badge
                   ml="0.5rem"
                   bg={tabIdx === 1 ? (isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.25)") : useColorModeValue("rgba(147, 51, 234, 0.08)", "rgba(147, 51, 234, 0.15)")}
@@ -2313,6 +2302,15 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
   const [expanded, setExpanded] = useState(null);
   const catEntries = Object.entries(categories);
 
+  const themeColor = scheme === 'blue' ? '#3182ce' : '#805ad5';
+
+  const handleKeyDown = (e, itemName) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setExpanded(prev => prev === itemName ? null : itemName);
+    }
+  };
+
   if (catEntries.length === 0) {
     return <Text color={textColorMuted} py="2rem" textAlign="center">No data available.</Text>;
   }
@@ -2334,8 +2332,11 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
             py="0.75rem"
             borderBottom="1px solid"
             borderColor={borderLight}
-            bg={scheme === 'blue' ? 'blue.50' : 'purple.50'}
-            _dark={{ bg: 'whiteAlpha.50' }}
+            bg={useColorModeValue(
+              scheme === 'blue' ? 'rgba(59, 130, 246, 0.04)' : 'rgba(147, 51, 234, 0.04)',
+              scheme === 'blue' ? 'rgba(59, 130, 246, 0.08)' : 'rgba(147, 51, 234, 0.08)'
+            )}
+            backdropFilter="blur(4px)"
           >
             <HStack justify="space-between">
               <Text fontSize="0.72rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.06em">
@@ -2349,28 +2350,78 @@ function CompetencyGroup({ categories, scheme, accentColor, borderLight, cardBg,
 
           {/* Skill Items */}
           <VStack align="stretch" spacing="0" divider={<Box borderTop="1px solid" borderColor={borderLight} />}>
-            {items.map(item => (
-              <Box key={item.name}>
-                <HStack
-                  px="1.1rem"
-                  py="0.6rem"
-                  cursor="pointer"
-                  _hover={{ bg: 'blackAlpha.30' }}
-                  justify="space-between"
-                  onClick={() => setExpanded(e => e === item.name ? null : item.name)}
-                >
-                  <Text fontSize="0.82rem" fontWeight="600" lineHeight="1.3">{item.name}</Text>
-                  <Text fontSize="0.65rem" opacity={0.45} flexShrink={0} ml="0.5rem">
-                    {expanded === item.name ? '▴' : '▾'}
-                  </Text>
-                </HStack>
-                <Collapse in={expanded === item.name} animateOpacity>
-                  <Text px="1.1rem" pb="0.85rem" pt="0.1rem" fontSize="0.78rem" color={textColorMuted} lineHeight="1.6">
-                    {item.description}
-                  </Text>
-                </Collapse>
-              </Box>
-            ))}
+            {items.map(item => {
+              const isHovExpanded = expanded === item.name;
+              return (
+                <Box key={item.name}>
+                  <HStack
+                    as="button"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isHovExpanded}
+                    w="100%"
+                    px="1.1rem"
+                    py="0.65rem"
+                    cursor="pointer"
+                    bg="transparent"
+                    border="none"
+                    textAlign="left"
+                    justify="space-between"
+                    onClick={() => setExpanded(e => e === item.name ? null : item.name)}
+                    onKeyDown={(e) => handleKeyDown(e, item.name)}
+                    _hover={{ bg: useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.035)') }}
+                    _focusVisible={{
+                      outline: '2px solid',
+                      outlineColor: themeColor,
+                      outlineOffset: '-2px'
+                    }}
+                    transition="background-color 0.2s"
+                  >
+                    <Text
+                      fontSize="0.82rem"
+                      fontWeight="600"
+                      lineHeight="1.3"
+                      transition="transform 0.2s ease"
+                      _hover={{ transform: 'translateX(3px)' }}
+                    >
+                      {item.name}
+                    </Text>
+                    <Text
+                      fontSize="0.65rem"
+                      opacity={0.45}
+                      flexShrink={0}
+                      ml="0.5rem"
+                      transition="transform 0.2s ease"
+                      transform={isHovExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                    >
+                      ▼
+                    </Text>
+                  </HStack>
+                  <Collapse in={isHovExpanded} animateOpacity>
+                    <Box pl="1.7rem" pr="1.1rem" pb="0.85rem" pt="0.2rem" position="relative">
+                      {/* Left border vertical glow track */}
+                      <Box
+                        position="absolute"
+                        left="1.1rem"
+                        top="0.3rem"
+                        bottom="0.85rem"
+                        w="2px"
+                        borderRadius="full"
+                        bg={themeColor}
+                        opacity={0.7}
+                      />
+                      <Text
+                        fontSize="0.78rem"
+                        color={useColorModeValue('gray.600', 'gray.300')}
+                        lineHeight="1.6"
+                      >
+                        {item.description}
+                      </Text>
+                    </Box>
+                  </Collapse>
+                </Box>
+              );
+            })}
           </VStack>
         </Box>
       ))}
