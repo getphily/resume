@@ -2468,7 +2468,7 @@ function CompetencyGroup({ categories, scheme, pathColor, borderLight, cardBg, t
           </VStack>
           </Collapse>
         </Box>
-      ))}
+      )})}
     </VStack>
   );
 }
