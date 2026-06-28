@@ -116,6 +116,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
   const [hovered, setHovered]               = useState(null);
   const [inView,  setInView]                = useState(false);
   const [revealed, setRevealed]             = useState(false);
+  const [isMapHovered, setIsMapHovered]     = useState(false);
   const containerRef = useRef(null);
   const mapBoxRef    = useRef(null);
 
@@ -261,10 +262,10 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     const idx = socal.findIndex(e => e.id === emp.id);
     const totalSocal = socal.length;
     
-    const startLng = -123.1;
-    const endLng = -121.5;
-    const step = totalSocal > 1 ? (endLng - startLng) / (totalSocal - 1) : 0;
-    const targetLngZoomedOut = startLng + idx * step;
+    const centerLng = -122.3;
+    const spacing = 0.15;
+    const startLng = centerLng - ((totalSocal - 1) * spacing) / 2;
+    const targetLngZoomedOut = startLng + idx * spacing;
     
     if (projectionScale < 12600) {
       return [targetLngZoomedOut, 37.12];
@@ -291,6 +292,8 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
       borderRadius="2xl"
       p={{ base: '1.5rem', md: '2rem' }}
       bg={cardBg}
+      onMouseEnter={() => setIsMapHovered(true)}
+      onMouseLeave={() => setIsMapHovered(false)}
     >
       {/* Header with Stats */}
       <Flex
@@ -369,6 +372,26 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                   70% { r: 16px; opacity: 0; stroke-width: 0.5px; }
                   100% { r: 16px; opacity: 0; stroke-width: 0px; }
                 }
+                @keyframes floatDotA {
+                  0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.88; }
+                  33% { transform: translate(0.15px, -0.2px) scale(0.98); opacity: 0.8; }
+                  66% { transform: translate(-0.2px, 0.15px) scale(1.01); opacity: 0.92; }
+                }
+                @keyframes floatDotB {
+                  0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.88; }
+                  40% { transform: translate(-0.2px, 0.1px) scale(1.01); opacity: 0.92; }
+                  70% { transform: translate(0.15px, -0.15px) scale(0.97); opacity: 0.78; }
+                }
+                @keyframes floatDotC {
+                  0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.88; }
+                  30% { transform: translate(0.15px, 0.15px) scale(0.97); opacity: 0.8; }
+                  60% { transform: translate(-0.1px, -0.2px) scale(1.01); opacity: 0.90; }
+                }
+                @keyframes floatDotD {
+                  0%, 100% { transform: translate(0px, 0px) scale(1); opacity: 0.88; }
+                  35% { transform: translate(-0.15px, -0.15px) scale(1.01); opacity: 0.90; }
+                  65% { transform: translate(0.2px, 0.1px) scale(0.96); opacity: 0.78; }
+                }
               `}</style>
             </defs>
             <Geographies geography={GEO_URL}>
@@ -420,6 +443,11 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                       filter: dim ? 'none' : `drop-shadow(0 0 ${hot ? 8 : 4}px ${col})`,
                       transition: 'r 0.22s ease, fill-opacity 0.22s ease, filter 0.22s ease',
                       cursor: 'pointer',
+                      transformOrigin: 'center',
+                      animation: !dim && !hot && !isMapHovered && projectionScale < 13000
+                        ? `${['floatDotA', 'floatDotB', 'floatDotC', 'floatDotD'][i % 4]} ${['4.6s', '5.4s', '3.9s', '4.8s'][i % 4]} infinite ease-in-out`
+                        : 'none',
+                      animationDelay: !dim && !hot && !isMapHovered && projectionScale < 13000 ? `${(i * 0.31) % 3}s` : '0s',
                     }}
                     onMouseEnter={() => setHovered(emp)}
                     onMouseLeave={() => setHovered(null)}
