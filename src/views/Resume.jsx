@@ -2287,8 +2287,9 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
 
 
 function CompetencyGroup({ categories, scheme, pathColor, borderLight, cardBg, textColorMuted }) {
-  const [expanded, setExpanded] = useState(null);
   const catEntries = Object.entries(categories);
+  const [activeCategory, setActiveCategory] = useState(catEntries[0]?.[0]);
+  const [expanded, setExpanded] = useState(null);
 
   const themeColor = pathColor || (scheme === 'blue' ? '#3182ce' : '#805ad5');
 
@@ -2299,132 +2300,173 @@ function CompetencyGroup({ categories, scheme, pathColor, borderLight, cardBg, t
     }
   };
 
+  const handleHeaderKeyDown = (e, catName) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setActiveCategory(prev => prev === catName ? null : catName);
+      setExpanded(null);
+    }
+  };
+
   if (catEntries.length === 0) {
     return <Text color={textColorMuted} py="2rem" textAlign="center">No data available.</Text>;
   }
 
   return (
     <VStack align="stretch" spacing="1.25rem">
-      {catEntries.map(([category, items]) => (
-        <Box
-          key={category}
-          border="1px solid"
-          borderColor={borderLight}
-          borderRadius="xl"
-          overflow="hidden"
-          bg={cardBg}
-          transition="border-color 0.22s, box-shadow 0.22s"
-          _hover={{
-            borderColor: themeColor.replace(')', ' / 0.35)'),
-            boxShadow: `0 4px 20px ${themeColor.replace(')', ' / 0.07)')}`
-          }}
-        >
-          {/* Category Header */}
+      {catEntries.map(([category, items]) => {
+        const isCatExpanded = activeCategory === category;
+        return (
           <Box
-            px="1.1rem"
-            py="0.75rem"
-            borderBottom="1px solid"
+            key={category}
+            border="1px solid"
             borderColor={borderLight}
-            bg={useColorModeValue(
-              themeColor.replace(')', ' / 0.04)'),
-              themeColor.replace(')', ' / 0.08)')
-            )}
-            backdropFilter="blur(4px)"
+            borderRadius="xl"
+            overflow="hidden"
+            bg={cardBg}
+            transition="border-color 0.22s, box-shadow 0.22s"
+            _hover={{
+              borderColor: themeColor.replace(')', ' / 0.35)'),
+              boxShadow: `0 4px 20px ${themeColor.replace(')', ' / 0.07)')}`
+            }}
           >
-            <HStack justify="space-between">
-              <Text fontSize="0.72rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.06em">
-                {category}
-              </Text>
-              <Badge
-                variant="subtle"
-                bg={themeColor.replace(')', ' / 0.12)')}
-                color={themeColor}
-                borderRadius="full"
-                fontSize="0.62rem"
-                fontWeight="800"
-                px="0.45rem"
-                py="0.1rem"
-              >
-                {items.length}
-              </Badge>
-            </HStack>
-          </Box>
-
-          {/* Skill Items */}
-          <VStack align="stretch" spacing="0" divider={<Box borderTop="1px solid" borderColor={borderLight} />}>
-            {items.map(item => {
-              const isHovExpanded = expanded === item.name;
-              return (
-                <Box key={item.name}>
-                  <HStack
-                    as="button"
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={isHovExpanded}
-                    w="100%"
-                    px="1.1rem"
-                    py="0.65rem"
-                    cursor="pointer"
-                    bg="transparent"
-                    border="none"
-                    textAlign="left"
-                    justify="space-between"
-                    onClick={() => setExpanded(e => e === item.name ? null : item.name)}
-                    onKeyDown={(e) => handleKeyDown(e, item.name)}
-                    _hover={{ bg: useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.035)') }}
-                    _focusVisible={{
-                      outline: '2px solid',
-                      outlineColor: themeColor,
-                      outlineOffset: '-2px'
-                    }}
-                    transition="background-color 0.2s"
+            {/* Category Header (collapsible toggle) */}
+            <Box
+              as="button"
+              role="button"
+              tabIndex={0}
+              aria-expanded={isCatExpanded}
+              w="100%"
+              onClick={() => {
+                setActiveCategory(prev => prev === category ? null : category);
+                setExpanded(null);
+              }}
+              onKeyDown={(e) => handleHeaderKeyDown(e, category)}
+              px="1.1rem"
+              py="0.75rem"
+              borderBottom="1px solid"
+              borderColor={isCatExpanded ? borderLight : 'transparent'}
+              bg={useColorModeValue(
+                isCatExpanded ? themeColor.replace(')', ' / 0.05)') : 'transparent',
+                isCatExpanded ? themeColor.replace(')', ' / 0.09)') : 'transparent'
+              )}
+              transition="background-color 0.2s, border-color 0.2s"
+              textAlign="left"
+              cursor="pointer"
+              outline="none"
+              _focusVisible={{
+                outline: '2px solid',
+                outlineColor: themeColor,
+                outlineOffset: '-2px'
+              }}
+            >
+              <HStack justify="space-between">
+                <HStack spacing="0.6rem">
+                  <Text fontSize="0.72rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.06em">
+                    {category}
+                  </Text>
+                  <Badge
+                    variant="subtle"
+                    bg={themeColor.replace(')', ' / 0.12)')}
+                    color={themeColor}
+                    borderRadius="full"
+                    fontSize="0.62rem"
+                    fontWeight="800"
+                    px="0.45rem"
+                    py="0.1rem"
                   >
-                    <Text
-                      fontSize="0.82rem"
-                      fontWeight="600"
-                      lineHeight="1.3"
-                      transition="transform 0.2s ease"
-                      _hover={{ transform: 'translateX(3px)' }}
-                    >
-                      {item.name}
-                    </Text>
-                    <Text
-                      fontSize="0.65rem"
-                      opacity={0.45}
-                      flexShrink={0}
-                      ml="0.5rem"
-                      transition="transform 0.2s ease"
-                      transform={isHovExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
-                    >
-                      ▼
-                    </Text>
-                  </HStack>
-                  <Collapse in={isHovExpanded} animateOpacity>
-                    <Box pl="1.7rem" pr="1.1rem" pb="0.85rem" pt="0.2rem" position="relative">
-                      {/* Left border vertical glow track */}
-                      <Box
-                        position="absolute"
-                        left="1.1rem"
-                        top="0.3rem"
-                        bottom="0.85rem"
-                        w="2px"
-                        borderRadius="full"
-                        bg={themeColor}
-                        opacity={0.7}
-                      />
-                      <Text
-                        fontSize="0.78rem"
-                        color={useColorModeValue('gray.600', 'gray.300')}
-                        lineHeight="1.6"
+                    {items.length}
+                  </Badge>
+                </HStack>
+                <Text
+                  fontSize="0.7rem"
+                  fontWeight="bold"
+                  color={themeColor}
+                  transition="transform 0.2s ease"
+                  transform={isCatExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                >
+                  ▼
+                </Text>
+              </HStack>
+            </Box>
+
+            {/* Skill Items */}
+            <Collapse in={isCatExpanded} animateOpacity>
+              <VStack align="stretch" spacing="0" divider={<Box borderTop="1px solid" borderColor={borderLight} />}>
+                {items.map(item => {
+                  const isHovExpanded = expanded === item.name;
+                  return (
+                    <Box key={item.name}>
+                      <HStack
+                        as="button"
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isHovExpanded}
+                        w="100%"
+                        px="1.1rem"
+                        py="0.65rem"
+                        cursor="pointer"
+                        bg="transparent"
+                        border="none"
+                        textAlign="left"
+                        justify="space-between"
+                        onClick={() => setExpanded(e => e === item.name ? null : item.name)}
+                        onKeyDown={(e) => handleKeyDown(e, item.name)}
+                        _hover={{ bg: useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.035)') }}
+                        _focusVisible={{
+                          outline: '2px solid',
+                          outlineColor: themeColor,
+                          outlineOffset: '-2px'
+                        }}
+                        transition="background-color 0.2s"
                       >
-                        {item.description}
-                      </Text>
+                        <Text
+                          fontSize="0.82rem"
+                          fontWeight="600"
+                          lineHeight="1.3"
+                          transition="transform 0.2s ease"
+                          _hover={{ transform: 'translateX(3px)' }}
+                        >
+                          {item.name}
+                        </Text>
+                        <Text
+                          fontSize="0.65rem"
+                          opacity={0.45}
+                          flexShrink={0}
+                          ml="0.5rem"
+                          transition="transform 0.2s ease"
+                          transform={isHovExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                        >
+                          ▼
+                        </Text>
+                      </HStack>
+                      <Collapse in={isHovExpanded} animateOpacity>
+                        <Box pl="1.7rem" pr="1.1rem" pb="0.85rem" pt="0.2rem" position="relative">
+                          {/* Left border vertical glow track */}
+                          <Box
+                            position="absolute"
+                            left="1.1rem"
+                            top="0.3rem"
+                            bottom="0.85rem"
+                            w="2px"
+                            borderRadius="full"
+                            bg={themeColor}
+                            opacity={0.7}
+                          />
+                          <Text
+                            fontSize="0.78rem"
+                            color={useColorModeValue('gray.600', 'gray.300')}
+                            lineHeight="1.6"
+                          >
+                            {item.description}
+                          </Text>
+                        </Box>
+                      </Collapse>
                     </Box>
-                  </Collapse>
-                </Box>
               );
             })}
           </VStack>
+          </Collapse>
         </Box>
       ))}
     </VStack>
