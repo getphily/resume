@@ -606,13 +606,15 @@ function Resume({ data }) {
       return {
         color: blueColor,
         scheme: 'blue',
-        label: 'Labor & Campaigns'
+        label: 'Labor & Campaigns',
+        altColor: brandPrimary
       };
     }
     return {
       color: purpleColor,
       scheme: 'purple',
-      label: 'Digital & Comms'
+      label: 'Digital & Comms',
+      altColor: brandSecondary
     };
   };
 
@@ -1344,24 +1346,25 @@ function Resume({ data }) {
                           position="relative"
                           align="center"
                           justify="center"
-                          boxSize="28px"
-                          borderRadius="full"
+                          w="16px"
+                          h="28px"
+                          borderRadius="4px"
                           border="1px solid"
-                          borderColor={isExpanded ? theme.color : borderLight}
-                          bg={isExpanded ? `${theme.color}15` : 'transparent'}
-                          color={isExpanded ? theme.color : theme.color + '8C'}
+                          borderColor={isExpanded ? theme.altColor : borderLight}
+                          bg={isExpanded ? theme.altColor.replace(')', ' / 0.15)') : 'transparent'}
+                          color={isExpanded ? theme.altColor : theme.altColor.replace(')', ' / 0.55)')}
                           transition="all 0.22s ease"
                           _hover={{
-                            borderColor: theme.color,
-                            bg: `${theme.color}25`,
-                            color: theme.color,
+                            borderColor: theme.altColor,
+                            bg: theme.altColor.replace(')', ' / 0.25)'),
+                            color: theme.altColor,
                           }}
                         >
                           <ChevronDownIcon
                             transition="transform 0.25s ease"
                             transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
-                            w="16px"
-                            h="16px"
+                            w="10px"
+                            h="10px"
                           />
                           {!isExpanded && (
                             <Box
@@ -1391,7 +1394,7 @@ function Resume({ data }) {
                                     </g>
                                   </mask>
                                 </defs>
-                                <rect width="16" height="44" fill={theme.color} mask={`url(#knockout-mask-${item.id})`} opacity="0.38" />
+                                <rect width="16" height="44" fill={theme.altColor} mask={`url(#knockout-mask-${item.id})`} opacity="0.38" />
                               </svg>
                             </Box>
                           )}
