@@ -1016,7 +1016,7 @@ function Resume({ data }) {
       {/* Main Container */}
       <Container maxW="container.md" pt="2rem">
         {/* Inline Top Header (scrolls away naturally) */}
-        <Box mb="3rem" pb="1.5rem" borderBottom="2px solid" borderColor={borderLight}>
+        <Box mb="3rem" pb="1.5rem">
           {/* Row 1: Social links (LinkedIn first), dashboard view, and theme buttons */}
           <Box
             display="flex"
