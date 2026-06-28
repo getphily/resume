@@ -364,13 +364,6 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                   100% { r: 16px; opacity: 0; stroke-width: 0px; }
                 }
               `}</style>
-              {Object.entries(INDUSTRY_COLORS).map(([ind, color]) => (
-                <radialGradient key={ind} id={gradId(ind)} cx="35%" cy="35%" r="60%">
-                  <stop offset="0%" stopColor="#ffffff" />
-                  <stop offset="40%" stopColor={color} />
-                  <stop offset="100%" stopColor={color} />
-                </radialGradient>
-              ))}
             </defs>
             <Geographies geography={GEO_URL}>
               {({ geographies }) =>
@@ -415,7 +408,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                   )}
                   <circle
                     r={hot ? 8 : dim ? 2.5 : 5}
-                    fill={`url(#${gid})`}
+                    fill={col}
                     fillOpacity={hot ? 1 : dim ? 0.12 : 0.88}
                     style={{
                       filter: dim ? 'none' : `drop-shadow(0 0 ${hot ? 8 : 4}px ${col})`,
