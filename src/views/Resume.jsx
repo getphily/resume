@@ -1986,28 +1986,43 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
   const { colorMode } = useColorMode();
   const isDark = colorMode === 'dark';
 
-  // Consolidate Labor Relations categories dynamically from 18 to 5 main groups
+  // Consolidate Labor Relations categories dynamically from 18 to 4 main groups with deduplication
   const consolidatedLaborCategories = useMemo(() => {
     const categories = {
-      'Collective Bargaining & Negotiations': [],
-      'Contract Architecture & Economics': [],
+      'Collective Bargaining & Contract Architecture': [],
       'Grievance & Dispute Resolution': [],
       'Workforce Organizing & Mobilization': [],
       'Political Action & Union Governance': []
     };
 
     const laborIds = ['strategic_core', 'core_professional', 'skills_list'];
+    const seenKeys = new Set();
     
-    (competencies || []).forEach(c => {
+    // Sort so that items with descriptions are processed first
+    const sortedCompetencies = [...(competencies || [])].sort((a, b) => {
+      const aHasDesc = a.description ? 1 : 0;
+      const bHasDesc = b.description ? 1 : 0;
+      return bHasDesc - aHasDesc;
+    });
+
+    sortedCompetencies.forEach(c => {
       if (!laborIds.includes(c.group_type)) return;
+      
+      // Clean and normalize name to catch near duplicates (e.g. TWR metrics vs TWR oversight)
+      const nameCleaned = c.name.toLowerCase()
+        .replace(/\(cba\)|\(ta\)|\(mou\)|\(lou\)|\(jlmc\)|\(twr\)|\(neo\)/g, '')
+        .replace(/[^a-z0-9]/g, '');
+      
+      // Take first 14 chars as signature to group near duplicates together
+      const sig = nameCleaned.substring(0, 14);
+      if (seenKeys.has(sig)) return;
+      seenKeys.add(sig);
       
       const cat = c.category.toLowerCase();
       const name = c.name.toLowerCase();
       
-      if (cat.includes('bargaining') || name.includes('negotiation') || name.includes('sunshine') || name.includes('tentative') || name.includes('fmcs') || name.includes('mediation')) {
-        categories['Collective Bargaining & Negotiations'].push(c);
-      } else if (cat.includes('contract') || cat.includes('cba') || cat.includes('wage opener') || cat.includes('compensation') || cat.includes('financial') || name.includes('mou') || name.includes('lou') || name.includes('wage') || name.includes('audit') || name.includes('990')) {
-        categories['Contract Architecture & Economics'].push(c);
+      if (cat.includes('bargaining') || cat.includes('contract') || cat.includes('cba') || cat.includes('wage opener') || name.includes('negotiation') || name.includes('sunshine') || name.includes('tentative') || name.includes('fmcs') || name.includes('mediation')) {
+        categories['Collective Bargaining & Contract Architecture'].push(c);
       } else if (cat.includes('grievance') || cat.includes('conflict') || cat.includes('resolution') || cat.includes('advocacy') || cat.includes('protection') || cat.includes('just cause') || cat.includes('compliance') || cat.includes('regulatory') || cat.includes('policy') || name.includes('nlrb') || name.includes('statutory') || name.includes('fmla') || name.includes('cfra') || name.includes('osha') || name.includes('weingarten') || name.includes('defense') || name.includes('workers')) {
         categories['Grievance & Dispute Resolution'].push(c);
       } else if (cat.includes('organizing') || cat.includes('campaign') || cat.includes('mobilization') || name.includes('mapping') || name.includes('twr') || name.includes('density') || name.includes('orientation') || name.includes('recruit') || name.includes('onboarding')) {
@@ -2023,10 +2038,11 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
     );
   }, [competencies]);
 
-  // Consolidate Digital Media & Communications categories dynamically from 7 to 3 main groups
+  // Consolidate Digital Media & Communications categories dynamically from 7 to 4 main groups
   const consolidatedDigitalCategories = useMemo(() => {
     const categories = {
-      'Creative Media & Studio Production': [],
+      'Creative Media & Live Broadcast': [],
+      'Design & Production Software': [],
       'Web Development & Coding': [],
       'Campaign Systems & Operations': []
     };
@@ -2037,9 +2053,11 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
       const cat = c.category.toLowerCase();
       const name = c.name.toLowerCase();
       
-      if (cat.includes('media') || cat.includes('video') || cat.includes('audio') || cat.includes('graphic') || cat.includes('editing') || cat.includes('streaming') || cat.includes('studio') || cat.includes('production') || cat.includes('design')) {
-        categories['Creative Media & Studio Production'].push(c);
-      } else if (cat.includes('coding') || cat.includes('software engineering') || cat.includes('web development') || name.includes('seo') || name.includes('front-end') || name.includes('architecture') || name.includes('state management')) {
+      if (cat.includes('master list - audio, video') || cat.includes('master list - media distribution') || name.includes('final cut') || name.includes('audition') || name.includes('creative suite') || name.includes('descript') || name.includes('capcut') || name.includes('canva') || name.includes('spreaker') || name.includes('riverside') || name.includes('switcher') || name.includes('opus')) {
+        categories['Design & Production Software'].push(c);
+      } else if (cat.includes('media') || cat.includes('video') || cat.includes('audio') || cat.includes('streaming') || cat.includes('broadcast') || cat.includes('studio') || cat.includes('transmission') || cat.includes('encoding') || cat.includes('compression')) {
+        categories['Creative Media & Live Broadcast'].push(c);
+      } else if (cat.includes('coding') || cat.includes('software engineering') || cat.includes('web development') || name.includes('seo') || name.includes('front-end') || name.includes('architecture') || name.includes('state management') || name.includes('session') || name.includes('kiosk') || name.includes('fillout')) {
         categories['Web Development & Coding'].push(c);
       } else {
         categories['Campaign Systems & Operations'].push(c);
