@@ -205,12 +205,31 @@ export default function SkillsTree({ borderLight, brandPrimary }) {
   const containerRef = useRef(null);
   const [zoom, setZoom] = useState({ x: 20, y: 50, scale: 0.95 });
   const [focusedNodeId, setFocusedNodeId] = useState(null);
+  const inactivityTimerRef = useRef(null);
 
   const focusedNodeObj = useMemo(() => {
     return focusedNodeId ? findNode(treeData, focusedNodeId) : null;
   }, [focusedNodeId]);
 
+  const resetInactivityTimer = () => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    inactivityTimerRef.current = setTimeout(() => {
+      handleReset();
+    }, 30000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleNodeClick = (nodeId) => {
+    resetInactivityTimer();
     if (!containerRef.current) return;
     setFocusedNodeId(nodeId);
 
@@ -248,6 +267,9 @@ export default function SkillsTree({ borderLight, brandPrimary }) {
 
   const handleReset = () => {
     setFocusedNodeId(null);
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
     if (!containerRef.current) return;
     const container = containerRef.current.getBoundingClientRect();
     

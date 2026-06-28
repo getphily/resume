@@ -115,27 +115,60 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
   const [projectionCenter, setProjectionCenter] = useState([-122.45, 38.2]);
   const [projectionScale, setProjectionScale] = useState(12500);
 
-  const animateZoom = (targetCenter, targetScale) => {
-    const start = {
-      scale: projectionScale,
-      lng: projectionCenter[0],
-      lat: projectionCenter[1]
+  const scaleRef = useRef(12500);
+  const centerRef = useRef([-122.45, 38.2]);
+  const animRef = useRef(null);
+  const inactivityTimerRef = useRef(null);
+
+  const resetInactivityTimer = () => {
+    if (inactivityTimerRef.current) {
+      clearTimeout(inactivityTimerRef.current);
+    }
+    inactivityTimerRef.current = setTimeout(() => {
+      setActiveIndustry(null);
+      animateZoom([-122.45, 38.2], 12500);
+    }, 30000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
     };
-    animate(start, {
-      scale: targetScale,
-      lng: targetCenter[0],
-      lat: targetCenter[1]
-    }, {
+  }, []);
+
+  const animateZoom = (targetCenter, targetScale) => {
+    if (animRef.current) {
+      animRef.current.stop();
+    }
+
+    const startScale = scaleRef.current;
+    const startLng = centerRef.current[0];
+    const startLat = centerRef.current[1];
+
+    animRef.current = animate(0, 1, {
       duration: 0.8,
       ease: [0.16, 1, 0.3, 1], // easeOutExpo
-      onUpdate: (latest) => {
-        setProjectionScale(latest.scale);
-        setProjectionCenter([latest.lng, latest.lat]);
+      onUpdate: (progress) => {
+        const currentScale = startScale + (targetScale - startScale) * progress;
+        const currentLng = startLng + (targetCenter[0] - startLng) * progress;
+        const currentLat = startLat + (targetCenter[1] - startLat) * progress;
+
+        scaleRef.current = currentScale;
+        centerRef.current = [currentLng, currentLat];
+
+        setProjectionScale(currentScale);
+        setProjectionCenter([currentLng, currentLat]);
+      },
+      onComplete: () => {
+        animRef.current = null;
       }
     });
   };
 
   const handleIndustryClick = (ind) => {
+    resetInactivityTimer();
     const nextInd = activeIndustry === ind ? null : ind;
     setActiveIndustry(nextInd);
     
@@ -164,6 +197,9 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
       }
     } else {
       animateZoom([-122.45, 38.2], 12500);
+      if (inactivityTimerRef.current) {
+        clearTimeout(inactivityTimerRef.current);
+      }
     }
   };
 
@@ -329,6 +365,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                     onMouseEnter={e => handleEnter(emp, e.currentTarget)}
                     onMouseLeave={() => setHovered(null)}
                     onClick={() => {
+                      resetInactivityTimer();
                       animateZoom(emp.coords, 35000);
                     }}
                   />
@@ -395,6 +432,9 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
               onClick={() => {
                 setActiveIndustry(null);
                 animateZoom([-122.45, 38.2], 12500);
+                if (inactivityTimerRef.current) {
+                  clearTimeout(inactivityTimerRef.current);
+                }
               }}
               zIndex={10}
               borderRadius="md"
