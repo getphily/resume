@@ -164,11 +164,11 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
         w="100%"
         pb="0.75rem"
         sx={{
-          '&::-webkit-scrollbar': { height: '5px' },
+          '&::-webkit-scrollbar': { height: '3px' },
           '&::-webkit-scrollbar-track': { bg: 'transparent' },
           '&::-webkit-scrollbar-thumb': {
-            bg: borderLight,
-            borderRadius: '4px',
+            bg: useColorModeValue('rgba(0, 0, 0, 0.12)', 'rgba(255, 255, 255, 0.12)'),
+            borderRadius: '10px',
           },
         }}
       >
@@ -305,8 +305,6 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
               borderColor={borderLight}
               borderRadius="xl"
               w="100%"
-              flex="1"
-              overflowY="auto"
             >
               <HStack justify="space-between" align="center" mb="0.6rem">
                 <Text fontSize="1rem" fontWeight="700" color={color}>
@@ -502,7 +500,7 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
               )}
 
               {currentSlide.content_type === 'personal_timeline' && (
-                <Box pb="0.5rem">
+                <Box pb="1.5rem">
                   <HorizontalTimeline
                     events={currentSlide.content_data}
                     color={slideTheme.color}
