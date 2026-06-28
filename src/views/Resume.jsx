@@ -172,7 +172,7 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
           },
         }}
       >
-        <Box position="relative" w="100%" minW="fit-content" h="90px">
+        <Box position="relative" w="100%" minW="fit-content" h="105px">
           {/* Track Line - mathematically centered vertically */}
           <Box
             position="absolute"
@@ -268,13 +268,15 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
                   <Text
                     position="absolute"
                     bottom="0"
-                    fontSize="0.8rem"
-                    fontWeight="600"
+                    fontSize="0.75rem"
+                    fontWeight={isSelected ? '800' : '500'}
                     textAlign="center"
-                    noOfLines={1}
-                    color={isSelected ? 'white' : textColorMuted}
-                    transition="color 0.2s"
-                    maxW="110px"
+                    noOfLines={2}
+                    whiteSpace="normal"
+                    color={isSelected ? color : textColorMuted}
+                    transition="color 0.2s, font-weight 0.2s"
+                    maxW="130px"
+                    lineHeight="1.2"
                   >
                     {ev.title}
                   </Text>
