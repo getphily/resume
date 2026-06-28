@@ -71,7 +71,13 @@ const COORDS = {
 };
 
 function jitter(id, spread = 0.022) {
-  const h1 = ((id * 1664525 + 1013904223) >>> 0);
+  let hash = 0;
+  const str = String(id);
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const h1 = ((Math.abs(hash) * 1664525 + 1013904223) >>> 0);
   const h2 = ((h1 * 1664525 + 1013904223) >>> 0);
   const angle  = ((h1 % 628) / 100);
   const radius = ((h2 % 100) / 100) * spread;
@@ -261,7 +267,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     const targetLngZoomedOut = startLng + idx * step;
     
     if (projectionScale < 12600) {
-      return [targetLngZoomedOut, 36.95];
+      return [targetLngZoomedOut, 37.12];
     }
     if (projectionScale > 34000) {
       return emp.coords;
@@ -269,7 +275,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
     
     const t = Math.min(Math.max((projectionScale - 12500) / (35000 - 12500), 0), 1);
     const interpolatedLng = targetLngZoomedOut + (emp.coords[0] - targetLngZoomedOut) * t;
-    const interpolatedLat = 36.95 + (emp.coords[1] - 36.95) * t;
+    const interpolatedLat = 37.12 + (emp.coords[1] - 37.12) * t;
     return [interpolatedLng, interpolatedLat];
   };
 
@@ -429,7 +435,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
 
             {/* Label for Southern CA dots when zoomed out */}
             {projectionScale < 13000 && socal.length > 0 && (
-              <Marker coordinates={[-122.3, 37.04]}>
+              <Marker coordinates={[-122.3, 37.22]}>
                 <text
                   textAnchor="middle"
                   fill={textColorMuted}
