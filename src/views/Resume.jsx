@@ -1341,41 +1341,19 @@ function Resume({ data }) {
                         <Tag size="sm" variant="subtle" colorScheme={theme.scheme} fontSize="0.75rem" fontWeight="700">
                           {theme.label}
                         </Tag>
-                        {/* Interactive Chevron Button */}
-                        <Flex
-                          position="relative"
-                          align="center"
-                          justify="center"
-                          w="16px"
-                          h="28px"
-                          borderRadius="4px"
-                          border="1px solid"
-                          borderColor={isExpanded ? theme.altColor : borderLight}
-                          bg={isExpanded ? theme.altColor.replace(')', ' / 0.15)') : 'transparent'}
-                          color={isExpanded ? theme.altColor : theme.altColor.replace(')', ' / 0.55)')}
-                          transition="all 0.22s ease"
-                          _hover={{
-                            borderColor: theme.altColor,
-                            bg: theme.altColor.replace(')', ' / 0.25)'),
-                            color: theme.altColor,
-                          }}
-                        >
-                          <ChevronDownIcon
-                            transition="transform 0.25s ease"
-                            transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
-                            w="10px"
-                            h="10px"
-                          />
+                        {/* Interactive Chevron Button as a settings pip */}
+                        <Box position="relative">
                           {!isExpanded && (
                             <Box
                               className="ghostly-chevrons"
                               position="absolute"
-                              top="26px"
+                              top="14px"
                               left="50%"
                               transform="translateX(-50%)"
                               w="16px"
                               h="44px"
                               pointerEvents="none"
+                              zIndex={0}
                               style={{
                                 maskImage: 'linear-gradient(to bottom, black 30%, transparent)',
                                 WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)',
@@ -1398,7 +1376,32 @@ function Resume({ data }) {
                               </svg>
                             </Box>
                           )}
-                        </Flex>
+                          <Flex
+                            position="relative"
+                            zIndex={1}
+                            align="center"
+                            justify="center"
+                            boxSize="28px"
+                            borderRadius="full"
+                            border="1px solid"
+                            borderColor={isExpanded ? theme.altColor : borderLight}
+                            bg={isExpanded ? theme.altColor.replace(')', ' / 0.15)') : cardBg}
+                            color={isExpanded ? theme.altColor : theme.altColor.replace(')', ' / 0.55)')}
+                            transition="all 0.22s ease"
+                            _hover={{
+                              borderColor: theme.altColor,
+                              bg: isExpanded ? theme.altColor.replace(')', ' / 0.25)') : useColorModeValue('gray.50', 'oklch(22% 0.015 240)'),
+                              color: theme.altColor,
+                            }}
+                          >
+                            <ChevronDownIcon
+                              transition="transform 0.25s ease"
+                              transform={isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}
+                              w="14px"
+                              h="14px"
+                            />
+                          </Flex>
+                        </Box>
                       </HStack>
                     </Flex>
 
