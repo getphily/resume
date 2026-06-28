@@ -424,70 +424,70 @@ export const fallbackCompetencies =
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Forensic Information Requests",
-    "description": null,
+    "description": "Engineering exhaustive data demands targeting payroll registries, employee demographics, operational expenses, and contractor usage to prepare for negotiations.",
     "sort_order": 31
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "IRS Form 990 & Financial Auditing",
-    "description": null,
+    "description": "Analyzing employer IRS Form 990 filings, balance sheets, and budget statements to evaluate fiscal health and uncover hidden reserves.",
     "sort_order": 32
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Workplace Violence Prevention Policies",
-    "description": null,
+    "description": "Reviewing, auditing, and advising on employer workplace safety and violence prevention frameworks to ensure regulatory compliance and employee security.",
     "sort_order": 33
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "OSHA Compliance & Log Auditing",
-    "description": null,
+    "description": "Examining employer OSHA 300 logs, incident reports, and safety protocols to identify workplace safety violations and enforce corrective measures.",
     "sort_order": 34
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Workers’ Compensation Claim Analysis",
-    "description": null,
+    "description": "Auditing industrial injury claims, return-to-work programs, and employer insurance logs to protect injured workers and verify proper coverage.",
     "sort_order": 35
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Classification & Retention Studies",
-    "description": null,
+    "description": "Reviewing job descriptions, salary bands, and market metrics to build classification studies that support retention and equitable pay adjustments.",
     "sort_order": 36
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Qualifying Life Event (QLE) Plan Rules",
-    "description": null,
+    "description": "Advising members on health benefit enrollments, status changes, and plan document rules following marriage, birth, or coverage loss events.",
     "sort_order": 37
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "FMLA / CFRA Leave Administration",
-    "description": null,
+    "description": "Representing employees requesting medical or family leave, auditing employer leave calculations, and defending against unlawful retaliation.",
     "sort_order": 38
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Total Compensation & Wage Opener Modeling",
-    "description": null,
+    "description": "Modeling economic impacts of wage increases, health contribution shifts, and retirement match changes to build comprehensive cost proposals.",
     "sort_order": 39
   },
   {
     "group_type": "skills_list",
     "category": "Compliance, HR, & Financial Diagnostics",
     "name": "Turnover Rate Risk Assessment",
-    "description": null,
+    "description": "Analyzing employee tenure, resignation patterns, and exit survey data to isolate retention risks and bargain for structural solutions.",
     "sort_order": 40
   },
   {
