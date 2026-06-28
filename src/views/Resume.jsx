@@ -1731,7 +1731,14 @@ function Resume({ data }) {
             </Text>
             <HStack spacing="0.5rem">
               {lightboxImg.tags.map((tag) => (
-                <Tag key={tag} size="sm" colorScheme="teal" variant="outline">
+                <Tag
+                  key={tag}
+                  size="sm"
+                  variant="outline"
+                  borderColor={brandPrimary}
+                  color={brandPrimary}
+                  bg={useColorModeValue('rgba(59, 130, 246, 0.04)', 'rgba(59, 130, 246, 0.1)')}
+                >
                   {tag}
                 </Tag>
               ))}
@@ -1877,6 +1884,7 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
   const [tabIdx, setTabIdx] = useState(0);
   const [viewMode, setViewMode] = useState('list');
   const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
 
   const groupedCompetencies = useMemo(() => {
     const out = {};
@@ -1946,49 +1954,93 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
         >
           <Button
             size="xs"
-            variant={viewMode === 'list' ? 'solid' : 'ghost'}
-            colorScheme={viewMode === 'list' ? 'blue' : 'gray'}
             onClick={() => setViewMode('list')}
             fontSize="0.75rem"
             fontWeight="700"
             borderRadius="md"
             px="0.75rem"
+            variant="unstyled"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            h="1.6rem"
+            bg={viewMode === 'list' ? brandPrimary : 'transparent'}
+            color={viewMode === 'list' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
+            boxShadow={viewMode === 'list' ? 'sm' : 'none'}
+            _hover={{
+              bg: viewMode === 'list' ? brandPrimary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
+              color: viewMode === 'list' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+            }}
+            transition="all 0.15s"
           >
             📋 List
           </Button>
           <Button
             size="xs"
-            variant={viewMode === 'map' ? 'solid' : 'ghost'}
-            colorScheme={viewMode === 'map' ? 'purple' : 'gray'}
             onClick={() => setViewMode('map')}
             fontSize="0.75rem"
             fontWeight="700"
             borderRadius="md"
             px="0.75rem"
+            variant="unstyled"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            h="1.6rem"
+            bg={viewMode === 'map' ? brandSecondary : 'transparent'}
+            color={viewMode === 'map' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
+            boxShadow={viewMode === 'map' ? 'sm' : 'none'}
+            _hover={{
+              bg: viewMode === 'map' ? brandSecondary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
+              color: viewMode === 'map' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+            }}
+            transition="all 0.15s"
           >
             🌐 Skill Map
           </Button>
           <Button
             size="xs"
-            variant={viewMode === 'insights' ? 'solid' : 'ghost'}
-            colorScheme={viewMode === 'insights' ? 'teal' : 'gray'}
             onClick={() => setViewMode('insights')}
             fontSize="0.75rem"
             fontWeight="700"
             borderRadius="md"
             px="0.75rem"
+            variant="unstyled"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            h="1.6rem"
+            bg={viewMode === 'insights' ? brandPrimary : 'transparent'}
+            color={viewMode === 'insights' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
+            boxShadow={viewMode === 'insights' ? 'sm' : 'none'}
+            _hover={{
+              bg: viewMode === 'insights' ? brandPrimary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
+              color: viewMode === 'insights' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+            }}
+            transition="all 0.15s"
           >
             📊 Insights
           </Button>
           <Button
             size="xs"
-            variant={viewMode === 'tree' ? 'solid' : 'ghost'}
-            colorScheme={viewMode === 'tree' ? 'green' : 'gray'}
             onClick={() => setViewMode('tree')}
             fontSize="0.75rem"
             fontWeight="700"
             borderRadius="md"
             px="0.75rem"
+            variant="unstyled"
+            display="inline-flex"
+            alignItems="center"
+            justifyContent="center"
+            h="1.6rem"
+            bg={viewMode === 'tree' ? brandSecondary : 'transparent'}
+            color={viewMode === 'tree' ? (isDark ? 'gray.900' : 'white') : textColorMuted}
+            boxShadow={viewMode === 'tree' ? 'sm' : 'none'}
+            _hover={{
+              bg: viewMode === 'tree' ? brandSecondary : useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)'),
+              color: viewMode === 'tree' ? (isDark ? 'gray.900' : 'white') : (isDark ? 'white' : 'gray.800')
+            }}
+            transition="all 0.15s"
           >
             🌳 Skills Tree
           </Button>
@@ -2026,7 +2078,7 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
               wrap="wrap"
             >
               <Tab
-                _selected={{ bg: 'blue.500', color: 'white', boxShadow: 'sm' }}
+                _selected={{ bg: brandPrimary, color: isDark ? 'gray.900' : 'white', boxShadow: 'sm' }}
                 _hover={{ bg: useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)') }}
                 fontWeight="700"
                 fontSize="0.8rem"
@@ -2038,12 +2090,18 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 transition="all 0.2s"
               >
                 🔵 Labor Relations
-                <Badge ml="0.5rem" bg="blue.600" color="white" borderRadius="full" fontSize="0.65rem">
+                <Badge
+                  ml="0.5rem"
+                  bg={tabIdx === 0 ? (isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.25)") : useColorModeValue("rgba(59, 130, 246, 0.08)", "rgba(59, 130, 246, 0.15)")}
+                  color={tabIdx === 0 ? (isDark ? "gray.900" : "white") : brandPrimary}
+                  borderRadius="full"
+                  fontSize="0.65rem"
+                >
                   {laborCount + leadershipSkills.length}
                 </Badge>
               </Tab>
               <Tab
-                _selected={{ bg: 'purple.500', color: 'white', boxShadow: 'sm' }}
+                _selected={{ bg: brandSecondary, color: isDark ? 'gray.900' : 'white', boxShadow: 'sm' }}
                 _hover={{ bg: useColorModeValue('rgba(0,0,0,0.04)', 'rgba(255,255,255,0.04)') }}
                 fontWeight="700"
                 fontSize="0.8rem"
@@ -2055,7 +2113,13 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
                 transition="all 0.2s"
               >
                 🟣 Digital Media &amp; Communications
-                <Badge ml="0.5rem" bg="purple.600" color="white" borderRadius="full" fontSize="0.65rem">
+                <Badge
+                  ml="0.5rem"
+                  bg={tabIdx === 1 ? (isDark ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.25)") : useColorModeValue("rgba(147, 51, 234, 0.08)", "rgba(147, 51, 234, 0.15)")}
+                  color={tabIdx === 1 ? (isDark ? "gray.900" : "white") : brandSecondary}
+                  borderRadius="full"
+                  fontSize="0.65rem"
+                >
                   {digitalCount + commsSkills.length}
                 </Badge>
               </Tab>
