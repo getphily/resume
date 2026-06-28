@@ -43,6 +43,7 @@ import { SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, Che
 import { FaLinkedin, FaInstagram, FaYoutube, FaFileDownload, FaCalendarAlt } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import SkillOrbMap from '../components/SkillOrbMap';
+import SkillsTree from '../components/SkillsTree';
 
 // Inline Tech Stack Icon Paths
 const techIcons = {
@@ -2071,6 +2072,18 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           >
             📊 Insights
           </Button>
+          <Button
+            size="xs"
+            variant={viewMode === 'tree' ? 'solid' : 'ghost'}
+            colorScheme={viewMode === 'tree' ? 'green' : 'gray'}
+            onClick={() => setViewMode('tree')}
+            fontSize="0.75rem"
+            fontWeight="700"
+            borderRadius="md"
+            px="0.75rem"
+          >
+            🌳 Skills Tree
+          </Button>
         </HStack>
       </Flex>
 
@@ -2079,6 +2092,11 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           <Box minH="300px">
             <SkillOrbMap colorMode={colorMode} />
           </Box>
+        ) : viewMode === 'tree' ? (
+          <SkillsTree
+            borderLight={borderLight}
+            brandPrimary={brandPrimary}
+          />
         ) : viewMode === 'insights' ? (
           <SkillsInsightsPanel
             colorMode={colorMode}
@@ -2728,19 +2746,20 @@ function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    if (!testimonials || testimonials.length <= 2) return;
+    if (!testimonials || testimonials.length <= 3) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 2) % testimonials.length);
+      setCurrentIndex((prev) => (prev + 3) % testimonials.length);
     }, 8000);
     return () => clearInterval(interval);
   }, [testimonials]);
 
   if (!testimonials || testimonials.length === 0) return null;
 
-  const currentPair = testimonials.length > 2 
+  const currentGroup = testimonials.length > 3 
     ? [
         testimonials[currentIndex],
         testimonials[(currentIndex + 1) % testimonials.length],
+        testimonials[(currentIndex + 2) % testimonials.length],
       ].filter(Boolean)
     : testimonials;
 
@@ -2759,8 +2778,8 @@ function TestimonialsSection({ testimonials, borderLight, cardBg, textColorMuted
             exit={{ opacity: 0, y: -15 }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing="1.5rem">
-              {currentPair.map((t, idx) => (
+            <SimpleGrid columns={1} spacing="1.5rem">
+              {currentGroup.map((t, idx) => (
           <Box
             key={t.id}
             bg={cardBg}

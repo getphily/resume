@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
-import { Box, Text, Heading, Flex, HStack, VStack, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { Box, Text, Heading, Flex, HStack, VStack, Button, useColorMode, useColorModeValue } from '@chakra-ui/react';
+import { animate } from 'framer-motion';
 
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/counties-10m.json';
@@ -110,6 +111,61 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
   const [revealed, setRevealed]             = useState(false);
   const containerRef = useRef(null);
   const mapBoxRef    = useRef(null);
+
+  const [projectionCenter, setProjectionCenter] = useState([-122.45, 38.2]);
+  const [projectionScale, setProjectionScale] = useState(12500);
+
+  const animateZoom = (targetCenter, targetScale) => {
+    const start = {
+      scale: projectionScale,
+      lng: projectionCenter[0],
+      lat: projectionCenter[1]
+    };
+    animate(start, {
+      scale: targetScale,
+      lng: targetCenter[0],
+      lat: targetCenter[1]
+    }, {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1], // easeOutExpo
+      onUpdate: (latest) => {
+        setProjectionScale(latest.scale);
+        setProjectionCenter([latest.lng, latest.lat]);
+      }
+    });
+  };
+
+  const handleIndustryClick = (ind) => {
+    const nextInd = activeIndustry === ind ? null : ind;
+    setActiveIndustry(nextInd);
+    
+    if (nextInd) {
+      const industryEmployers = norcal.filter(e => e.industry === nextInd);
+      if (industryEmployers.length > 0) {
+        const avgLng = industryEmployers.reduce((sum, e) => sum + e.coords[0], 0) / industryEmployers.length;
+        const avgLat = industryEmployers.reduce((sum, e) => sum + e.coords[1], 0) / industryEmployers.length;
+        
+        const lngs = industryEmployers.map(e => e.coords[0]);
+        const lats = industryEmployers.map(e => e.coords[1]);
+        const maxLng = Math.max(...lngs);
+        const minLng = Math.min(...lngs);
+        const maxLat = Math.max(...lats);
+        const minLat = Math.min(...lats);
+        
+        const rangeLng = maxLng - minLng;
+        const rangeLat = maxLat - minLat;
+        const maxRange = Math.max(rangeLng, rangeLat);
+        
+        const targetScale = maxRange > 0 
+          ? Math.min(Math.max(12500 / maxRange, 15000), 40000) 
+          : 35000;
+          
+        animateZoom([avgLng, avgLat], targetScale);
+      }
+    } else {
+      animateZoom([-122.45, 38.2], 12500);
+    }
+  };
 
   useEffect(() => {
     const el = containerRef.current;
@@ -231,7 +287,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
         >
           <ComposableMap
             projection="geoMercator"
-            projectionConfig={{ center: [-122.45, 38.2], scale: 12500 }}
+            projectionConfig={{ center: projectionCenter, scale: projectionScale }}
             width={600}
             height={600}
             style={{ width: '100%', height: '100%', display: 'block' }}
@@ -272,6 +328,9 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                     }}
                     onMouseEnter={e => handleEnter(emp, e.currentTarget)}
                     onMouseLeave={() => setHovered(null)}
+                    onClick={() => {
+                      animateZoom(emp.coords, 35000);
+                    }}
                   />
                 </Marker>
               );
@@ -325,6 +384,25 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
               +{southernCount} employer{southernCount !== 1 ? 's' : ''} in Southern CA not shown
             </Box>
           )}
+
+          {projectionScale > 13000 && (
+            <Button
+              position="absolute"
+              bottom="0.75rem"
+              left="0.75rem"
+              size="xs"
+              colorScheme="blue"
+              onClick={() => {
+                setActiveIndustry(null);
+                animateZoom([-122.45, 38.2], 12500);
+              }}
+              zIndex={10}
+              borderRadius="md"
+              boxShadow="sm"
+            >
+              Reset Zoom
+            </Button>
+          )}
         </Box>
 
         {/* Industry filter key (Horizontal layout underneath map) */}
@@ -349,7 +427,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
               bg={!activeIndustry ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)') : 'transparent'}
               border="1px solid"
               borderColor={!activeIndustry ? (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)') : 'transparent'}
-              transition="all 0.15s" onClick={() => setActiveIndustry(null)}
+              transition="all 0.15s" onClick={() => handleIndustryClick(null)}
               cursor="pointer"
               _hover={{ bg: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)' }}
             >
@@ -373,7 +451,7 @@ export function LaborMap({ employers = [], borderLight, cardBg, textColorMuted }
                   border="1px solid"
                   borderColor={on ? `${c}44` : 'transparent'}
                   transition="all 0.15s"
-                  onClick={() => setActiveIndustry(on ? null : ind)}
+                  onClick={() => handleIndustryClick(ind)}
                   cursor="pointer"
                   sx={{ '&:hover': { bg: `${c}12`, color: c } }}
                 >
