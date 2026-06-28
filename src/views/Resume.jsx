@@ -1350,7 +1350,7 @@ function Resume({ data }) {
                               top="14px"
                               left="50%"
                               transform="translateX(-50%)"
-                              w="16px"
+                              w="28px"
                               h="44px"
                               pointerEvents="none"
                               zIndex={0}
@@ -1359,20 +1359,20 @@ function Resume({ data }) {
                                 WebkitMaskImage: 'linear-gradient(to bottom, black 30%, transparent)',
                               }}
                             >
-                              <svg width="16" height="44" viewBox="0 0 16 44">
+                              <svg width="28" height="44" viewBox="0 0 28 44">
                                 <defs>
                                   <mask id={`knockout-mask-${item.id}`}>
-                                    <rect width="16" height="44" fill="white" rx="8" />
+                                    <rect width="28" height="44" fill="white" rx="14" />
                                     <g fill="none" stroke="black" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="mask-chevrons">
-                                      <path d="M3,5 L8,10 L13,5" />
-                                      <path d="M3,17 L8,22 L13,17" />
-                                      <path d="M3,29 L8,34 L13,29" />
-                                      <path d="M3,41 L8,46 L13,41" />
-                                      <path d="M3,53 L8,58 L13,53" />
+                                      <path d="M4,5 L14,10 L24,5" />
+                                      <path d="M4,17 L14,22 L24,17" />
+                                      <path d="M4,29 L14,34 L24,29" />
+                                      <path d="M4,41 L14,46 L24,41" />
+                                      <path d="M4,53 L14,58 L24,53" />
                                     </g>
                                   </mask>
                                 </defs>
-                                <rect width="16" height="44" fill={theme.altColor} mask={`url(#knockout-mask-${item.id})`} opacity="0.38" />
+                                <rect width="28" height="44" fill={theme.altColor} mask={`url(#knockout-mask-${item.id})`} opacity="0.38" />
                               </svg>
                             </Box>
                           )}
