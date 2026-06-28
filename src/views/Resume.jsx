@@ -377,9 +377,18 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
 function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight, cardBg, textColorMuted, setLbAsset, setLbJobAssets }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [height, setHeight] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
   const elementRef = useRef(null);
 
   const enabledSlides = slides.filter(s => s.is_enabled);
+
+  const nextSlide = useCallback(() => {
+    setActiveIdx(prev => (prev === enabledSlides.length - 1 ? 0 : prev + 1));
+  }, [enabledSlides.length]);
+
+  const prevSlide = useCallback(() => {
+    setActiveIdx(prev => (prev === 0 ? enabledSlides.length - 1 : prev - 1));
+  }, [enabledSlides.length]);
 
   useEffect(() => {
     if (!elementRef.current) return;
@@ -396,17 +405,19 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
     return () => observer.disconnect();
   }, [activeIdx]);
 
+  useEffect(() => {
+    if (enabledSlides.length <= 1 || isHovered) return;
+
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 8000); // Auto rotate every 8 seconds when not hovered
+
+    return () => clearInterval(interval);
+  }, [enabledSlides.length, activeIdx, isHovered, nextSlide]);
+
   if (enabledSlides.length === 0) return null;
 
   const currentSlide = enabledSlides[activeIdx];
-
-  const nextSlide = () => {
-    setActiveIdx(prev => (prev === enabledSlides.length - 1 ? 0 : prev + 1));
-  };
-
-  const prevSlide = () => {
-    setActiveIdx(prev => (prev === 0 ? enabledSlides.length - 1 : prev - 1));
-  };
 
   const slideTheme = activeIdx % 2 === 0 ? {
     color: brandPrimary,
@@ -428,6 +439,8 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
       display="flex"
       flexDirection="column"
       overflow="hidden"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Carousel Header */}
       <Flex align="center" justify="space-between" mb="1.5rem" pb="1rem" borderBottom="1px solid" borderColor={borderLight} flexShrink={0}>
