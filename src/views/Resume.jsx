@@ -97,7 +97,6 @@ const techIcons = {
 // ─── Horizontal Timeline Component for Carousel ───
 function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, textColorMuted, setLbAsset, setLbJobAssets }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const [isDesc, setIsDesc] = useState(false);
   const detailBg = useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)');
 
   if (!events || events.length === 0) return null;
@@ -107,28 +106,11 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
     return copy.sort((a, b) => {
       const yearA = parseInt(a.year) || 0;
       const yearB = parseInt(b.year) || 0;
-      return isDesc ? yearB - yearA : yearA - yearB;
+      return yearB - yearA;
     });
-  }, [events, isDesc]);
+  }, [events]);
 
   const selectedEvent = sortedEvents[selectedIdx] || sortedEvents[0] || null;
-
-  const toggleSort = () => {
-    const currentEvent = sortedEvents[selectedIdx];
-    setIsDesc(prev => {
-      const nextDesc = !prev;
-      const nextSorted = [...events].sort((a, b) => {
-        const yearA = parseInt(a.year) || 0;
-        const yearB = parseInt(b.year) || 0;
-        return nextDesc ? yearB - yearA : yearA - yearB;
-      });
-      const nextIdx = nextSorted.findIndex(e => e.year === currentEvent?.year && e.title === currentEvent?.title);
-      if (nextIdx !== -1) {
-        setSelectedIdx(nextIdx);
-      }
-      return nextDesc;
-    });
-  };
 
   return (
     <VStack align="stretch" spacing="1.5rem" w="100%" flex="1" minH="0" justify="space-between">
@@ -138,25 +120,6 @@ function HorizontalTimeline({ events = [], color, scheme, borderLight, cardBg, t
           100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
         }
       `}</style>
-
-      {/* Sort Toggle Bar */}
-      <Flex justify="flex-end" mb="-0.75rem" zIndex="3" position="relative">
-        <Button
-          size="xs"
-          variant="outline"
-          borderColor={borderLight}
-          color={textColorMuted}
-          _hover={{ bg: useColorModeValue('gray.100', 'whiteAlpha.100'), color: color }}
-          onClick={toggleSort}
-          leftIcon={<span>⇅</span>}
-          borderRadius="full"
-          px="0.75rem"
-          fontSize="0.75rem"
-          fontWeight="700"
-        >
-          Sort: {isDesc ? 'Newest First' : 'Oldest First'}
-        </Button>
-      </Flex>
       
       {/* Horizontal timeline track and nodes */}
       <Box
