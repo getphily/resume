@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useSearchParams } from 'react-router-dom';
 import Resume from './views/Resume';
 import Dashboard from './views/Dashboard';
 import Admin from './views/Admin';
@@ -17,6 +17,9 @@ import { fallbackEmployers } from './data/employers';
 import { fallbackCompetencies } from './data/competencies';
 
 function App() {
+  const [searchParams] = useSearchParams();
+  const activeVariant = searchParams.get('v') || 'standard';
+
   const [state, setState] = useState({
     timeline: [],
     podcasts: [],
@@ -50,7 +53,7 @@ function App() {
           fetchEndpoint('/api/socials'),
           fetchEndpoint('/api/skills'),
           fetchEndpoint('/api/education'),
-          fetchEndpoint('/api/slogan').catch(() => ({ slogan: '' })),
+          fetchEndpoint(`/api/slogan?v=${activeVariant}`).catch(() => ({ slogan: '' })),
           fetchEndpoint('/api/slides').catch(() => fallbackSlides),
           fetchEndpoint('/api/testimonials').catch(() => fallbackTestimonials),
         ]);
@@ -113,6 +116,24 @@ function App() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (state.loading) return;
+
+    async function fetchSlogan() {
+      try {
+        const res = await fetch(`/api/slogan?v=${activeVariant}`);
+        if (res.ok) {
+          const sloganRes = await res.json();
+          setState((prev) => ({ ...prev, slogan: sloganRes?.slogan || '' }));
+        }
+      } catch (err) {
+        console.warn('Failed to fetch variant slogan:', err.message);
+      }
+    }
+
+    fetchSlogan();
+  }, [activeVariant, state.loading]);
+
   // Helper to restructure the flat socials list into categorised format (compatible with public/socials.json)
   function formatSocials(socialsData) {
     if (!socialsData) return null;
@@ -137,13 +158,11 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Resume data={state} />} />
-        <Route path="/dashboard" element={<Dashboard data={state} />} />
-        <Route path="/admin" element={<Admin />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<Resume data={state} activeVariant={activeVariant} />} />
+      <Route path="/dashboard" element={<Dashboard data={state} />} />
+      <Route path="/admin" element={<Admin />} />
+    </Routes>
   );
 }
 

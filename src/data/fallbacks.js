@@ -324,20 +324,20 @@ export const fallbackSocials = [
 ];
 
 export const fallbackSkills = [
-  { id: 1, category: 'leadership', name: 'First Contracts & Collective Bargaining' },
-  { id: 2, category: 'leadership', name: 'Contract Costing & Financial Analysis' },
-  { id: 3, category: 'leadership', name: 'Coalition Building & Strategic Campaigns' },
-  { id: 4, category: 'leadership', name: 'Grievance Writing, Case Management & Panels' },
-  { id: 5, category: 'leadership', name: 'Organizing Drives & Project Management' },
-  { id: 6, category: 'leadership', name: 'Steward Training & Member Engagement' },
-  { id: 7, category: 'leadership', name: 'Leadership Recruitment & Team Coordination' },
-  { id: 8, category: 'comms', name: 'Digital Organizing & Social Media Management' },
-  { id: 9, category: 'comms', name: 'SEO, Website Development & Digital Algorithms' },
-  { id: 10, category: 'comms', name: 'Video Podcast Production & Editing' },
-  { id: 11, category: 'comms', name: 'Graphic Layout (Photoshop, Illustrator, InDesign)' },
-  { id: 12, category: 'comms', name: 'Audio & Video Editing (Final Cut Pro, Audacity, CapCut)' },
-  { id: 13, category: 'comms', name: 'Content Strategy & Campaign Messaging' },
-  { id: 14, category: 'comms', name: 'Fiduciary Trust Health Plan Design & Budgeting' }
+  { id: 1, category: 'leadership', name: 'First Contracts & Collective Bargaining', variants: ['standard', 'labor'] },
+  { id: 2, category: 'leadership', name: 'Contract Costing & Financial Analysis', variants: ['standard', 'labor'] },
+  { id: 3, category: 'leadership', name: 'Coalition Building & Strategic Campaigns', variants: ['standard', 'labor', 'aaup'] },
+  { id: 4, category: 'leadership', name: 'Grievance Writing, Case Management & Panels', variants: ['standard', 'labor'] },
+  { id: 5, category: 'leadership', name: 'Organizing Drives & Project Management', variants: ['standard', 'labor', 'aaup'] },
+  { id: 6, category: 'leadership', name: 'Steward Training & Member Engagement', variants: ['standard', 'labor'] },
+  { id: 7, category: 'leadership', name: 'Leadership Recruitment & Team Coordination', variants: ['standard', 'labor', 'aaup'] },
+  { id: 8, category: 'comms', name: 'Digital Organizing & Social Media Management', variants: ['standard', 'labor', 'aaup'] },
+  { id: 9, category: 'comms', name: 'SEO, Website Development & Digital Algorithms', variants: ['standard', 'aaup'] },
+  { id: 10, category: 'comms', name: 'Video Podcast Production & Editing', variants: ['standard', 'aaup'] },
+  { id: 11, category: 'comms', name: 'Graphic Layout (Photoshop, Illustrator, InDesign)', variants: ['standard', 'aaup'] },
+  { id: 12, category: 'comms', name: 'Audio & Video Editing (Final Cut Pro, Audacity, CapCut)', variants: ['standard', 'aaup'] },
+  { id: 13, category: 'comms', name: 'Content Strategy & Campaign Messaging', variants: ['standard', 'labor', 'aaup'] },
+  { id: 14, category: 'comms', name: 'Fiduciary Trust Health Plan Design & Budgeting', variants: ['standard', 'labor'] }
 ];
 
 export const fallbackEducation = [

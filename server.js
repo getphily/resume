@@ -477,16 +477,30 @@ app.get('/api/slogan', async (req, res) => {
     if (!client) {
       return res.json({ slogan: '' });
     }
-    const { data, error } = await client
+    const variant = req.query.v;
+    let key = 'slogan';
+    if (variant && variant !== 'standard') {
+      key = `slogan_${variant}`;
+    }
+
+    let { data, error } = await client
       .from('app_settings')
       .select('value')
-      .eq('key', 'slogan')
+      .eq('key', key)
       .maybeSingle();
 
-    if (error) {
-      console.warn('Error fetching slogan from DB:', error.message);
-      return res.json({ slogan: '' });
+    if (error || !data) {
+      // Fallback to standard slogan
+      const { data: stdData, error: stdError } = await client
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'slogan')
+        .maybeSingle();
+      if (!stdError && stdData) {
+        data = stdData;
+      }
     }
+
     res.json({ slogan: data ? data.value : '' });
   } catch (err) {
     res.json({ slogan: '' });

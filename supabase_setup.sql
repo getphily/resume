@@ -722,3 +722,20 @@ TRUNCATE testimonials RESTART IDENTITY CASCADE;
 INSERT INTO testimonials (name, title, company, content, linkedin_url, sort_order) VALUES
 ('Jane Doe', 'Senior Organizer', 'SEIU 1021', 'Phil is an incredible leader who knows how to build consensus and drive real results. Working with him was a masterclass in strategic communications.', 'https://linkedin.com', 1),
 ('John Smith', 'Communications Director', 'Teamsters', 'I have never met someone so capable of blending traditional labor organizing with modern digital campaigns. Highly recommended.', 'https://linkedin.com', 2);
+
+-- ==========================================
+-- 8. RESUME VARIANTS EXTENSION
+-- ==========================================
+
+-- Tagging skills with variants (for filtering or reordering)
+ALTER TABLE skills ADD COLUMN IF NOT EXISTS variants text[] DEFAULT '{standard, aaup, labor}';
+
+-- Tagging competencies with variants
+ALTER TABLE competencies ADD COLUMN IF NOT EXISTS variants text[] DEFAULT '{standard, aaup, labor}';
+
+-- Insert variant slogan overrides in app_settings
+INSERT INTO app_settings (key, value) VALUES
+('slogan_aaup', 'Digital Media Producer & Labor Communications Strategist'),
+('slogan_labor', 'Senior Labor Relations Representative & Collective Bargaining Expert')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+

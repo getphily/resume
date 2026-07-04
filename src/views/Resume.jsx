@@ -6,7 +6,7 @@ const ReactApexChart = lazy(() => import('react-apexcharts'));
 import { MasonryPhotoAlbum as PhotoAlbum } from 'react-photo-album';
 import 'react-photo-album/masonry.css';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -38,6 +38,10 @@ import {
   TabPanel,
   Badge,
   useDisclosure,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from '@chakra-ui/react';
 import { SunIcon, MoonIcon, ChevronDownIcon, ChevronUpIcon, ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons';
 import { FaLinkedin, FaInstagram, FaYoutube, FaFileDownload, FaCalendarAlt } from 'react-icons/fa';
@@ -497,13 +501,95 @@ function SlideCarousel({ slides = [], brandPrimary, brandSecondary, borderLight,
   );
 }
 
-function Resume({ data }) {
+function Resume({ data, activeVariant = 'standard' }) {
   const { colorMode, toggleColorMode } = useColorMode();
   const isDark = colorMode === 'dark';
 
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const [expandedCards, setExpandedCards] = useState({});
   const [hoveredCardId, setHoveredCardId] = useState(null);
+
+  // Handle dynamic auto-expansion of timeline cards based on active variant
+  useEffect(() => {
+    if (activeVariant === 'aaup') {
+      setExpandedCards({
+        'redwood-empire': true,
+        'norcal-pods': true,
+        'freelance': true
+      });
+    } else if (activeVariant === 'labor') {
+      setExpandedCards({
+        'seiu-1021': true,
+        'teamsters-harris': true,
+        'teamsters-853': true
+      });
+    } else {
+      setExpandedCards({
+        'redwood-empire': true
+      });
+    }
+  }, [activeVariant]);
+
+  const displayedSlogan = useMemo(() => {
+    const defaultSlogans = [
+      "Ready now to Lead, Communicate, Mentor, Fight, Teach, and Make a Difference",
+      "Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance social justice."
+    ];
+    if (data.slogan && !defaultSlogans.includes(data.slogan.trim())) {
+      return data.slogan;
+    }
+    if (activeVariant === 'aaup') {
+      return "Digital Media Producer & Labor Communications Strategist";
+    }
+    if (activeVariant === 'labor') {
+      return "Senior Labor Relations Representative & Collective Bargaining Expert";
+    }
+    return data.slogan || "Combines deep labor relations expertise with cutting-edge digital communication strategies to amplify voices, build coalitions, and advance social justice.";
+  }, [data.slogan, activeVariant]);
+
+  const displayedSlides = useMemo(() => {
+    const rawSlides = data.slides || [];
+    if (rawSlides.length === 0) return [];
+    return rawSlides.map(slide => {
+      if (slide.title === 'Professional Summary' || slide.sort_order === 1) {
+        let lead = slide.content_data?.lead;
+        let body = slide.content_data?.body;
+
+        if (activeVariant === 'aaup') {
+          lead = "Combines senior labor representation with professional digital media and video podcast production.";
+          body = "Digital media producer and campaign communications director with 20+ years of experience. Expert at editing video/audio, deploying livestream networks, and crafting high-impact digital messaging for large-scale worker mobilization.";
+        } else if (activeVariant === 'labor') {
+          lead = "High-stakes contract negotiator and labor advocate with over 20 years of union leadership.";
+          body = "Former local union president and business representative with extensive experience bargaining complex contracts, coordinating organizing drives, representing workers in regulatory hearings, and managing labor disputes.";
+        }
+
+        return {
+          ...slide,
+          content_data: {
+            ...slide.content_data,
+            lead,
+            body
+          }
+        };
+      }
+      return slide;
+    });
+  }, [data.slides, activeVariant]);
+
+  const filteredSkills = useMemo(() => {
+    return (data.skills || []).filter(s => {
+      if (!s.variants || !Array.isArray(s.variants)) return true;
+      return s.variants.includes(activeVariant);
+    });
+  }, [data.skills, activeVariant]);
+
+  const filteredCompetencies = useMemo(() => {
+    return (data.competencies || []).filter(c => {
+      if (!c.variants || !Array.isArray(c.variants)) return true;
+      return c.variants.includes(activeVariant);
+    });
+  }, [data.competencies, activeVariant]);
 
   // Media library — prefetched for all jobs on load; never re-fetches if already cached
   const [mediaByJob,  setMediaByJob]  = useState({});
@@ -1035,7 +1121,39 @@ function Resume({ data }) {
             </HStack>
           </HStack>
 
-          <HStack spacing="1rem">
+          <HStack spacing="0.75rem">
+            <Menu size="sm">
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon />}
+                size="sm"
+                variant="ghost"
+                fontSize="0.75rem"
+                fontWeight="700"
+                textTransform="uppercase"
+                letterSpacing="0.05em"
+                px="0.75rem"
+                height="2rem"
+                bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.04)')}
+                border="1px solid"
+                borderColor={borderLight}
+                _hover={{ bg: useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.08)') }}
+                _active={{ bg: useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.08)') }}
+              >
+                {activeVariant === 'aaup' ? 'Media' : activeVariant === 'labor' ? 'Labor' : 'Standard'}
+              </MenuButton>
+              <MenuList
+                fontSize="0.8rem"
+                fontWeight="600"
+                bg={useColorModeValue('white', 'rgb(20, 20, 20)')}
+                borderColor={borderLight}
+                boxShadow="xl"
+              >
+                <MenuItem onClick={() => setSearchParams({ v: 'standard' })}>Standard Profile</MenuItem>
+                <MenuItem onClick={() => setSearchParams({ v: 'aaup' })}>Media Production Manager</MenuItem>
+                <MenuItem onClick={() => setSearchParams({ v: 'labor' })}>Labor Relations Expert</MenuItem>
+              </MenuList>
+            </Menu>
             <IconButton
               aria-label="Toggle Color Mode"
               icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -1113,7 +1231,40 @@ function Resume({ data }) {
               )}
             </HStack>
 
-            <HStack spacing="0.5rem">
+            <HStack spacing="0.75rem">
+              <Menu size="sm">
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  size="sm"
+                  variant="ghost"
+                  fontSize="0.75rem"
+                  fontWeight="700"
+                  textTransform="uppercase"
+                  letterSpacing="0.05em"
+                  px="0.75rem"
+                  height="2rem"
+                  bg={useColorModeValue('rgba(0,0,0,0.03)', 'rgba(255,255,255,0.04)')}
+                  border="1px solid"
+                  borderColor={borderLight}
+                  _hover={{ bg: useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.08)') }}
+                  _active={{ bg: useColorModeValue('rgba(0,0,0,0.06)', 'rgba(255,255,255,0.08)') }}
+                >
+                  {activeVariant === 'aaup' ? 'Media' : activeVariant === 'labor' ? 'Labor' : 'Standard'}
+                </MenuButton>
+                <MenuList
+                  fontSize="0.8rem"
+                  fontWeight="600"
+                  bg={useColorModeValue('white', 'rgb(20, 20, 20)')}
+                  borderColor={borderLight}
+                  boxShadow="xl"
+                  zIndex="200"
+                >
+                  <MenuItem onClick={() => setSearchParams({ v: 'standard' })}>Standard Profile</MenuItem>
+                  <MenuItem onClick={() => setSearchParams({ v: 'aaup' })}>Media Production Manager</MenuItem>
+                  <MenuItem onClick={() => setSearchParams({ v: 'labor' })}>Labor Relations Expert</MenuItem>
+                </MenuList>
+              </Menu>
               <IconButton
                 aria-label="Toggle Color Mode"
                 icon={colorMode === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -1146,7 +1297,7 @@ function Resume({ data }) {
                 PHIL YBARROLAZA
               </Heading>
 
-              {data.slogan && (
+              {displayedSlogan && (
                 <Text
                   fontSize={{ base: '0.9rem', md: '1.1rem' }}
                   fontWeight="650"
@@ -1157,7 +1308,7 @@ function Resume({ data }) {
                   mt="-0.2rem"
                   mb="0.1rem"
                 >
-                  {data.slogan}
+                  {displayedSlogan}
                 </Text>
               )}
 
@@ -1264,7 +1415,7 @@ function Resume({ data }) {
           blueColor={blueColor}
           purpleColor={purpleColor}
           employers={data.employers}
-          competencies={data.competencies}
+          competencies={filteredCompetencies}
           cardBg={cardBg}
         />
 
@@ -1287,7 +1438,7 @@ function Resume({ data }) {
 
         {/* 2. Hero / Profile Section (Traditional Professional Summary Carousel) */}
         <SlideCarousel
-          slides={data.slides || []}
+          slides={displayedSlides}
           brandPrimary={brandPrimary}
           brandSecondary={brandSecondary}
           borderLight={borderLight}
@@ -1616,8 +1767,8 @@ function Resume({ data }) {
           Skills
         </Heading>
         <SkillsSection
-          skills={data.skills}
-          competencies={data.competencies}
+          skills={filteredSkills}
+          competencies={filteredCompetencies}
           timeline={data.timeline}
           borderLight={borderLight}
           cardBg={cardBg}
@@ -1627,6 +1778,7 @@ function Resume({ data }) {
           blueColor={blueColor}
           purpleColor={purpleColor}
           colorMode={colorMode}
+          activeVariant={activeVariant}
         />
 
 
@@ -2014,7 +2166,7 @@ function TimelineDot({ color, cardBg, dateRange, isActive = false }) {
   );
 }
 
-function SkillsSection({ skills, competencies, timeline = [], borderLight, cardBg, textColorMuted, brandPrimary, brandSecondary, blueColor, purpleColor }) {
+function SkillsSection({ skills, competencies, timeline = [], borderLight, cardBg, textColorMuted, brandPrimary, brandSecondary, blueColor, purpleColor, activeVariant = 'standard' }) {
 
   const [viewMode, setViewMode] = useState('list');
   const { colorMode } = useColorMode();
@@ -2225,93 +2377,103 @@ function SkillsSection({ skills, competencies, timeline = [], borderLight, cardB
           />
         ) : (
           <SimpleGrid columns={{ base: 1, lg: 2 }} spacing="2.5rem" mt="0.5rem">
-            {/* Left Column: Labor Relations */}
-            <Box>
-              {/* Column Header */}
-              <VStack align="stretch" spacing="1rem" mb="1.5rem">
-                <HStack justify="space-between" align="baseline" pb="0.5rem" borderBottom="1px solid" borderColor={borderLight}>
-                  <Heading as="h3" fontSize="0.95rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" color={blueColor}>
-                    Labor Relations
-                  </Heading>
-                  <Text fontSize="0.75rem" fontWeight="700" color={textColorMuted}>
-                    {laborCount + leadershipSkills.length} Skills
-                  </Text>
-                </HStack>
-                
-                {/* Quick-ref pills */}
-                {leadershipSkills.length > 0 && (
-                  <Box
-                    p="1rem"
-                    bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
-                    border="1px solid"
-                    borderColor={borderLight}
-                    borderRadius="xl"
-                  >
-                    <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
-                      Core Strategic Focus
-                    </Text>
-                    <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
-                      {leadershipSkills.map(s => (
-                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.72rem" fontWeight="700" borderRadius="md">{s.name}</Tag>
-                      ))}
+            {(() => {
+              const laborCol = (
+                <Box key="labor-col">
+                  {/* Column Header */}
+                  <VStack align="stretch" spacing="1rem" mb="1.5rem">
+                    <HStack justify="space-between" align="baseline" pb="0.5rem" borderBottom="1px solid" borderColor={borderLight}>
+                      <Heading as="h3" fontSize="0.95rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" color={blueColor}>
+                        Labor Relations
+                      </Heading>
+                      <Text fontSize="0.75rem" fontWeight="700" color={textColorMuted}>
+                        {laborCount + leadershipSkills.length} Skills
+                      </Text>
                     </HStack>
-                  </Box>
-                )}
-              </VStack>
+                    
+                    {/* Quick-ref pills */}
+                    {leadershipSkills.length > 0 && (
+                      <Box
+                        p="1rem"
+                        bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
+                        border="1px solid"
+                        borderColor={borderLight}
+                        borderRadius="xl"
+                      >
+                        <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={blueColor}>
+                          Core Strategic Focus
+                        </Text>
+                        <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                          {leadershipSkills.map(s => (
+                            <Tag key={s.id} size="sm" variant="subtle" colorScheme="blue" fontSize="0.72rem" fontWeight="700" borderRadius="md">{s.name}</Tag>
+                          ))}
+                        </HStack>
+                      </Box>
+                    )}
+                  </VStack>
 
-              <CompetencyGroup
-                categories={consolidatedLaborCategories}
-                scheme="blue"
-                pathColor={brandPrimary}
-                borderLight={borderLight}
-                cardBg={cardBg}
-                textColorMuted={textColorMuted}
-              />
-            </Box>
+                  <CompetencyGroup
+                    categories={consolidatedLaborCategories}
+                    scheme="blue"
+                    pathColor={brandPrimary}
+                    borderLight={borderLight}
+                    cardBg={cardBg}
+                    textColorMuted={textColorMuted}
+                  />
+                </Box>
+              );
 
-            {/* Right Column: Digital Media & Communications */}
-            <Box>
-              {/* Column Header */}
-              <VStack align="stretch" spacing="1rem" mb="1.5rem">
-                <HStack justify="space-between" align="baseline" pb="0.5rem" borderBottom="1px solid" borderColor={borderLight}>
-                  <Heading as="h3" fontSize="0.95rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" color={purpleColor}>
-                    Digital Media &amp; Communications
-                  </Heading>
-                  <Text fontSize="0.75rem" fontWeight="700" color={textColorMuted}>
-                    {digitalCount + commsSkills.length} Skills
-                  </Text>
-                </HStack>
-
-                {/* Quick-ref pills */}
-                {commsSkills.length > 0 && (
-                  <Box
-                    p="1rem"
-                    bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
-                    border="1px solid"
-                    borderColor={borderLight}
-                    borderRadius="xl"
-                  >
-                    <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
-                      Core Technical Focus
-                    </Text>
-                    <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
-                      {commsSkills.map(s => (
-                        <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.72rem" fontWeight="700" borderRadius="md">{s.name}</Tag>
-                      ))}
+              const digitalCol = (
+                <Box key="digital-col">
+                  {/* Column Header */}
+                  <VStack align="stretch" spacing="1rem" mb="1.5rem">
+                    <HStack justify="space-between" align="baseline" pb="0.5rem" borderBottom="1px solid" borderColor={borderLight}>
+                      <Heading as="h3" fontSize="0.95rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" color={purpleColor}>
+                        Digital Media &amp; Communications
+                      </Heading>
+                      <Text fontSize="0.75rem" fontWeight="700" color={textColorMuted}>
+                        {digitalCount + commsSkills.length} Skills
+                      </Text>
                     </HStack>
-                  </Box>
-                )}
-              </VStack>
 
-              <CompetencyGroup
-                categories={consolidatedDigitalCategories}
-                scheme="purple"
-                pathColor={brandSecondary}
-                borderLight={borderLight}
-                cardBg={cardBg}
-                textColorMuted={textColorMuted}
-              />
-            </Box>
+                    {/* Quick-ref pills */}
+                    {commsSkills.length > 0 && (
+                      <Box
+                        p="1rem"
+                        bg={useColorModeValue('rgba(0,0,0,0.015)', 'rgba(255,255,255,0.015)')}
+                        border="1px solid"
+                        borderColor={borderLight}
+                        borderRadius="xl"
+                      >
+                        <Text fontSize="0.65rem" fontWeight="800" textTransform="uppercase" letterSpacing="0.08em" mb="0.6rem" color={purpleColor}>
+                          Core Technical Focus
+                        </Text>
+                        <HStack spacing="0.4rem" wrap="wrap" rowGap="0.4rem">
+                          {commsSkills.map(s => (
+                            <Tag key={s.id} size="sm" variant="subtle" colorScheme="purple" fontSize="0.72rem" fontWeight="700" borderRadius="md">{s.name}</Tag>
+                          ))}
+                        </HStack>
+                      </Box>
+                    )}
+                  </VStack>
+
+                  <CompetencyGroup
+                    categories={consolidatedDigitalCategories}
+                    scheme="purple"
+                    pathColor={brandSecondary}
+                    borderLight={borderLight}
+                    cardBg={cardBg}
+                    textColorMuted={textColorMuted}
+                  />
+                </Box>
+              );
+
+              const cols = [laborCol, digitalCol];
+              if (activeVariant === 'aaup') {
+                cols.reverse();
+              }
+              return cols;
+            })()}
           </SimpleGrid>
         )}
       </Box>
