@@ -46,13 +46,40 @@ export function AudioProvider({ children }) {
   const frameRef     = useRef(SILENT) // Latest analysis result
   const beatRef      = useRef(createBeatDetector())
 
+  // ── Stop capture ───────────────────────────────────
+  const stop = useCallback(() => {
+    if (sourceRef.current) {
+      sourceRef.current.mediaStream?.getTracks().forEach((t) => t.stop())
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+      audioCtxRef.current.close()
+    }
+    audioCtxRef.current = null
+    analyserRef.current = null
+    sourceRef.current   = null
+    dataRef.current     = null
+    frameRef.current    = SILENT
+    setIsListening(false)
+  }, [])
+
+  // ── Adjust smoothing ───────────────────────────────
+  const setSmoothing = useCallback((value) => {
+    if (analyserRef.current) {
+      analyserRef.current.smoothingTimeConstant = value
+    }
+  }, [])
+
   // ── Start capture ──────────────────────────────────
   const start = useCallback(async () => {
     try {
       setError(null)
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        audio: true,
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
         video: true,
       })
 
@@ -89,23 +116,7 @@ export function AudioProvider({ children }) {
         setError(`Audio error: ${err.message}`)
       }
     }
-  }, [])
-
-  // ── Stop capture ───────────────────────────────────
-  const stop = useCallback(() => {
-    if (sourceRef.current) {
-      sourceRef.current.mediaStream?.getTracks().forEach((t) => t.stop())
-    }
-    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
-      audioCtxRef.current.close()
-    }
-    audioCtxRef.current = null
-    analyserRef.current = null
-    sourceRef.current   = null
-    dataRef.current     = null
-    frameRef.current    = SILENT
-    setIsListening(false)
-  }, [])
+  }, [stop])
 
   // ── Cleanup on unmount ─────────────────────────────
   useEffect(() => {
@@ -144,9 +155,10 @@ export function AudioProvider({ children }) {
     error,
     start, 
     stop, 
+    setSmoothing,
     getFrame,
     frameRef,
-  }), [isListening, error, start, stop, getFrame])
+  }), [isListening, error, start, stop, setSmoothing, getFrame])
 
   return (
     <AudioContext_.Provider value={contextValue}>

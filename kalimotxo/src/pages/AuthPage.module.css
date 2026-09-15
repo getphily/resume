@@ -11,8 +11,6 @@
 .glow {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 50% 60% at 50% 50%, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -39,17 +37,7 @@
   gap: var(--sp-2);
 }
 
-.wordmark {
-  font-family: var(--font-heading);
-  font-size: var(--text-2xl);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--clr-text-primary);
-}
 
-.wordmarkK {
-  color: var(--clr-cyan);
-}
 
 .cardTagline {
   font-size: var(--text-sm);
@@ -88,14 +76,14 @@
 }
 
 .tab:focus-visible {
-  outline: 2px solid var(--clr-cyan);
+  outline: 2px solid var(--clr-active-amber);
   outline-offset: 2px;
 }
 
 .tabActive {
-  background: var(--clr-violet);
-  color: #fff;
-  box-shadow: 0 0 12px rgba(124, 58, 237, 0.3);
+  background: var(--clr-active-amber);
+  color: var(--clr-text-primary);
+  box-shadow: 0 0 12px rgba(255, 89, 0, 0.3);
 }
 
 /* ── Panel & Form ── */
@@ -141,7 +129,7 @@
   background: none;
   border: none;
   padding: 0;
-  color: var(--clr-violet-light);
+  color: var(--clr-active-amber);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -149,11 +137,11 @@
 }
 
 .switchLink:hover {
-  color: var(--clr-cyan);
+  color: #ff7733;
 }
 
 .switchLink:focus-visible {
-  outline: 2px solid var(--clr-cyan);
+  outline: 2px solid var(--clr-active-amber);
   outline-offset: 2px;
   border-radius: 2px;
 }

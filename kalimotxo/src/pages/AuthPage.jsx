@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import FormField from '../components/FormField'
 import Button from '../components/Button'
+import Logo from '../components/Logo'
 import styles from './AuthPage.module.css'
 
 export default function AuthPage() {
@@ -53,12 +54,9 @@ export default function AuthPage() {
       <div className={styles.glow} aria-hidden="true" />
 
       <div className={styles.card}>
-        {/* Wordmark */}
+        {/* Logo */}
         <div className={styles.cardHeader}>
-          <span className={styles.wordmark} aria-label="Kalimotxo">
-            <span className={styles.wordmarkK} aria-hidden="true">K</span>
-            <span aria-hidden="true">alimotxo</span>
-          </span>
+          <Logo size="lg" />
           <p className={styles.cardTagline}>Your live visualizer</p>
         </div>
 

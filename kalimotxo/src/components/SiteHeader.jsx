@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import Button from './Button'
+import Logo from './Logo'
 import styles from './SiteHeader.module.css'
 
 export default function SiteHeader({ session }) {
@@ -14,10 +15,9 @@ export default function SiteHeader({ session }) {
   return (
     <header className={styles.header} role="banner">
       <div className={styles.inner}>
-        {/* Wordmark */}
-        <Link to="/" className={styles.wordmark} aria-label="Kalimotxo — Go to homepage">
-          <span className={styles.wordmarkK} aria-hidden="true">K</span>
-          <span>alimotxo</span>
+        {/* Logo */}
+        <Link to="/" className={styles.wordmarkLink} aria-label="Kalimotxo — Go to homepage">
+          <Logo size="sm" />
         </Link>
 
         {/* Nav */}
@@ -27,28 +27,27 @@ export default function SiteHeader({ session }) {
               <li>
                 <Link
                   to="/workspace"
-                  className={styles.navLink}
+                  className={styles.hardwareBtn}
                   aria-current={location.pathname === '/workspace' ? 'page' : undefined}
                 >
                   Workspace
                 </Link>
               </li>
               <li>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
+                  className={styles.hardwareBtn}
                   onClick={handleLogout}
                   aria-label="Log out of Kalimotxo"
                 >
                   Log out
-                </Button>
+                </button>
               </li>
             </ul>
           ) : (
             <ul className={styles.navList} role="list">
               {!isLanding && (
                 <li>
-                  <Link to="/" className={styles.navLink}>Home</Link>
+                  <Link to="/" className={styles.hardwareBtn}>Home</Link>
                 </li>
               )}
               <li>

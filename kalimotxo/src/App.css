@@ -20,7 +20,7 @@
 }
 
 .loadingWordmark span {
-  color: var(--clr-cyan);
+  color: var(--clr-active-amber);
 }
 
 .loadingSpinner {

@@ -20,6 +20,7 @@ export default function AudioMeter() {
     const loop = () => {
       if (isListening) {
         const frame = getFrame()
+        
         if (bassRef.current) bassRef.current.style.transform = `scaleX(${frame.bass})`
         if (midRef.current)  midRef.current.style.transform  = `scaleX(${frame.mid})`
         if (highRef.current) highRef.current.style.transform = `scaleX(${frame.high})`
@@ -46,24 +47,24 @@ export default function AudioMeter() {
 
   return (
     <div className={styles.container}>
+      <button 
+        className={`${styles.capturePad} ${isListening ? styles.captureActive : ''}`} 
+        onClick={isListening ? stop : start}
+      >
+        <Mic size={18} className={styles.micIcon} />
+        {isListening ? 'STOP AUDIO CAPTURE' : 'AUDIO CAPTURE'}
+      </button>
+
       <div className={styles.header}>
         <div className={styles.title}>
           <Activity size={14} className={styles.icon} />
           <span>Audio Input</span>
         </div>
         
-        {isListening ? (
+        {isListening && (
           <div className={styles.statusGroup}>
             <div ref={beatRef} className={styles.beatIndicator} title="Beat Detected" />
-            <button className={styles.btnStop} onClick={stop}>
-              Stop
-            </button>
           </div>
-        ) : (
-          <button className={styles.btnStart} onClick={start}>
-            <Mic size={14} />
-            Capture
-          </button>
         )}
       </div>
 

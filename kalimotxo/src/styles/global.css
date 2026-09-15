@@ -2,6 +2,10 @@
    KALIMOTXO — Global Reset & Base Styles
    ================================================ */
 
+:root {
+  --bg-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.069'/%3E%3C/svg%3E");
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -24,6 +28,7 @@ body {
   line-height: 1.6;
   color: var(--clr-text-primary);
   background-color: var(--clr-bg);
+  background-image: var(--bg-noise);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -32,22 +37,21 @@ body {
 /* ── Heading Scale ─────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.2;
   color: var(--clr-text-primary);
-  letter-spacing: -0.02em;
 }
 
-h1 { font-size: var(--text-4xl); }
-h2 { font-size: var(--text-3xl); }
+h1 { font-size: var(--text-3xl); }
+h2 { font-size: var(--text-2xl); }
 h3 { font-size: var(--text-xl);  }
 h4 { font-size: var(--text-lg);  }
 h5 { font-size: var(--text-base);}
 h6 { font-size: var(--text-sm);  }
 
 @media (max-width: 768px) {
-  h1 { font-size: var(--text-3xl); }
-  h2 { font-size: var(--text-2xl); }
+  h1 { font-size: var(--text-2xl); }
+  h2 { font-size: var(--text-xl); }
   h3 { font-size: var(--text-lg); }
 }
 
@@ -59,38 +63,18 @@ a {
   transition: color var(--transition-fast);
 }
 a:hover {
-  color: var(--clr-cyan);
+  color: var(--clr-active-amber);
 }
 a:focus-visible {
-  outline: 2px solid var(--clr-cyan);
+  outline: 2px solid var(--clr-active-amber);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
 }
 
-/* ── Skip Link ─────────────────────────────────── */
-.skip-link {
-  position: fixed;
-  top: var(--sp-4);
-  left: var(--sp-4);
-  z-index: var(--z-toast);
-  padding: var(--sp-3) var(--sp-6);
-  background: var(--clr-cyan);
-  color: #000;
-  font-weight: 600;
-  font-size: var(--text-sm);
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  transform: translateY(-120%);
-  transition: transform var(--transition-fast);
-  box-shadow: var(--shadow-glow-cyan);
-}
-.skip-link:focus {
-  transform: translateY(0);
-}
 
 /* ── Focus Visible Global ──────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--clr-cyan);
+  outline: 2px solid var(--clr-active-amber);
   outline-offset: 3px;
 }
 

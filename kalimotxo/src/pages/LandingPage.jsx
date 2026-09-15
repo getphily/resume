@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { Monitor, Save, Maximize, Zap, Headphones, Radio } from 'lucide-react'
-import Button from '../components/Button'
 import styles from './LandingPage.module.css'
 
 const FEATURES = [
@@ -167,8 +166,12 @@ function CanvasPreview() {
     >
       {bars.map((i) => {
         const x = 5 + i * 9.5
-        const maxH = 20 + Math.sin(i * 0.5) * 60 + Math.random() * 40
-        const hue = 200 + (i / bars.length) * 160
+        const maxH = 20 + Math.sin(i * 0.5) * 60 + ((i * 13) % 40)
+        
+        // Cycle through Stems Colors: Drums Blue, Vocals Green, Inst Red, Active Amber
+        const colors = ['var(--clr-stems-drums)', 'var(--clr-stems-vocals)', 'var(--clr-stems-inst)', 'var(--clr-active-amber)']
+        const fill = colors[i % colors.length]
+        
         return (
           <rect
             key={i}
@@ -177,7 +180,7 @@ function CanvasPreview() {
             width={7}
             height={maxH}
             rx={2}
-            fill={`hsl(${hue}, 90%, 60%)`}
+            fill={fill}
             opacity={0.85}
             className={styles.svgBar}
             style={{

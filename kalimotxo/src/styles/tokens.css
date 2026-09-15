@@ -3,38 +3,35 @@
    Single source of truth for all visual decisions
    ================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&family=Michroma&display=swap');
 
 :root {
   /* === Colors: Base === */
-  --clr-bg:          #0a0a0f;
-  --clr-surface:     #13131a;
-  --clr-surface-2:   #1c1c26;
-  --clr-surface-3:   #23233000;
-  --clr-border:      #2a2a38;
-  --clr-border-2:    #3a3a50;
+  --clr-bg:          #111111; /* Chassis Black */
+  --clr-surface:     #1C1C1C; /* Module Grey */
+  --clr-surface-2:   #151515;
+  --clr-surface-3:   #222222;
+  --clr-border:      #333333; /* Rigid border */
+  --clr-border-2:    #444444;
 
   /* === Colors: Text === */
-  --clr-text-primary:   #f0f0f8;
-  --clr-text-secondary: #8888a8;
-  --clr-text-muted:     #55556a;
+  --clr-text-primary:   #fafafa;
+  --clr-text-secondary: #f0f0f5;
+  --clr-text-muted:     #e2e2e8;
 
   /* === Colors: Brand === */
+  --clr-active-amber: #FF5900;
+  --clr-stems-drums:  #0055FF;
+  --clr-stems-vocals: #00FF00;
+  --clr-stems-inst:   #FF0000;
+  
   --clr-violet:       #7C3AED;
-  --clr-violet-light: #9F67FF;
-  --clr-violet-dim:   rgba(124, 58, 237, 0.15);
   --clr-cyan:         #00E5FF;
-  --clr-cyan-dim:     rgba(0, 229, 255, 0.12);
-  --clr-green:        #10B981;
-  --clr-green-dim:    rgba(16, 185, 129, 0.15);
-  --clr-red:          #EF4444;
-  --clr-red-dim:      rgba(239, 68, 68, 0.15);
-  --clr-orange:       #F59E0B;
 
   /* === Typography === */
-  --font-heading: 'Space Grotesk', system-ui, sans-serif;
+  --font-heading: 'Michroma', system-ui, sans-serif;
   --font-body:    'Inter', system-ui, sans-serif;
-  --font-mono:    ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-mono:    'Roboto Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
 
   --text-xs:   0.75rem;   /* 12px */
   --text-sm:   0.875rem;  /* 14px */

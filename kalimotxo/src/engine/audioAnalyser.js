@@ -18,39 +18,57 @@ const HISTORY_SIZE = 60
  *   Energies are normalised 0‑1.
  */
 export function analyseBands(data, bins) {
-  // Band boundaries (approximate Hz ranges for 44.1 kHz sample-rate, 2048 fftSize):
-  // bin 0–10  → ~0–215 Hz   (bass)
-  // bin 11–80 → ~215–1720 Hz (mids)
-  // bin 81–250 → ~1720–5380 Hz (highs) (stop at 250 to avoid high frequency silence dragging average down)
-  const bassEnd = Math.min(11, bins)
-  const midEnd  = Math.min(80, bins)
-  const highEnd = Math.min(250, bins)
+  // Assuming ~24Hz per bin (48kHz sample rate / 2048 FFT size)
+  // Bass: ~0Hz to ~250Hz (bins 0 to 10)
+  // Mid: ~250Hz to ~4000Hz (bins 11 to 166)
+  // High: ~4000Hz to ~16000Hz (bins 167 to ~660)
+  
+  const bassEnd = 10
+  const midEnd = 166
+  const highEnd = 660
 
-  let bassSum = 0
-  let midMax  = 0
+  let bassRmsSum = 0
+  let midRmsSum = 0
+  let highRmsSum = 0
+  let totalRmsSum = 0
+  
+  let bassMax = 0
+  let midMax = 0
   let highMax = 0
-  let totalSum = 0
 
   for (let i = 0; i < highEnd; i++) {
-    const v = data[i]
-    totalSum += v
-    if (i < bassEnd) {
-      bassSum += v
-    } else if (i < midEnd) {
+    const v = data[i] / 255
+    const sq = v * v
+    totalRmsSum += sq
+    
+    if (i <= bassEnd) {
+      bassRmsSum += sq
+      if (v > bassMax) bassMax = v
+    } else if (i <= midEnd) {
+      midRmsSum += sq
       if (v > midMax) midMax = v
     } else {
+      highRmsSum += sq
       if (v > highMax) highMax = v
     }
   }
 
-  // Get remaining bins just for RMS
-  for (let i = highEnd; i < bins; i++) {
-    totalSum += data[i]
-  }
 
-  const bass = bassSum  / (bassEnd * 255)
-  const mid  = Math.min(1.0, (midMax / 255) * 1.3)
-  const high = Math.min(1.0, (highMax / 255) * 2.5)
+
+  const bassCount = bassEnd + 1
+  const midCount = midEnd - bassEnd
+  const highCount = highEnd - midEnd
+
+  // Calculate RMS (Root Mean Square) for each band
+  // This provides a smooth, accurate energy reading that doesn't easily peg to 100%
+  const bassRms = Math.sqrt(bassRmsSum / bassCount)
+  const midRms = Math.sqrt(midRmsSum / midCount)
+  const highRms = Math.sqrt(highRmsSum / highCount)
+
+  // Dialed down multipliers to prevent maxing out the meters
+  const bass = Math.min(1.0, bassRms * 0.7)
+  const mid  = Math.min(1.0, midRms * 0.8)
+  const high = Math.min(1.0, Math.pow(highRms, 0.8) * 1.1)
 
   // RMS-style volume (0‑1)
   let rms = 0
@@ -60,7 +78,12 @@ export function analyseBands(data, bins) {
   }
   const volume = Math.sqrt(rms / bins)
 
-  return { bass, mid, high, volume, spectrum: data }
+  return { 
+    bass, mid, high, volume, spectrum: data,
+    rawBass: Math.min(1.0, bassMax * 0.9),
+    rawMid: Math.min(1.0, midMax * 1.1),
+    rawHigh: Math.min(1.0, highMax * 1.3)
+  }
 }
 
 /**

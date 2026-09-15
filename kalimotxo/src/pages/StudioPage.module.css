@@ -1,0 +1,105 @@
+.studioPage {
+  display: flex;
+  height: 100svh;
+  width: 100vw;
+  background-color: var(--clr-bg); /* Chassis Black */
+  color: var(--clr-text-primary);
+  overflow: hidden;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-4);
+  gap: var(--sp-4);
+  overflow-y: auto;
+}
+
+/* 16:9 Preview Window Container */
+.previewContainer {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+  border: 1px solid var(--clr-border); /* Rigid 1px border */
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fullscreenBtn {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text-primary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(4px);
+}
+
+.fullscreenBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--clr-active-amber);
+  border-color: var(--clr-border-2);
+}
+
+/* Side Control Panel */
+.sidePanel {
+  width: var(--sidebar-width, 320px);
+  background-color: var(--clr-surface); /* Module Grey */
+  background-image: var(--bg-noise);
+  border-left: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.panelHeader {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--clr-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--clr-active-amber); /* Active Amber */
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.panelBody {
+  padding: var(--sp-4);
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.placeholderControls {
+  border: 1px dashed var(--clr-border-2);
+  padding: var(--sp-4);
+  text-align: center;
+  color: var(--clr-text-muted);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono); /* Roboto Mono for data readouts */
+  font-size: var(--text-sm);
+}

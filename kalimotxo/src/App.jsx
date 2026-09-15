@@ -2,13 +2,13 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 
-import SkipLink      from './components/SkipLink'
 import SiteHeader    from './components/SiteHeader'
 import SiteFooter    from './components/SiteFooter'
 
 import LandingPage   from './pages/LandingPage'
 import AuthPage      from './pages/AuthPage'
-import WorkspacePage from './pages/WorkspacePage'
+import StudioPage    from './pages/StudioPage'
+import LivePage      from './pages/LivePage'
 
 import './App.css'
 
@@ -37,7 +37,7 @@ function App() {
         <p className="loadingWordmark">
           <span>K</span>alimotxo
         </p>
-        <p className="loadingText">Loading your workspace…</p>
+        <p className="loadingText">Loading your studio…</p>
       </div>
     )
   }
@@ -45,7 +45,6 @@ function App() {
   // ── Routes ──────────────────────────────────────
   return (
     <BrowserRouter basename="/kalimotxo">
-      <SkipLink />
       <Routes>
 
         {/* ── Landing — public ── */}
@@ -53,7 +52,7 @@ function App() {
           path="/"
           element={
             session
-              ? <Navigate to="/workspace" replace />
+              ? <Navigate to="/studio" replace />
               : <>
                   <SiteHeader session={session} />
                   <main id="main-content">
@@ -69,7 +68,7 @@ function App() {
           path="/auth"
           element={
             session
-              ? <Navigate to="/workspace" replace />
+              ? <Navigate to="/studio" replace />
               : <>
                   <SiteHeader session={session} />
                   <AuthPage />
@@ -77,15 +76,25 @@ function App() {
           }
         />
 
-        {/* ── Workspace — protected ── */}
+        {/* ── Studio — protected ── */}
         <Route
-          path="/workspace"
+          path="/studio"
           element={
             session
               ? <>
                   <SiteHeader session={session} />
-                  <WorkspacePage />
+                  <StudioPage />
                 </>
+              : <Navigate to="/auth" replace />
+          }
+        />
+
+        {/* ── Live Canvas — protected ── */}
+        <Route
+          path="/live"
+          element={
+            session
+              ? <LivePage />
               : <Navigate to="/auth" replace />
           }
         />
