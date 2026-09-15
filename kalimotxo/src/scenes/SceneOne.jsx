@@ -6,8 +6,8 @@ import { useVisualSettings } from '../engine/VisualSettingsContext'
 
 export default function SceneOne() {
   const { getFrame } = useAudioData()
-  const { settings } = useVisualSettings()
-  
+  const { root } = useVisualSettings()
+  const settings = root.synthwave   // always read from synthwave namespace
   const terrainRef = useRef()
   const solidRef = useRef()
   const sunRef = useRef()

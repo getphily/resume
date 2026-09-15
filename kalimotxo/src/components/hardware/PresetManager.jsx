@@ -6,7 +6,7 @@ import Button from '../Button'
 import styles from './PresetManager.module.css'
 
 export default function PresetManager({ userId }) {
-  const { settings, applyPreset } = useVisualSettings()
+  const { root, applyPreset } = useVisualSettings()
   const [presets, setPresets] = useState([])
   const [newPresetName, setNewPresetName] = useState('')
   const [loading, setLoading] = useState(false)
@@ -32,8 +32,8 @@ export default function PresetManager({ userId }) {
     if (!newPresetName.trim() || !userId) return
     setLoading(true)
     
-    // Create payload from current settings
-    const { ...currentSettings } = settings
+    // Create payload from entire root (both scene namespaces)
+    const currentSettings = root
     const presetName = newPresetName.trim()
     
     const existing = presets.find(p => p.name.toLowerCase() === presetName.toLowerCase())
@@ -65,7 +65,7 @@ export default function PresetManager({ userId }) {
 
   const handleUpdatePreset = async (id) => {
     if (!userId) return
-    const { ...currentSettings } = settings
+    const currentSettings = root
     const { error } = await supabase
       .from('kalimotxo_visuals')
       .update({ settings: currentSettings })
