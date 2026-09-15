@@ -52,6 +52,10 @@ if (supabaseUrl && supabaseServiceKey) {
 
 // Serve static assets from dist folder (production build)
 app.use(express.static(path.join(__dirname, 'dist')));
+
+// Serve kalimotxo project
+app.use('/kalimotxo', express.static(path.join(__dirname, 'kalimotxo/dist')));
+
 app.use(express.json());
 
 // Helper middleware to check Supabase client connection

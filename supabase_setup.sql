@@ -739,3 +739,24 @@ INSERT INTO app_settings (key, value) VALUES
 ('slogan_labor', 'Senior Labor Relations Representative & Collective Bargaining Expert')
 ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
+
+-- ==========-- 9. KALIMOTXO VISUALIZER
+-- ==========================================
+
+-- Create Kalimotxo Visuals Table
+CREATE TABLE IF NOT EXISTS kalimotxo_visuals (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) NOT NULL,
+    name TEXT NOT NULL,
+    settings JSONB NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE kalimotxo_visuals ENABLE ROW LEVEL SECURITY;
+
+-- Policies for kalimotxo_visuals
+CREATE POLICY "Users can insert their own visuals" ON kalimotxo_visuals FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can view their own visuals" ON kalimotxo_visuals FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can update their own visuals" ON kalimotxo_visuals FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can delete their own visuals" ON kalimotxo_visuals FOR DELETE USING (auth.uid() = user_id);

@@ -1,0 +1,59 @@
+/* CategoryPicker.module.css */
+
+.picker {
+  display: flex;
+  gap: 2px;
+  padding: var(--sp-2);
+  background: var(--clr-bg);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--sp-2) var(--sp-1);
+  min-height: 52px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--clr-text-muted);
+  font-family: var(--font-heading);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast),
+              border-color var(--transition-fast);
+}
+
+.tab:hover:not(:disabled) {
+  background: var(--clr-surface-2);
+  color: var(--clr-text-secondary);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--clr-cyan);
+  outline-offset: 2px;
+}
+
+.tab:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tabActive {
+  background: var(--clr-violet-dim);
+  border-color: rgba(124, 58, 237, 0.4);
+  color: var(--clr-violet-light);
+}
+
+.tabLabel {
+  line-height: 1;
+  white-space: nowrap;
+}

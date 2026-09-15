@@ -1,0 +1,163 @@
+/* ================================================
+   KALIMOTXO — Global Reset & Base Styles
+   ================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  color: var(--clr-text-primary);
+  background-color: var(--clr-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Heading Scale ─────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--clr-text-primary);
+  letter-spacing: -0.02em;
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-3xl); }
+h3 { font-size: var(--text-xl);  }
+h4 { font-size: var(--text-lg);  }
+h5 { font-size: var(--text-base);}
+h6 { font-size: var(--text-sm);  }
+
+@media (max-width: 768px) {
+  h1 { font-size: var(--text-3xl); }
+  h2 { font-size: var(--text-2xl); }
+  h3 { font-size: var(--text-lg); }
+}
+
+/* ── Links ─────────────────────────────────────── */
+a {
+  color: var(--clr-violet-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  color: var(--clr-cyan);
+}
+a:focus-visible {
+  outline: 2px solid var(--clr-cyan);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Skip Link ─────────────────────────────────── */
+.skip-link {
+  position: fixed;
+  top: var(--sp-4);
+  left: var(--sp-4);
+  z-index: var(--z-toast);
+  padding: var(--sp-3) var(--sp-6);
+  background: var(--clr-cyan);
+  color: #000;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transform: translateY(-120%);
+  transition: transform var(--transition-fast);
+  box-shadow: var(--shadow-glow-cyan);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ── Focus Visible Global ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--clr-cyan);
+  outline-offset: 3px;
+}
+
+/* ── Images & Media ────────────────────────────── */
+img, video, canvas {
+  display: block;
+  max-width: 100%;
+}
+
+/* ── Interactive resets ────────────────────────── */
+button, input, textarea, select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+input, textarea, select {
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  background: var(--clr-surface-2);
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--clr-text-primary);
+  width: 100%;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--clr-violet);
+  box-shadow: 0 0 0 3px var(--clr-violet-dim);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--clr-text-muted);
+}
+
+/* ── Lists ─────────────────────────────────────── */
+ul, ol {
+  list-style: none;
+}
+
+/* ── Utility: Visually hidden (for screen readers) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ── Root App Container ────────────────────────── */
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
