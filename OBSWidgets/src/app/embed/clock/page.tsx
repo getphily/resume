@@ -1,18 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useParams } from 'next/navigation';
-import { ClockPreview } from '../../../clock/page';
+import { useSearchParams } from 'next/navigation';
+import { ClockPreview } from '../../clock/page';
 
-export default function ClockEmbed() {
-  const params = useParams();
-  const id = params.id as string;
+function ClockEmbedContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') as string;
   
   const [config, setConfig] = useState<any>(null);
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    if (!id) return;
     // 1. Initial Fetch
     const fetchConfig = async () => {
       const { data } = await supabase
@@ -61,5 +62,13 @@ export default function ClockEmbed() {
       <style>{`body { margin: 0; padding: 0; background: transparent; overflow: hidden; }`}</style>
       <ClockPreview config={config} time={time} scale={1} />
     </div>
+  );
+}
+
+export default function ClockEmbed() {
+  return (
+    <Suspense fallback={null}>
+      <ClockEmbedContent />
+    </Suspense>
   );
 }

@@ -53,8 +53,11 @@ if (supabaseUrl && supabaseServiceKey) {
 // Serve static assets from dist folder (production build)
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Serve kalimotxo project
+// Serve kalimotxo project (legacy)
 app.use('/kalimotxo', express.static(path.join(__dirname, 'kalimotxo/dist')));
+
+// Serve OBS Widgets (Next.js static export)
+app.use('/widgets', express.static(path.join(__dirname, 'OBSWidgets/out')));
 
 app.use(express.json());
 

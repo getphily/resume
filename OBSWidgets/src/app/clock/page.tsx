@@ -146,7 +146,7 @@ export default function ClockCustomizer() {
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}/embed/clock/${activeConfigId}`);
+    await navigator.clipboard.writeText(`${window.location.origin}/embed/clock?id=${activeConfigId}`);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -347,7 +347,7 @@ export default function ClockCustomizer() {
                 <div style={{ backgroundColor: '#0a0a0a', padding: '15px', border: '1px solid var(--vocals-green)' }}>
                   <p style={{ color: 'var(--vocals-green)', fontSize: '0.85rem', marginBottom: '8px', fontWeight: 600 }}>OBS EMBED URL:</p>
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <input type="text" readOnly value={`${window.location.origin}/embed/clock/${activeConfigId}`} onClick={(e) => (e.target as HTMLInputElement).select()} style={{ flex: 1, borderColor: 'var(--vocals-green)' }} />
+                    <input type="text" readOnly value={`${window.location.origin}/embed/clock?id=${activeConfigId}`} onClick={(e) => (e.target as HTMLInputElement).select()} style={{ flex: 1, borderColor: 'var(--vocals-green)' }} />
                     <button className="btn-amber" onClick={handleCopy} style={{ margin: 0, padding: '8px 12px', backgroundColor: copySuccess ? 'var(--vocals-green)' : 'var(--module-grey)', color: copySuccess ? '#000' : 'var(--text-primary)', borderColor: copySuccess ? 'var(--vocals-green)' : 'var(--border-rigid)' }}>
                       {copySuccess ? 'COPIED!' : 'COPY'}
                     </button>

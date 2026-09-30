@@ -1,17 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
-import { useParams } from 'next/navigation';
-import { MarqueePreview } from '../../../marquee/page';
+import { useSearchParams } from 'next/navigation';
+import { MarqueePreview } from '../../marquee/page';
 
-export default function MarqueeEmbed() {
-  const params = useParams();
-  const id = params.id as string;
+function MarqueeEmbedContent() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get('id') as string;
   
   const [config, setConfig] = useState<any>(null);
 
   useEffect(() => {
+    if (!id) return;
     // 1. Initial Fetch
     const fetchConfig = async () => {
       const { data } = await supabase
@@ -53,5 +54,13 @@ export default function MarqueeEmbed() {
       <style>{`body { margin: 0; padding: 0; background: transparent; overflow: hidden; }`}</style>
       <MarqueePreview config={config} scale={1} />
     </div>
+  );
+}
+
+export default function MarqueeEmbed() {
+  return (
+    <Suspense fallback={null}>
+      <MarqueeEmbedContent />
+    </Suspense>
   );
 }
