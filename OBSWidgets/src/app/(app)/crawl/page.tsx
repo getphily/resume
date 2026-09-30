@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { GripVertical } from 'lucide-react';
 import ChyronPreview from '@/components/ChyronPreview';
 import type { ChyronConfig, CrawlBlock } from '@/types/chyron';
 import { DEFAULT_CHYRON_CONFIG } from '@/types/chyron';
@@ -716,6 +718,17 @@ export default function ChyronBuilder() {
     setConfig({ ...config, layerOrder: order });
   };
 
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const items = Array.from(config.layerOrder);
+    ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
+      if (!items.includes(l as any)) items.push(l as any);
+    });
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+    setConfig({ ...config, layerOrder: items as any });
+  };
+
   const toggleLayer = (layerId: string) => {
     const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
     const layer = config[key];
@@ -755,70 +768,82 @@ export default function ChyronBuilder() {
               </div>
 
               {/* Layer rows */}
-              {['title', 'subheader', 'crawl', 'logo', 'clock']
-                .sort((a, b) => {
-                  const idxA = config.layerOrder.indexOf(a as any);
-                  const idxB = config.layerOrder.indexOf(b as any);
-                  if (idxA === -1 && idxB === -1) return 0;
-                  if (idxA === -1) return 1;
-                  if (idxB === -1) return -1;
-                  return idxA - idxB;
-                })
-                .map((layerId, i, arr) => {
-                const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
-                const layer = config[key];
-                const isEnabled = layer && 'enabled' in layer ? layer.enabled : true;
-                const isSelected = selectedPanel === 'layer' && selectedLayer === layerId;
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId="layers-list">
+                  {(provided) => (
+                    <div {...provided.droppableProps} ref={provided.innerRef}>
+                      {['title', 'subheader', 'crawl', 'logo', 'clock']
+                        .sort((a, b) => {
+                          const idxA = config.layerOrder.indexOf(a as any);
+                          const idxB = config.layerOrder.indexOf(b as any);
+                          if (idxA === -1 && idxB === -1) return 0;
+                          if (idxA === -1) return 1;
+                          if (idxB === -1) return -1;
+                          return idxA - idxB;
+                        })
+                        .map((layerId, i) => {
+                          const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
+                          const layer = config[key];
+                          const isEnabled = layer && 'enabled' in layer ? layer.enabled : true;
+                          const isSelected = selectedPanel === 'layer' && selectedLayer === layerId;
 
-                return (
-                  <div
-                    key={layerId}
-                    onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '8px',
-                      padding: '12px 20px',
-                      backgroundColor: isSelected ? 'var(--module-grey)' : 'transparent',
-                      borderLeft: isSelected ? '3px solid var(--active-amber)' : '3px solid transparent',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      opacity: isEnabled ? 1 : 0.4,
-                    }}
-                  >
-                    {/* Reorder arrows */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', flexShrink: 0 }}>
-                      <button
-                        onClick={e => { e.stopPropagation(); moveLayer(layerId, -1); }}
-                        disabled={i === 0}
-                        style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '1px', color: i === 0 ? '#d1d5db' : 'var(--text-secondary)', fontSize: '8px', lineHeight: 1 }}
-                        aria-label="Move layer up"
-                      >▲</button>
-                      <button
-                        onClick={e => { e.stopPropagation(); moveLayer(layerId, 1); }}
-                        disabled={i === arr.length - 1}
-                        style={{ background: 'none', border: 'none', cursor: i === arr.length - 1 ? 'default' : 'pointer', padding: '1px', color: i === arr.length - 1 ? '#d1d5db' : 'var(--text-secondary)', fontSize: '8px', lineHeight: 1 }}
-                        aria-label="Move layer down"
-                      >▼</button>
+                          return (
+                            <Draggable key={layerId} draggableId={layerId} index={i}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '10px',
+                                    padding: '12px 16px',
+                                    backgroundColor: isSelected ? 'var(--module-grey)' : (snapshot.isDragging ? 'var(--module-grey)' : 'transparent'),
+                                    borderLeft: isSelected ? '3px solid var(--active-amber)' : '3px solid transparent',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.15s ease',
+                                    opacity: isEnabled ? 1 : 0.4,
+                                    boxShadow: snapshot.isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : 'none',
+                                    ...provided.draggableProps.style,
+                                  }}
+                                >
+                                  {/* Drag Handle */}
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      color: 'var(--text-muted)',
+                                      cursor: 'grab',
+                                    }}
+                                  >
+                                    <GripVertical size={16} />
+                                  </div>
+
+                                  {/* Visibility toggle */}
+                                  <button
+                                    onClick={e => { e.stopPropagation(); toggleLayer(layerId); }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
+                                    aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
+                                  >
+                                    <EyeIcon visible={isEnabled} />
+                                  </button>
+
+                                  {/* Label */}
+                                  <span style={{
+                                    flex: 1, fontSize: '13px', fontWeight: 600,
+                                    color: isSelected ? 'var(--active-amber)' : 'var(--text-primary)',
+                                  }}>
+                                    {LAYER_LABELS[layerId] || layerId}
+                                  </span>
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        })}
+                      {provided.placeholder}
                     </div>
-
-                    {/* Visibility toggle */}
-                    <button
-                      onClick={e => { e.stopPropagation(); toggleLayer(layerId); }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
-                      aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
-                    >
-                      <EyeIcon visible={isEnabled} />
-                    </button>
-
-                    {/* Label */}
-                    <span style={{
-                      flex: 1, fontSize: '13px', fontWeight: 600,
-                      color: isSelected ? 'var(--active-amber)' : 'var(--text-primary)',
-                    }}>
-                      {LAYER_LABELS[layerId] || layerId}
-                    </span>
-                  </div>
-                );
-              })}
+                  )}
+                </Droppable>
+              </DragDropContext>
 
               {/* Divider */}
               <div style={{ borderTop: '1px solid var(--border-rigid)', margin: '8px 0' }} />
