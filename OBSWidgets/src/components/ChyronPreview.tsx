@@ -113,21 +113,32 @@ function LogoBug({ config, scale }: { config: ChyronConfig; scale: number }) {
         <>
           <div style={{
             position: 'absolute',
-            top: `${8 * scale}px`,
-            left: `${8 * scale}px`,
-            backgroundColor: '#e63946',
+            top: `${12 * scale}px`,
+            left: `${12 * scale}px`,
+            backgroundColor: 'rgba(230, 57, 70, 0.95)', // Slightly translucent red
             color: 'white',
-            padding: `${2 * scale}px ${6 * scale}px`,
-            fontSize: `${0.75 * scale}rem`,
+            padding: `${4 * scale}px ${8 * scale}px`,
+            fontSize: `${0.8 * scale}rem`,
             fontWeight: 800,
             fontFamily: 'Inter, sans-serif',
-            letterSpacing: '0.05em',
-            borderRadius: `${3 * scale}px`,
+            letterSpacing: '0.08em',
+            borderRadius: `${12 * scale}px`, // Pill shape
             zIndex: 2,
-            boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
             textTransform: 'uppercase',
-            lineHeight: 1.2,
+            lineHeight: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: `${6 * scale}px`,
+            backdropFilter: 'blur(4px)',
           }}>
+            <div style={{
+              width: `${6 * scale}px`,
+              height: `${6 * scale}px`,
+              backgroundColor: '#ffffff',
+              borderRadius: '50%',
+              animation: 'pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            }} />
             LIVE
           </div>
           <img
@@ -363,6 +374,10 @@ export default function ChyronPreview({ config, scale = 1 }: { config: ChyronCon
         @keyframes scroll-chyron {
           from { transform: translateX(100%); }
           to { transform: translateX(-100%); }
+        }
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.85); }
         }
       `}</style>
       
