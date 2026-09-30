@@ -39,6 +39,7 @@ export interface ChyronConfig {
     imageUrl: string;
     position: 'LEFT' | 'RIGHT';
     spanRows: boolean; // if true, logo spans all layers instead of just title
+    showLiveBadge?: boolean;
     bgColor: string;
     textColor: string;
     fontFamily: string;
@@ -113,6 +114,7 @@ export const DEFAULT_CHYRON_CONFIG: ChyronConfig = {
     imageUrl: '',
     position: 'RIGHT',
     spanRows: false,
+    showLiveBadge: true,
     bgColor: '#e63946',
     textColor: '#ffffff',
     fontFamily: 'Inter',

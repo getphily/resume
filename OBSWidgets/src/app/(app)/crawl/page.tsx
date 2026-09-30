@@ -171,6 +171,12 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
           <input type="checkbox" checked={l.spanRows || false} onChange={e => update({ spanRows: e.target.checked })} />
           SPAN ALL ROWS (Makes logo fill height)
         </label>
+        {l.mode === 'IMAGE' && (
+          <label className="form-checkbox-label" style={{ marginTop: '10px' }}>
+            <input type="checkbox" checked={l.showLiveBadge !== false} onChange={e => update({ showLiveBadge: e.target.checked })} />
+            SHOW "LIVE" BADGE OVERLAY
+          </label>
+        )}
       </div>
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>

@@ -111,36 +111,38 @@ function LogoBug({ config, scale }: { config: ChyronConfig; scale: number }) {
     }}>
       {logo.mode === 'IMAGE' && logo.imageUrl ? (
         <>
-          <div style={{
-            position: 'absolute',
-            top: `${12 * scale}px`,
-            left: `${12 * scale}px`,
-            backgroundColor: 'rgba(230, 57, 70, 0.95)', // Slightly translucent red
-            color: 'white',
-            padding: `${4 * scale}px ${8 * scale}px`,
-            fontSize: `${0.8 * scale}rem`,
-            fontWeight: 800,
-            fontFamily: 'Inter, sans-serif',
-            letterSpacing: '0.08em',
-            borderRadius: `${12 * scale}px`, // Pill shape
-            zIndex: 2,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-            textTransform: 'uppercase',
-            lineHeight: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: `${6 * scale}px`,
-            backdropFilter: 'blur(4px)',
-          }}>
+          {logo.showLiveBadge !== false && (
             <div style={{
-              width: `${6 * scale}px`,
-              height: `${6 * scale}px`,
-              backgroundColor: '#ffffff',
-              borderRadius: '50%',
-              animation: 'pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            }} />
-            LIVE
-          </div>
+              position: 'absolute',
+              top: `${16 * scale}px`, // +33%
+              left: `${16 * scale}px`, // +33%
+              backgroundColor: 'rgba(230, 57, 70, 0.95)',
+              color: 'white',
+              padding: `${6 * scale}px ${12 * scale}px`, // +50%
+              fontSize: `${1.05 * scale}rem`, // +30%
+              fontWeight: 800,
+              fontFamily: 'Inter, sans-serif',
+              letterSpacing: '0.08em',
+              borderRadius: `${16 * scale}px`, // Pill shape
+              zIndex: 2,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+              textTransform: 'uppercase',
+              lineHeight: 1,
+              display: 'flex',
+              alignItems: 'center',
+              gap: `${8 * scale}px`, // +33%
+              backdropFilter: 'blur(4px)',
+            }}>
+              <div style={{
+                width: `${8 * scale}px`, // +33%
+                height: `${8 * scale}px`, // +33%
+                backgroundColor: '#ffffff',
+                borderRadius: '50%',
+                animation: 'pulse-dot 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              }} />
+              LIVE
+            </div>
+          )}
           <img
             src={logo.imageUrl}
             alt="Logo"
