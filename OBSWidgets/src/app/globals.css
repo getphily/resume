@@ -1,0 +1,190 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap');
+
+:root {
+  /* getphily.io Color System */
+  --chassis-black: oklch(14% 0.01 240);
+  --module-grey: oklch(18% 0.015 240 / 0.65);
+  --border-rigid: oklch(28% 0.015 240 / 0.7);
+  
+  /* Brand colors mapped to our existing var names for compatibility */
+  --active-amber: oklch(75% 0.15 200); /* Electric Cyan from getphily.io */
+  --drums-blue: oklch(65% 0.20 280); /* Bright Violet from getphily.io */
+  --vocals-green: oklch(75% 0.15 200);
+  --instruments-red: oklch(65% 0.20 280);
+  
+  --text-primary: oklch(93% 0.01 240);
+  --text-secondary: oklch(65% 0.01 240);
+  --bg-input: rgba(0, 0, 0, 0.2);
+  
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-heading: 'Outfit', -apple-system, sans-serif;
+  --font-mono: 'Roboto Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--chassis-black);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* Glassmorphism Panel (getphily.io Card style) */
+.panel {
+  background-color: var(--module-grey);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-rigid);
+  border-radius: 16px; /* 2xl */
+  padding: 24px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  transition: all 0.3s ease;
+}
+
+.screen-readout {
+  font-family: var(--font-mono);
+  background-color: rgba(0,0,0,0.5);
+  border: 1px solid var(--border-rigid);
+  color: var(--active-amber);
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-shadow: 0 0 10px var(--active-amber);
+}
+
+button.btn-amber {
+  background-color: var(--active-amber);
+  color: var(--chassis-black);
+  border: none;
+  padding: 10px 20px;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+button.btn-amber:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  filter: brightness(1.1);
+}
+
+button.btn-amber:active, button.btn-amber.active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+button.btn-amber:disabled {
+  background-color: var(--border-rigid);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  transform: none;
+}
+
+input[type="text"], input[type="password"], input[type="color"], input[type="number"], select {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-rigid);
+  color: var(--text-primary);
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  border-radius: 8px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--active-amber);
+  box-shadow: 0 0 0 1px var(--active-amber);
+}
+
+.preview-window-container {
+  aspect-ratio: 16 / 9;
+  background-color: #000;
+  border: 1px solid var(--border-rigid);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+/* Segmented Buttons (Modernized) */
+.segmented-control {
+  display: flex;
+  background-color: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-rigid);
+  border-radius: 8px;
+  overflow: hidden;
+  width: fit-content;
+  padding: 4px;
+  gap: 4px;
+}
+
+.segmented-control button {
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.segmented-control button.active {
+  background-color: var(--active-amber);
+  color: var(--chassis-black);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.segmented-control button:hover:not(.active) {
+  background-color: var(--border-rigid);
+  color: var(--text-primary);
+}
+
+/* LIGHT THEME OVERRIDES (getphily.io Light Mode) */
+[data-theme='light'] {
+  --chassis-black: oklch(98% 0.005 240);
+  --module-grey: oklch(100% 0 0 / 0.7);
+  --border-rigid: oklch(90% 0.01 240);
+  
+  --active-amber: oklch(55% 0.16 260); /* Royal Indigo */
+  --drums-blue: oklch(50% 0.18 200); /* Slate Cyan */
+  --vocals-green: oklch(55% 0.16 260);
+  
+  --text-primary: oklch(25% 0.01 240);
+  --text-secondary: oklch(50% 0.01 240);
+  --bg-input: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme='light'] .panel {
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+}
+
+[data-theme='light'] .segmented-control {
+  background-color: rgba(0,0,0,0.05);
+}
