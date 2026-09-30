@@ -1,34 +1,52 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
-import { ClockPreview } from '../../clock/page';
+import { ClockPreview } from '../../(app)/clock/page';
 
 function ClockEmbedContent() {
   const searchParams = useSearchParams();
-  const id = searchParams.get('id') as string;
-  
+  const id = searchParams.get('id');
   const [config, setConfig] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    // 1. Initial Fetch
+    setTime(new Date());
+    const interval = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!id) {
+      setError('No ID provided');
+      setLoading(false);
+      return;
+    }
+
     const fetchConfig = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('widget_configs')
         .select('config')
         .eq('id', id)
         .single();
       
-      if (data) setConfig(data.config);
+      if (error || !data) {
+        setError('Widget not found');
+      } else {
+        setConfig(data.config);
+      }
+      setLoading(false);
     };
+
     fetchConfig();
 
-    // 2. Setup Supabase Realtime Subscription
     const channel = supabase
-      .channel(`public:widget_configs:id=eq.${id}`)
+      .channel('schema-db-changes')
       .on(
         'postgres_changes',
         {
@@ -38,7 +56,6 @@ function ClockEmbedContent() {
           filter: `id=eq.${id}`
         },
         (payload) => {
-          console.log('Realtime update received!', payload);
           setConfig(payload.new.config);
         }
       )
@@ -49,25 +66,22 @@ function ClockEmbedContent() {
     };
   }, [id]);
 
-  useEffect(() => {
-    setTime(new Date());
-    const interval = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
+  if (loading) return null;
+  if (error) return <div style={{ color: 'red', fontFamily: 'monospace', padding: '20px' }}>{error}</div>;
   if (!config) return null;
 
   return (
-    <div style={{ margin: 0, padding: 0 }}>
-      <style>{`body { margin: 0; padding: 0; background: transparent; overflow: hidden; }`}</style>
-      <ClockPreview config={config} time={time} scale={1} />
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      <ClockPreview config={config} time={time} />
     </div>
   );
 }
 
+import { Suspense } from 'react';
+
 export default function ClockEmbed() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div>Loading...</div>}>
       <ClockEmbedContent />
     </Suspense>
   );

@@ -1,33 +1,43 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
-import { MarqueePreview } from '../../marquee/page';
+import { MarqueePreview } from '../../(app)/marquee/page';
 
 function MarqueeEmbedContent() {
   const searchParams = useSearchParams();
-  const id = searchParams.get('id') as string;
-  
+  const id = searchParams.get('id');
   const [config, setConfig] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    if (!id) return;
-    // 1. Initial Fetch
+    if (!id) {
+      setError('No ID provided');
+      setLoading(false);
+      return;
+    }
+
     const fetchConfig = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('widget_configs')
         .select('config')
         .eq('id', id)
         .single();
       
-      if (data) setConfig(data.config);
+      if (error || !data) {
+        setError('Widget not found');
+      } else {
+        setConfig(data.config);
+      }
+      setLoading(false);
     };
+
     fetchConfig();
 
-    // 2. Setup Supabase Realtime Subscription
     const channel = supabase
-      .channel(`public:widget_configs:marquee_id=eq.${id}`)
+      .channel('schema-db-changes-marquee')
       .on(
         'postgres_changes',
         {
@@ -47,19 +57,22 @@ function MarqueeEmbedContent() {
     };
   }, [id]);
 
+  if (loading) return null;
+  if (error) return <div style={{ color: 'red', fontFamily: 'monospace', padding: '20px' }}>{error}</div>;
   if (!config) return null;
 
   return (
-    <div style={{ margin: 0, padding: 0 }}>
-      <style>{`body { margin: 0; padding: 0; background: transparent; overflow: hidden; }`}</style>
-      <MarqueePreview config={config} scale={1} />
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
+      <MarqueePreview config={config} />
     </div>
   );
 }
 
+import { Suspense } from 'react';
+
 export default function MarqueeEmbed() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div>Loading...</div>}>
       <MarqueeEmbedContent />
     </Suspense>
   );
