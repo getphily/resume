@@ -134,8 +134,8 @@ function LogoBug({ config, scale }: { config: ChyronConfig; scale: number }) {
             src={logo.imageUrl}
             alt="Logo"
             style={{
-              height: '100%',
-              aspectRatio: '1 / 1',
+              width: logo.spanRows ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale}px` : `${B.titleBarHeight * scale}px`,
+              height: logo.spanRows ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale}px` : `${B.titleBarHeight * scale}px`,
               objectFit: 'cover',
             }}
           />
