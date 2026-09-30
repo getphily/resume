@@ -1,24 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
 
 :root {
-  /* Pioneer DJ DDJ-FLX10 Strict Color System */
-  --chassis-black: #111111;
-  --module-grey: #1C1C1C;
-  --border-rigid: #333333;
+  /* Hostinger Dashboard Design System */
+  --bg-main: #f4f5f7;       /* Off-white background for the main content area */
+  --bg-panel: #ffffff;      /* Pure white panels */
+  --bg-navbar: #1b1b29;     /* Very dark navy/purple for top navbar */
+  --bg-sidebar: #ffffff;    /* Pure white sidebar */
   
-  /* Brand colors mapped to our existing var names for compatibility */
-  --active-amber: #FF5900;
-  --drums-blue: #0055FF;
-  --vocals-green: #00FF00;
-  --instruments-red: #FF0000;
+  --border-subtle: #e2e8f0; /* Soft borders for panels */
   
-  --text-primary: #EEEEEE;
-  --text-secondary: #888888;
-  --bg-input: rgba(0, 0, 0, 0.4);
+  --text-primary: #0f172a;  /* Very dark slate for high legibility */
+  --text-secondary: #475569;/* Muted gray for secondary text */
+  --text-muted: #94a3b8;    /* Lighter gray */
+  --text-navbar: #ffffff;   /* White text on dark navbar */
+  
+  --accent-primary: #4f46e5; /* Modern indigo/purple accent */
+  --accent-hover: #4338ca;
+  
+  --bg-input: #ffffff;
+  --border-input: #cbd5e1;
   
   --font-sans: 'Inter', -apple-system, sans-serif;
-  --font-heading: 'Outfit', -apple-system, sans-serif;
   --font-mono: 'Roboto Mono', monospace;
+}
+
+/* Optional Dark Mode fallback (if we want to support it later, keeping it consistent) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-main: #0f172a;
+    --bg-panel: #1e293b;
+    --bg-navbar: #020617;
+    --bg-sidebar: #1e293b;
+    
+    --border-subtle: #334155;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-navbar: #ffffff;
+    
+    --accent-primary: #6366f1;
+    --accent-hover: #4f46e5;
+    
+    --bg-input: #0f172a;
+    --border-input: #475569;
+  }
 }
 
 * {
@@ -28,113 +54,76 @@
 }
 
 body {
-  background-color: var(--chassis-black);
+  background-color: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-sans);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  line-height: 1.5;
 }
 
-/* Glassmorphism Panel (getphily.io Card style) */
 .panel {
-  background-color: var(--module-grey);
-  border: 1px solid var(--border-rigid);
-  border-radius: 16px; /* 2xl */
-  padding: 24px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transition: all 0.3s ease;
-}
-
-.screen-readout {
-  font-family: var(--font-mono);
-  background-color: rgba(0,0,0,0.5);
-  border: 1px solid var(--border-rigid);
-  color: var(--active-amber);
-  padding: 8px 12px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  text-shadow: 0 0 10px var(--active-amber);
+  padding: 24px;
 }
 
-button.btn-amber {
-  background-color: var(--active-amber);
-  color: var(--chassis-black);
+button.btn-amber, button.btn-primary {
+  background-color: var(--accent-primary);
+  color: #ffffff;
   border: none;
   padding: 10px 20px;
-  font-family: var(--font-heading);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
-button.btn-amber:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  filter: brightness(1.1);
+button.btn-amber:hover, button.btn-primary:hover {
+  background-color: var(--accent-hover);
 }
 
-button.btn-amber:active, button.btn-amber.active {
-  transform: translateY(1px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-button.btn-amber:disabled {
-  background-color: var(--border-rigid);
-  color: var(--text-secondary);
+button.btn-amber:disabled, button.btn-primary:disabled {
+  background-color: var(--border-subtle);
+  color: var(--text-muted);
   cursor: not-allowed;
-  transform: none;
 }
 
 input[type="text"], input[type="password"], input[type="color"], input[type="number"], select {
   background-color: var(--bg-input);
-  border: 1px solid var(--border-rigid);
+  border: 1px solid var(--border-input);
   color: var(--text-primary);
   padding: 10px 14px;
   font-family: var(--font-sans);
-  border-radius: 8px;
+  font-size: 14px;
+  border-radius: 6px;
   width: 100%;
   transition: all 0.2s ease;
 }
 
 input:focus, select:focus {
   outline: none;
-  border-color: var(--active-amber);
-  box-shadow: 0 0 0 1px var(--active-amber);
-}
-
-.preview-window-container {
-  aspect-ratio: 16 / 9;
-  background-color: #000;
-  border: 1px solid var(--border-rigid);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(0, 112, 243, 0.2);
 }
 
 h1, h2, h3, h4 {
-  font-family: var(--font-heading);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-family: var(--font-sans);
+  font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-/* Segmented Buttons (Modernized) */
+/* Segmented Buttons */
 .segmented-control {
   display: flex;
-  background-color: rgba(0,0,0,0.2);
-  border: 1px solid var(--border-rigid);
-  border-radius: 8px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
   overflow: hidden;
   width: fit-content;
   padding: 4px;
@@ -147,19 +136,131 @@ h1, h2, h3, h4 {
   border: none;
   padding: 8px 16px;
   font-family: var(--font-sans);
-  font-weight: 600;
-  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .segmented-control button.active {
-  background-color: var(--active-amber);
-  color: var(--chassis-black);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid var(--border-subtle);
 }
 
 .segmented-control button:hover:not(.active) {
-  background-color: var(--border-rigid);
+  background-color: var(--border-subtle);
   color: var(--text-primary);
+}
+
+/* Specific component overrides mapping old variables to new ones for compatibility */
+:root {
+  --chassis-black: var(--bg-main);
+  --module-bg: var(--bg-panel);
+  --module-grey: var(--bg-panel);
+  --border-rigid: var(--border-subtle);
+  --active-amber: var(--accent-primary);
+  --vocals-green: var(--text-primary); 
+}
+
+/* Transparent Checkerboard Pattern */
+.preview-window-container {
+  background-color: #f0f0f0;
+  background-image:
+    linear-gradient(45deg, #d3d3d3 25%, transparent 25%),
+    linear-gradient(-45deg, #d3d3d3 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d3d3d3 75%),
+    linear-gradient(-45deg, transparent 75%, #d3d3d3 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .preview-window-container {
+    background-color: #1a1a1a;
+    background-image:
+      linear-gradient(45deg, #2a2a2a 25%, transparent 25%),
+      linear-gradient(-45deg, #2a2a2a 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #2a2a2a 75%),
+      linear-gradient(-45deg, transparent 75%, #2a2a2a 75%);
+  }
+}
+
+/* Delete Action Button */
+.btn-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.btn-delete:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+.btn-delete svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Form Inputs */
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: var(--bg-input, #fff);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.form-input:hover, .form-select:hover {
+  border-color: #cbd5e1;
+}
+.form-input:focus, .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.form-checkbox-group {
+  display: flex;
+  gap: 24px;
+  margin-top: 15px;
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.form-checkbox-label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.form-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
 }

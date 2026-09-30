@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import toast from 'react-hot-toast';
 
 const getFontFamily = (font: string) => {
   switch (font) {
@@ -38,7 +39,7 @@ export function ClockPreview({ config, time, scale = 1 }: { config: any, time: D
   const outlineStyle = config.outline ? { WebkitTextStroke: `${2 * scale}px black` } : {};
   return (
     <div style={{ 
-      width: `${300 * scale}px`, height: `${200 * scale}px`, 
+      width: `${400 * scale}px`, height: `${200 * scale}px`, 
       backgroundColor: config.bgMode === 'TRANSPARENT' ? 'transparent' : (config.bgColor || '#0a0a0a'),
       border: config.bgMode === 'TRANSPARENT' ? '1px dashed rgba(255,255,255,0.2)' : '1px solid var(--border-rigid)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden'
@@ -140,13 +141,37 @@ export default function ClockCustomizer() {
 
   const deleteConfig = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Delete this widget?")) return;
-    await supabase.from('widget_configs').delete().eq('id', id);
-    setConfigsList(configsList.filter(c => c.id !== id));
+    toast(
+      (t) => (
+        <div>
+          <p style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 500 }}>Delete this widget?</p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+              onClick={async () => {
+                toast.dismiss(t.id);
+                await supabase.from('widget_configs').delete().eq('id', id);
+                setConfigsList(configsList.filter(c => c.id !== id));
+                toast.success('Widget deleted');
+              }} 
+              style={{ padding: '6px 12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+            >
+              Delete
+            </button>
+            <button 
+              onClick={() => toast.dismiss(t.id)} 
+              style={{ padding: '6px 12px', background: 'var(--bg-main)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity }
+    );
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}/embed/clock?id=${activeConfigId}`);
+    await navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/clock?id=${activeConfigId}`);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -213,11 +238,18 @@ export default function ClockCustomizer() {
             {loadingList ? <p>Loading...</p> : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {configsList.map(c => (
-                  <div key={c.id} className="panel" onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '15px' }}>
-                    <ClockPreview config={c.config} time={time} scale={0.8} />
+                  <div key={c.id} className="panel" onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', padding: '20px', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'} onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'}>
+                    <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', border: '1px solid var(--border-subtle)' }}>
+                      <ClockPreview config={c.config} time={time} scale={0.5} />
+                    </div>
                     <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 'bold' }}>{c.config.name || 'Unnamed'}</span>
-                      <button onClick={(e) => deleteConfig(c.id, e)} style={{ background: 'none', border: 'none', color: '#FF0000', cursor: 'pointer' }}>X</button>
+                      <span style={{ fontWeight: 600, fontSize: '15px' }}>{c.config.name || 'Unnamed'}</span>
+                      <button onClick={(e) => deleteConfig(c.id, e)} className="btn-delete" aria-label="Delete widget" title="Delete widget">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -240,17 +272,16 @@ export default function ClockCustomizer() {
               flexDirection: 'column',
               justifyContent: 'center', 
               alignItems: 'center', 
-              borderBottom: '1px solid var(--border-rigid)',
-              backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAMElEQVQ4T2NkYOD4z8DAwMgw0oBhw8GwwcCAgZGRkRGmw8HAgIFxGMEowUY2w0Y/A3N3GgX28m8/AAAAAElFTkSuQmCC")',
-              backgroundSize: '20px 20px'
+              borderBottom: '1px solid var(--border-subtle)',
+              backgroundColor: 'var(--bg-panel)'
             }}>
               <div style={{ display: 'flex', width: '100%', maxWidth: '800px', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <h2 style={{ margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>{name.toUpperCase()}</h2>
-                <span style={{ color: 'var(--vocals-green)', fontSize: '0.8rem', fontWeight: 'bold', textShadow: '0 1px 2px rgba(0,0,0,0.8)', textTransform: 'uppercase' }}>
+                <h2 style={{ margin: 0 }}>{name.toUpperCase()}</h2>
+                <span style={{ color: 'var(--text-primary)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
                   {saving ? 'AUTOSAVING...' : 'SAVED'}
                 </span>
               </div>
-              <div style={{ border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+              <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden' }} className="preview-window-container">
                 <ClockPreview config={activeConfigObj} time={time} scale={1.5} />
               </div>
             </div>
@@ -262,20 +293,20 @@ export default function ClockCustomizer() {
                 <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>DATA & FORMATTING</h3>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>WIDGET NAME</label>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} style={{ width: '100%', padding: '10px' }} />
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>WIDGET NAME</label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} className="form-input" />
                   </div>
                   <div style={{ display: 'flex', gap: '15px' }}>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>FORMAT</label>
-                      <select style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-rigid)' }} value={timeFormat} onChange={e => setTimeFormat(e.target.value as '12HR'|'24HR')}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FORMAT</label>
+                      <select className="form-select" value={timeFormat} onChange={e => setTimeFormat(e.target.value as '12HR'|'24HR')}>
                         <option value="12HR">12 Hour</option>
                         <option value="24HR">24 Hour</option>
                       </select>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>TIMEZONE</label>
-                      <select style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-rigid)' }} value={timezone} onChange={e => setTimezone(e.target.value)}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TIMEZONE</label>
+                      <select className="form-select" value={timezone} onChange={e => setTimezone(e.target.value)}>
                         <option value="LOCAL">Local Time</option>
                         <option value="UTC">UTC</option>
                         <option value="America/New_York">EST (New York)</option>
@@ -285,12 +316,14 @@ export default function ClockCustomizer() {
                       </select>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '20px', marginTop: '10px', padding: '15px', backgroundColor: 'var(--module-grey)', border: '1px solid var(--border-rigid)' }}>
-                    <label style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '0.9rem', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={showSeconds} onChange={e => setShowSeconds(e.target.checked)} style={{ transform: 'scale(1.2)' }} /> SHOW SECONDS
+                  <div className="form-checkbox-group">
+                    <label className="form-checkbox-label">
+                      <input type="checkbox" checked={showSeconds} onChange={e => setShowSeconds(e.target.checked)} />
+                      SHOW SECONDS
                     </label>
-                    <label style={{ display: 'flex', gap: '10px', alignItems: 'center', fontSize: '0.9rem', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={showDate} onChange={e => setShowDate(e.target.checked)} style={{ transform: 'scale(1.2)' }} /> SHOW DATE
+                    <label className="form-checkbox-label">
+                      <input type="checkbox" checked={showDate} onChange={e => setShowDate(e.target.checked)} />
+                      SHOW DATE
                     </label>
                   </div>
                 </div>
@@ -300,8 +333,8 @@ export default function ClockCustomizer() {
                 <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>TYPOGRAPHY</h3>
                   <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>FONT FAMILY</label>
-                    <select style={{ width: '100%', padding: '10px', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-rigid)' }} value={fontFamily} onChange={e => setFontFamily(e.target.value)}>
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT FAMILY</label>
+                    <select className="form-select" value={fontFamily} onChange={e => setFontFamily(e.target.value)}>
                       <option value="Roboto Mono">Roboto Mono (Digital)</option>
                       <option value="Inter">Inter (Clean)</option>
                       <option value="Outfit">Outfit (Bold)</option>
@@ -381,11 +414,11 @@ export default function ClockCustomizer() {
                     <li>Ensure <strong>"Allow transparency"</strong> is checked</li>
                     <li>Any changes you make here will instantly sync to OBS!</li>
                   </ul>
-                  <div style={{ backgroundColor: '#0a0a0a', padding: '20px', border: '1px solid var(--vocals-green)', borderRadius: '4px', marginTop: '10px' }}>
-                    <p style={{ color: 'var(--vocals-green)', fontSize: '0.85rem', marginBottom: '12px', fontWeight: 600 }}>YOUR UNIQUE WIDGET URL:</p>
+                  <div style={{ backgroundColor: 'var(--bg-panel)', padding: '20px', border: '1px solid var(--border-subtle)', borderRadius: '8px', marginTop: '10px' }}>
+                    <p style={{ color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '12px', fontWeight: 600 }}>YOUR UNIQUE WIDGET URL:</p>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <input type="text" readOnly value={`${window.location.origin}/widgets/embed/clock?id=${activeConfigId}`} onClick={(e) => (e.target as HTMLInputElement).select()} style={{ flex: 1, padding: '12px', fontSize: '1rem', borderColor: 'var(--vocals-green)', backgroundColor: 'rgba(0,255,0,0.05)', color: 'var(--text-primary)' }} />
-                      <button className="btn-amber" onClick={handleCopy} style={{ margin: 0, padding: '0 25px', backgroundColor: copySuccess ? 'var(--vocals-green)' : 'var(--active-amber)', color: '#000', border: 'none', fontWeight: 'bold' }}>
+                      <input type="text" readOnly value={`${window.location.origin}/widgets/embed/clock?id=${activeConfigId}`} onClick={(e) => (e.target as HTMLInputElement).select()} style={{ flex: 1, padding: '12px', fontSize: '1rem', cursor: 'text' }} />
+                      <button className="btn-primary" onClick={handleCopy} style={{ margin: 0, padding: '0 25px', backgroundColor: copySuccess ? '#0070f3' : 'var(--accent-primary)', color: '#fff', border: 'none', fontWeight: 'bold' }}>
                         {copySuccess ? 'COPIED!' : 'COPY'}
                       </button>
                     </div>

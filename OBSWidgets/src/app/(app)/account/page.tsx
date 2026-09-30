@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -58,10 +59,10 @@ export default function AccountPage() {
       });
 
     if (error) {
-      alert("Error saving profile: " + error.message);
+      toast.error("Error saving profile: " + error.message);
     } else {
       document.documentElement.setAttribute('data-theme', theme);
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
     }
     setSaving(false);
   };
@@ -89,7 +90,7 @@ export default function AccountPage() {
 
       setAvatarUrl(publicUrl);
     } catch (error: any) {
-      alert('Error uploading avatar: ' + error.message);
+      toast.error('Error uploading avatar: ' + error.message);
     } finally {
       setSaving(false);
     }
@@ -159,7 +160,7 @@ export default function AccountPage() {
               </div>
 
               <div style={{ marginTop: 'auto' }}>
-                <button className="btn-amber" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
+                <button className="btn-primary" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
                   {saving ? 'SAVING...' : 'SAVE PROFILE'}
                 </button>
               </div>
@@ -179,7 +180,7 @@ export default function AccountPage() {
               </div>
 
               <div style={{ marginTop: 'auto' }}>
-                <button className="btn-amber" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
+                <button className="btn-primary" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
                   {saving ? 'SAVING...' : 'SAVE PREFERENCES'}
                 </button>
               </div>

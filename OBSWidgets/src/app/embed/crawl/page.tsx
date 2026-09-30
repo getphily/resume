@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
-import { MarqueePreview } from '../../(app)/marquee/page';
+import ChyronPreview from '@/components/ChyronPreview';
+import type { ChyronConfig } from '@/types/chyron';
 
-function MarqueeEmbedContent() {
+function ChyronEmbedContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get('id');
-  const [config, setConfig] = useState<any>(null);
+  const [config, setConfig] = useState<ChyronConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,7 +26,7 @@ function MarqueeEmbedContent() {
         .select('config')
         .eq('id', id)
         .single();
-      
+
       if (error || !data) {
         setError('Widget not found');
       } else {
@@ -36,8 +37,9 @@ function MarqueeEmbedContent() {
 
     fetchConfig();
 
+    // Real-time sync
     const channel = supabase
-      .channel('schema-db-changes-marquee')
+      .channel('schema-db-changes-chyron')
       .on(
         'postgres_changes',
         {
@@ -62,18 +64,22 @@ function MarqueeEmbedContent() {
   if (!config) return null;
 
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <MarqueePreview config={config} />
+    <div style={{ 
+      width: '100vw', 
+      height: '100vh', 
+      overflow: 'hidden',
+      display: 'flex',
+      alignItems: 'flex-end',
+    }}>
+      <ChyronPreview config={config} scale={1} />
     </div>
   );
 }
 
-import { Suspense } from 'react';
-
-export default function MarqueeEmbed() {
+export default function ChyronEmbed() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <MarqueeEmbedContent />
+      <ChyronEmbedContent />
     </Suspense>
   );
 }

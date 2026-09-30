@@ -5,67 +5,41 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 export default function Home() {
-  const [session, setSession] = useState<any>(null);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
   return (
-    <main style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '40px', borderBottom: '1px solid var(--border-rigid)', paddingBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1>getphily's OBS Widgets</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>Select a widget to customize and import into OBS.</p>
-        </div>
-        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          {session ? (
-            <>
-              <Link href="/account" style={{ color: 'var(--active-amber)', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 'bold' }}>ACCOUNT</Link>
-              <button 
-                onClick={() => supabase.auth.signOut()} 
-                style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '0.9rem', padding: 0 }}
-              >
-                SIGN OUT
-              </button>
-            </>
-          ) : (
-            <Link href="/auth">
-              <button className="btn-amber">Sign In</button>
-            </Link>
-          )}
-        </div>
+    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+      <header style={{ marginBottom: '30px' }}>
+        <h1 style={{ fontSize: '24px', color: 'var(--text-primary)' }}>Dashboard</h1>
+        <p style={{ color: 'var(--text-secondary)', marginTop: '5px' }}>Manage your custom OBS widgets.</p>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
         
         {/* Clock Widget Card */}
-        <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div className="preview-window-container" style={{ aspectRatio: '300 / 200' }}>
-            <div className="screen-readout" style={{ fontSize: '2rem' }}>
-              12:34:56
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="preview-window-container" style={{ aspectRatio: '16 / 9', marginBottom: '20px', borderRadius: '6px' }}>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '2.5rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>
+              12:34
             </div>
           </div>
           <div>
-            <h3>Clock Widget</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>A fully customizable digital clock. Customize colors, font, and format.</p>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>Clock Widget</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>A fully customizable digital clock. Edit colors, font, and format for your stream.</p>
             <Link href="/clock">
-              <button className="btn-amber" style={{ width: '100%' }}>Customize</button>
+              <button className="btn-primary" style={{ width: '100%' }}>Manage Widget</button>
             </Link>
           </div>
         </div>
 
-        {/* Marquee Widget Card */}
-        <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div className="preview-window-container" style={{ aspectRatio: '1920 / 300' }}>
-            <div className="screen-readout" style={{ whiteSpace: 'nowrap', overflow: 'hidden' }}>
-              <span style={{ display: 'inline-block', animation: 'scroll 5s linear infinite' }}>SCROLLING TEXT EXAMPLE...</span>
+        {/* Chyron Builder Card */}
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="preview-window-container" style={{ aspectRatio: '16 / 5', marginBottom: '20px', borderRadius: '6px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflow: 'hidden' }}>
+            {/* Mini chyron mockup */}
+            <div style={{ backgroundColor: '#1a1a2e', borderLeft: '3px solid #e63946', padding: '6px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ color: '#fff', fontSize: '11px', fontWeight: 700 }}>BREAKING NEWS HEADLINE</span>
+              <span style={{ color: '#fff', fontSize: '10px', fontFamily: 'monospace', backgroundColor: '#e63946', padding: '2px 6px', borderRadius: '2px' }}>LIVE</span>
+            </div>
+            <div style={{ backgroundColor: '#0f172a', borderTop: '2px solid #e63946', padding: '4px 12px', overflow: 'hidden' }}>
+              <span style={{ color: '#fff', fontSize: '10px', fontWeight: 600, whiteSpace: 'nowrap', display: 'inline-block', animation: 'scroll 6s linear infinite' }}>SCROLLING TICKER TEXT ★ LATEST UPDATES ★ LIVE COVERAGE</span>
             </div>
           </div>
           <style>{`
@@ -75,15 +49,15 @@ export default function Home() {
             }
           `}</style>
           <div>
-            <h3>Marquee Widget</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>A horizontal scrolling marquee for announcements or ticker text.</p>
-            <Link href="/marquee">
-              <button className="btn-amber" style={{ width: '100%' }}>Customize</button>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>Chyron Builder</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>Build broadcast-style lower thirds with title, logo, clock, and scrolling crawl.</p>
+            <Link href="/crawl">
+              <button className="btn-primary" style={{ width: '100%' }}>Open Builder</button>
             </Link>
           </div>
         </div>
 
       </div>
-    </main>
+    </div>
   );
 }

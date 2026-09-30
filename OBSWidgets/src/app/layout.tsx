@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 import ThemeProvider from "./ThemeProvider";
+import { Toaster } from 'react-hot-toast';
 
 export default function RootLayout({
   children,
@@ -28,6 +29,7 @@ export default function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="dark">
       <body>
         <ThemeProvider>
+          <Toaster position="top-center" />
           {children}
         </ThemeProvider>
       </body>
