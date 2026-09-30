@@ -643,6 +643,14 @@ export default function ChyronBuilder() {
 
   const loadEditor = (id: string, c: any) => {
     setActiveConfigId(id);
+    
+    // Inject any missing layers into the loaded order
+    const loadedOrder = c.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder;
+    const finalOrder = [...loadedOrder];
+    ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
+      if (!finalOrder.includes(l as any)) finalOrder.push(l as any);
+    });
+
     // Merge with defaults to handle missing fields from older configs
     const mergedConfig: ChyronConfig = {
       ...DEFAULT_CHYRON_CONFIG,
@@ -653,7 +661,7 @@ export default function ChyronBuilder() {
       logo: { ...DEFAULT_CHYRON_CONFIG.logo, ...(c.logo || {}) },
       clock: { ...DEFAULT_CHYRON_CONFIG.clock, ...(c.clock || {}) },
       crawl: { ...DEFAULT_CHYRON_CONFIG.crawl, ...(c.crawl || {}) },
-      layerOrder: c.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder,
+      layerOrder: finalOrder,
     };
     setConfig(mergedConfig);
     setSelectedLayer('title');
