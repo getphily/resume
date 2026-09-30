@@ -1,20 +1,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&family=Roboto+Mono:wght@400;700&display=swap');
 
 :root {
-  /* getphily.io Color System */
-  --chassis-black: oklch(14% 0.01 240);
-  --module-grey: oklch(18% 0.015 240 / 0.65);
-  --border-rigid: oklch(28% 0.015 240 / 0.7);
+  /* Pioneer DJ DDJ-FLX10 Strict Color System */
+  --chassis-black: #111111;
+  --module-grey: #1C1C1C;
+  --border-rigid: #333333;
   
   /* Brand colors mapped to our existing var names for compatibility */
-  --active-amber: oklch(75% 0.15 200); /* Electric Cyan from getphily.io */
-  --drums-blue: oklch(65% 0.20 280); /* Bright Violet from getphily.io */
-  --vocals-green: oklch(75% 0.15 200);
-  --instruments-red: oklch(65% 0.20 280);
+  --active-amber: #FF5900;
+  --drums-blue: #0055FF;
+  --vocals-green: #00FF00;
+  --instruments-red: #FF0000;
   
-  --text-primary: oklch(93% 0.01 240);
-  --text-secondary: oklch(65% 0.01 240);
-  --bg-input: rgba(0, 0, 0, 0.2);
+  --text-primary: #EEEEEE;
+  --text-secondary: #888888;
+  --bg-input: rgba(0, 0, 0, 0.4);
   
   --font-sans: 'Inter', -apple-system, sans-serif;
   --font-heading: 'Outfit', -apple-system, sans-serif;
@@ -40,8 +40,6 @@ body {
 /* Glassmorphism Panel (getphily.io Card style) */
 .panel {
   background-color: var(--module-grey);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-rigid);
   border-radius: 16px; /* 2xl */
   padding: 24px;
@@ -164,27 +162,4 @@ h1, h2, h3, h4 {
 .segmented-control button:hover:not(.active) {
   background-color: var(--border-rigid);
   color: var(--text-primary);
-}
-
-/* LIGHT THEME OVERRIDES (getphily.io Light Mode) */
-[data-theme='light'] {
-  --chassis-black: oklch(98% 0.005 240);
-  --module-grey: oklch(100% 0 0 / 0.7);
-  --border-rigid: oklch(90% 0.01 240);
-  
-  --active-amber: oklch(55% 0.16 260); /* Royal Indigo */
-  --drums-blue: oklch(50% 0.18 200); /* Slate Cyan */
-  --vocals-green: oklch(55% 0.16 260);
-  
-  --text-primary: oklch(25% 0.01 240);
-  --text-secondary: oklch(50% 0.01 240);
-  --bg-input: rgba(255, 255, 255, 0.5);
-}
-
-[data-theme='light'] .panel {
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-}
-
-[data-theme='light'] .segmented-control {
-  background-color: rgba(0,0,0,0.05);
 }
