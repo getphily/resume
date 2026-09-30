@@ -166,7 +166,7 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
       )}
       <div className="form-checkbox-group">
         <label className="form-checkbox-label">
-          <input type="checkbox" checked={l.spanRows} onChange={e => update({ spanRows: e.target.checked })} />
+          <input type="checkbox" checked={l.spanRows || false} onChange={e => update({ spanRows: e.target.checked })} />
           SPAN ALL ROWS (Makes logo fill height)
         </label>
       </div>

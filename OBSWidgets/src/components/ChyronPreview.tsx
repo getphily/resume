@@ -101,24 +101,45 @@ function LogoBug({ config, scale }: { config: ChyronConfig; scale: number }) {
   return (
     <div style={{
       display: 'flex',
-      alignItems: 'center',
+      alignItems: logo.mode === 'IMAGE' ? 'stretch' : 'center',
       justifyContent: 'center',
-      padding: `${8 * scale}px ${B.logoPadH * scale}px`,
+      padding: logo.mode === 'IMAGE' ? 0 : `${8 * scale}px ${B.logoPadH * scale}px`,
       backgroundColor: logo.bgColor,
       flexShrink: 0,
-      minWidth: `${80 * scale}px`,
+      minWidth: logo.mode === 'IMAGE' ? 'auto' : `${80 * scale}px`,
+      position: 'relative',
     }}>
       {logo.mode === 'IMAGE' && logo.imageUrl ? (
-        <img
-          src={logo.imageUrl}
-          alt="Logo"
-          style={{
-            height: logo.spanRows ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale * 0.7}px` : `${B.logoImageHeight * scale}px`,
-            maxHeight: '100%',
-            width: 'auto',
-            objectFit: 'contain',
-          }}
-        />
+        <>
+          <div style={{
+            position: 'absolute',
+            top: `${8 * scale}px`,
+            left: `${8 * scale}px`,
+            backgroundColor: '#e63946',
+            color: 'white',
+            padding: `${2 * scale}px ${6 * scale}px`,
+            fontSize: `${0.75 * scale}rem`,
+            fontWeight: 800,
+            fontFamily: 'Inter, sans-serif',
+            letterSpacing: '0.05em',
+            borderRadius: `${3 * scale}px`,
+            zIndex: 2,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+            textTransform: 'uppercase',
+            lineHeight: 1.2,
+          }}>
+            LIVE
+          </div>
+          <img
+            src={logo.imageUrl}
+            alt="Logo"
+            style={{
+              height: '100%',
+              aspectRatio: '1 / 1',
+              objectFit: 'cover',
+            }}
+          />
+        </>
       ) : (
         <span style={{
           fontFamily: getFontFamily(logo.fontFamily),
@@ -332,6 +353,7 @@ export default function ChyronPreview({ config, scale = 1 }: { config: ChyronCon
       width: '100%',
       display: 'flex',
       flexDirection: config.logo.spanRows && config.logo.position === 'RIGHT' ? 'row-reverse' : 'row',
+      alignItems: 'stretch',
       backgroundColor: config.layout.bgMode === 'TRANSPARENT' ? 'transparent' : config.layout.bgColor,
       overflow: 'hidden',
       position: 'relative',
