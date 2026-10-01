@@ -243,7 +243,7 @@ function ClockLayer({ config, scale, inline = false }: { config: ChyronConfig; s
       {clock.showDate && (
         <span style={{
           fontFamily: getFontFamily('Roboto Mono'),
-          fontSize: `${B.clockFontSize * scale * (clock.fontSize || 1.0)}rem`,
+          fontSize: `${B.clockFontSize * scale * (clock.fontSize || 1.0) * 0.8}rem`,
           fontWeight: 700,
           color: clock.textColor,
           fontVariantNumeric: 'tabular-nums',
