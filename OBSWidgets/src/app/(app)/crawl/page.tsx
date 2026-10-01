@@ -451,6 +451,7 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
 // ─── Properties: Crawl Blocks Manager ──────────────────────────────
 function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const cr = config.crawl;
 
   const updateBlock = (id: string, patch: Partial<CrawlBlock>) => {
@@ -485,6 +486,18 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
     const [reorderedItem] = newBlocks.splice(result.source.index, 1);
     newBlocks.splice(result.destination.index, 0, reorderedItem);
     onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
+  };
+
+  const bulkDeleteBlocks = () => {
+    const newBlock: CrawlBlock = {
+      id: `block-${Date.now()}`,
+      label: `Block 1`,
+      text: 'NEW CRAWL TEXT',
+      enabled: true,
+    };
+    onChange({ ...config, crawl: { ...cr, blocks: [newBlock] } });
+    setShowBulkDeleteConfirm(false);
+    setExpandedId(null);
   };
 
   return (
@@ -592,6 +605,43 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
           )}
         </Droppable>
       </DragDropContext>
+
+      <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-rigid)' }}>
+        {!showBulkDeleteConfirm ? (
+          <button
+            onClick={() => setShowBulkDeleteConfirm(true)}
+            style={{
+              padding: '10px', background: 'transparent', color: '#ef4444', border: '1px solid #fecaca',
+              borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, width: '100%',
+              transition: 'background 0.15s ease'
+            }}
+            onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
+            onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+          >
+            DELETE ALL BLOCKS
+          </button>
+        ) : (
+          <div style={{ padding: '16px', background: '#fee2e2', borderRadius: '8px', border: '1px solid #fecaca' }}>
+            <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#b91c1c', fontWeight: 600 }}>
+              Are you sure you want to delete all blocks? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={bulkDeleteBlocks}
+                style={{ flex: 1, padding: '8px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+              >
+                YES, DELETE ALL
+              </button>
+              <button
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                style={{ flex: 1, padding: '8px', background: 'transparent', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
