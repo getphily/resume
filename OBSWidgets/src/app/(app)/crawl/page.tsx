@@ -491,20 +491,23 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
     <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCKS</h3>
+        <button
+          onClick={() => addBlockAt(0)}
+          style={{
+            background: 'var(--active-amber)', color: '#fff', border: 'none', borderRadius: '4px',
+            padding: '6px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer'
+          }}
+        >
+          + ADD BLOCK
+        </button>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="crawl-blocks-accordion">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} style={{ display: 'flex', flexDirection: 'column' }}>
+            <div {...provided.droppableProps} ref={provided.innerRef} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {cr.blocks.map((block, i) => (
-                <React.Fragment key={block.id}>
-                  {/* Add button above the block */}
-                  <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0', opacity: 0.5, transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = '1'} onMouseOut={e => e.currentTarget.style.opacity = '0.5'}>
-                    <button onClick={() => addBlockAt(i)} style={{ background: 'var(--border-subtle)', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: 'var(--text-secondary)', cursor: 'pointer' }}>+ ADD BLOCK HERE</button>
-                  </div>
-
-                  <Draggable draggableId={block.id} index={i}>
+                  <Draggable key={block.id} draggableId={block.id} index={i}>
                     {(provided, snapshot) => (
                       <div
                         ref={provided.innerRef}
@@ -582,13 +585,7 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
                       </div>
                     )}
                   </Draggable>
-                </React.Fragment>
               ))}
-
-              {/* Add button at the very end */}
-              <div style={{ display: 'flex', justifyContent: 'center', margin: '4px 0', opacity: 0.5, transition: 'opacity 0.2s' }} onMouseOver={e => e.currentTarget.style.opacity = '1'} onMouseOut={e => e.currentTarget.style.opacity = '0.5'}>
-                <button onClick={() => addBlockAt(cr.blocks.length)} style={{ background: 'var(--border-subtle)', border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 700, color: 'var(--text-secondary)', cursor: 'pointer' }}>+ ADD BLOCK HERE</button>
-              </div>
 
               {provided.placeholder}
             </div>
