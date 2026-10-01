@@ -341,6 +341,8 @@ function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
         whiteSpace: 'nowrap',
         textTransform: 'uppercase',
         animation: `scroll-chyron ${getAnimationDuration()} linear infinite`,
+        willChange: 'transform',
+        backfaceVisibility: 'hidden',
         letterSpacing: '0.04em',
         lineHeight: 1,
         paddingLeft: `${16 * scale}px`,
@@ -387,8 +389,8 @@ export default function ChyronPreview({ config, scale = 1 }: { config: ChyronCon
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@500;600;700;800&family=Outfit:wght@500;600;700&family=VT323&display=swap');
         @keyframes scroll-chyron {
-          from { transform: translateX(100%); }
-          to { transform: translateX(-100%); }
+          from { transform: translate3d(100%, 0, 0); }
+          to { transform: translate3d(-100%, 0, 0); }
         }
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; transform: scale(1); }
