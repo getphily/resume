@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 
 const getFontFamily = (font: string) => {
   switch (font) {
@@ -16,45 +17,7 @@ const getFontFamily = (font: string) => {
   }
 };
 
-// ─── Color Picker Component ─────────────────────────────────────────
-const PRESET_COLORS = [
-  '#ffffff', // White
-  '#f8fafc', // Slate 50
-  '#94a3b8', // Slate 400
-  '#0f172a', // Slate 900
-  '#000000', // Black
-  '#e63946', // Red
-  '#f97316', // Orange
-  '#f59e0b', // Amber
-  '#84cc16', // Lime
-  '#10b981', // Emerald
-  '#14b8a6', // Teal
-  '#3b82f6', // Blue
-  '#8b5cf6', // Violet
-  '#ec4899', // Pink
-];
 
-function ColorInputWithPalette({ value, onChange }: { value: string, onChange: (val: string) => void }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <input type="color" value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
-      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-        {PRESET_COLORS.map(c => (
-          <button
-            key={c}
-            onClick={() => onChange(c)}
-            style={{
-              width: '18px', height: '18px', borderRadius: '50%', backgroundColor: c,
-              border: value.toLowerCase() === c.toLowerCase() ? '2px solid var(--active-amber)' : '1px solid var(--border-subtle)',
-              cursor: 'pointer', padding: 0
-            }}
-            title={c}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function ClockPreview({ config, time, scale = 1 }: { config: any, time: Date | null, scale?: number }) {
   if (!time) return null;

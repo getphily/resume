@@ -279,3 +279,140 @@ h1, h2, h3, h4 {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
+
+/* ─── Screen Sets: Text Toolbar ─────────────────────────────────── */
+.text-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px 20px;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  align-items: flex-end;
+}
+
+.text-toolbar .toolbar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.text-toolbar .toolbar-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.text-toolbar .toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.text-toolbar .toolbar-divider {
+  width: 1px;
+  height: 28px;
+  background-color: var(--border-subtle);
+  margin: 0 4px;
+  align-self: center;
+}
+
+/* ─── Screen Sets: Color Swatch Button ──────────────────────────── */
+.color-swatch-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  position: relative;
+}
+
+.color-swatch-btn .swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  overflow: hidden;
+  position: relative;
+}
+
+.color-swatch-btn .swatch input[type="color"] {
+  opacity: 0;
+  width: 200%;
+  height: 200%;
+  cursor: pointer;
+  position: absolute;
+  top: -10px;
+  left: -10px;
+}
+
+.color-swatch-btn .swatch-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ─── Screen Sets: Timer Controls ───────────────────────────────── */
+.timer-controls {
+  padding: 15px;
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+}
+
+.timer-controls .timer-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 15px;
+  align-items: flex-end;
+}
+
+/* ─── Screen Sets: Page Card ────────────────────────────────────── */
+.page-card {
+  padding: 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background-color: var(--bg-panel);
+  position: relative;
+}
+
+.page-card .page-field {
+  margin-bottom: 15px;
+}
+
+.page-card .page-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* Toolbar Buttons */
+.toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 8px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toolbar-btn:hover {
+  background-color: var(--module-grey);
+  color: var(--text-primary);
+}
+
+.toolbar-btn[data-state='on'] {
+  background-color: #e2e8f0;
+  color: var(--accent-primary);
+}

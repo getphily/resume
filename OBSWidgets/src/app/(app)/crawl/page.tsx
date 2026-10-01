@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { GripVertical } from 'lucide-react';
+import { DragHandleDots2Icon } from '@radix-ui/react-icons';
 import ChyronPreview from '@/components/ChyronPreview';
+import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
+import { TextFormattingToolbar } from '@/components/TextFormattingToolbar';
 import type { ChyronConfig, CrawlBlock } from '@/types/chyron';
 import { DEFAULT_CHYRON_CONFIG } from '@/types/chyron';
 
@@ -45,45 +47,7 @@ const TrashIcon = () => (
   </svg>
 );
 
-// ─── Layer Names ───────────────────────────────────────────────────
-const PRESET_COLORS = [
-  '#ffffff', // White
-  '#f8fafc', // Slate 50
-  '#94a3b8', // Slate 400
-  '#0f172a', // Slate 900
-  '#000000', // Black
-  '#e63946', // Red
-  '#f97316', // Orange
-  '#f59e0b', // Amber
-  '#84cc16', // Lime
-  '#10b981', // Emerald
-  '#14b8a6', // Teal
-  '#3b82f6', // Blue
-  '#8b5cf6', // Violet
-  '#ec4899', // Pink
-];
 
-function ColorInputWithPalette({ value, onChange }: { value: string, onChange: (val: string) => void }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <input type="color" value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
-      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-        {PRESET_COLORS.map(c => (
-          <button
-            key={c}
-            onClick={() => onChange(c)}
-            style={{
-              width: '18px', height: '18px', borderRadius: '50%', backgroundColor: c,
-              border: value.toLowerCase() === c.toLowerCase() ? '2px solid var(--active-amber)' : '1px solid var(--border-subtle)',
-              cursor: 'pointer', padding: 0
-            }}
-            title={c}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 const LAYER_LABELS: Record<string, string> = {
   title: 'Title Bar',
@@ -100,52 +64,17 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
   return (
     <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>TITLE BAR</h3>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>HEADLINE TEXT</label>
-        <input type="text" className="form-input" value={t.text} onChange={e => update({ text: e.target.value })} />
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-          <select className="form-select" value={t.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>
-            <option value="Inter">Inter</option>
-            <option value="Outfit">Outfit</option>
-            <option value="Roboto Mono">Roboto Mono</option>
-            <option value="Bebas Neue">Bebas Neue</option>
-          </select>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT TRANSFORM</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={t.textTransform === 'uppercase' ? 'active' : ''} onClick={() => update({ textTransform: 'uppercase' })}>UPPER</button>
-            <button style={{ flex: 1 }} className={t.textTransform === 'none' ? 'active' : ''} onClick={() => update({ textTransform: 'none' })}>Normal</button>
-          </div>
-        </div>
-      </div>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>HEADLINE SIZE</label>
-        <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-          <button style={{ flex: 1 }} className={t.fontSize === 0.82 ? 'active' : ''} onClick={() => update({ fontSize: 0.82 })}>SMALL</button>
-          <button style={{ flex: 1 }} className={t.fontSize === 1.0 ? 'active' : ''} onClick={() => update({ fontSize: 1.0 })}>MEDIUM</button>
-          <button style={{ flex: 1 }} className={t.fontSize === 1.2 ? 'active' : ''} onClick={() => update({ fontSize: 1.2 })}>LARGE</button>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <ColorInputWithPalette value={t.textColor} onChange={val => update({ textColor: val })} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <ColorInputWithPalette value={t.bgColor} onChange={val => update({ bgColor: val })} />
-        </div>
-      </div>
-      <div className="form-checkbox-group">
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={t.bold} onChange={e => update({ bold: e.target.checked })} />
-          BOLD
-        </label>
-      </div>
+      <TextFormattingToolbar
+        text={t.text}
+        fontFamily={t.fontFamily}
+        fontSize={t.fontSize}
+        bold={t.bold}
+        textTransform={t.textTransform as any}
+        textColor={t.textColor}
+        bgColor={t.bgColor}
+        showBgColor={true}
+        onChange={update}
+      />
     </div>
   );
 }
@@ -265,51 +194,17 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
   return (
     <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>SUBHEADER</h3>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SUBHEADER TEXT</label>
-        <input type="text" className="form-input" value={s.text} onChange={e => update({ text: e.target.value })} placeholder="e.g. LIVE FROM OAKLAND, CA" />
-      </div>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT SIZE</label>
-        <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-          <button style={{ flex: 1 }} className={s.fontSize === 0.82 ? 'active' : ''} onClick={() => update({ fontSize: 0.82 })}>SMALL</button>
-          <button style={{ flex: 1 }} className={s.fontSize === 1.0 ? 'active' : ''} onClick={() => update({ fontSize: 1.0 })}>MEDIUM</button>
-          <button style={{ flex: 1 }} className={s.fontSize === 1.2 ? 'active' : ''} onClick={() => update({ fontSize: 1.2 })}>LARGE</button>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-          <select className="form-select" value={s.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>
-            <option value="Inter">Inter</option>
-            <option value="Outfit">Outfit</option>
-            <option value="Bebas Neue">Bebas Neue</option>
-          </select>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TRANSFORM</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={s.textTransform === 'uppercase' ? 'active' : ''} onClick={() => update({ textTransform: 'uppercase' })}>UPPER</button>
-            <button style={{ flex: 1 }} className={s.textTransform === 'none' ? 'active' : ''} onClick={() => update({ textTransform: 'none' })}>Normal</button>
-          </div>
-        </div>
-      </div>
-      <div className="form-checkbox-group">
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={s.bold} onChange={e => update({ bold: e.target.checked })} />
-          BOLD TEXT
-        </label>
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <ColorInputWithPalette value={s.textColor} onChange={val => update({ textColor: val })} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <ColorInputWithPalette value={s.bgColor} onChange={val => update({ bgColor: val })} />
-        </div>
-      </div>
+      <TextFormattingToolbar
+        text={s.text}
+        fontFamily={s.fontFamily}
+        fontSize={s.fontSize}
+        bold={s.bold}
+        textTransform={s.textTransform as any}
+        textColor={s.textColor}
+        bgColor={s.bgColor}
+        showBgColor={true}
+        onChange={update}
+      />
     </div>
   );
 }
@@ -596,7 +491,7 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
                           }}
                         >
                           <div {...provided.dragHandleProps} style={{ color: 'var(--text-muted)', cursor: 'grab', display: 'flex', alignItems: 'center' }}>
-                            <GripVertical size={16} />
+                            <DragHandleDots2Icon />
                           </div>
 
                           <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }}>
@@ -1031,7 +926,7 @@ export default function ChyronBuilder() {
                                       cursor: 'grab',
                                     }}
                                   >
-                                    <GripVertical size={16} />
+                                    <DragHandleDots2Icon />
                                   </div>
 
                                   {/* Visibility toggle */}

@@ -57,6 +57,23 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Screen Sets Card */}
+        <div className="panel" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="preview-window-container" style={{ aspectRatio: '16 / 9', marginBottom: '20px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', lineHeight: 1.1 }}>STARTING SOON</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '6px' }}>The stream will begin shortly...</div>
+            </div>
+          </div>
+          <div>
+            <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>Screen Sets</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>Create full-screen overlays for Starting Soon, Be Right Back, and Goodbye pages with timers.</p>
+            <Link href="/screen">
+              <button className="btn-primary" style={{ width: '100%' }}>Manage Screens</button>
+            </Link>
+          </div>
+        </div>
+
       </div>
     </div>
   );

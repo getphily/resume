@@ -10,6 +10,7 @@ export default function Sidebar() {
     { name: 'Dashboard', path: '/' },
     { name: 'Clock Widget', path: '/clock' },
     { name: 'Chyron Builder', path: '/crawl' },
+    { name: 'Screen Sets', path: '/screen' },
   ];
 
   return (

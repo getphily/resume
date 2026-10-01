@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+import { Theme } from '@radix-ui/themes';
+
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     // Check initial auth state
@@ -32,10 +34,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       .single();
     
     if (data && data.theme) {
-      setTheme(data.theme);
+      setTheme(data.theme === 'light' ? 'light' : 'dark');
       document.documentElement.setAttribute('data-theme', data.theme);
     }
   };
 
-  return <>{children}</>;
+  return (
+    <Theme appearance={theme} accentColor="orange" radius="medium">
+      {children}
+    </Theme>
+  );
 }
