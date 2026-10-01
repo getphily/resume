@@ -780,11 +780,11 @@ export default function ChyronBuilder() {
         display: 'flex', flexDirection: 'column', backgroundColor: 'var(--module-bg)',
         flexShrink: 0,
       }}>
-        <div style={{ padding: '20px', borderBottom: '1px solid var(--border-rigid)' }}>
-          <h2 style={{ margin: 0, fontSize: '1.1rem', textTransform: 'uppercase' }}>
-            {activeConfigId ? (config.name || 'EDITOR') : 'YOUR CHYRONS'}
-          </h2>
-        </div>
+        {!activeConfigId && (
+          <div style={{ padding: '20px', borderBottom: '1px solid var(--border-rigid)' }}>
+            <h2 style={{ margin: 0, fontSize: '1.1rem', textTransform: 'uppercase' }}>YOUR CHYRONS</h2>
+          </div>
+        )}
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {activeConfigId ? (
