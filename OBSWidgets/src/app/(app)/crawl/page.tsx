@@ -178,6 +178,15 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
           </label>
         )}
       </div>
+      {l.mode === 'IMAGE' && (
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>ASPECT RATIO</label>
+          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
+            <button style={{ flex: 1 }} className={l.aspectRatio !== '16:9' ? 'active' : ''} onClick={() => update({ aspectRatio: '1:1' })}>1:1 (SQUARE)</button>
+            <button style={{ flex: 1 }} className={l.aspectRatio === '16:9' ? 'active' : ''} onClick={() => update({ aspectRatio: '16:9' })}>16:9 (WIDE)</button>
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>POSITION</label>
@@ -273,7 +282,13 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
 
   return (
     <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CLOCK / DATE</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CLOCK / DATE</h3>
+        <label className="form-checkbox-label" style={{ margin: 0, padding: 0 }}>
+          <input type="checkbox" checked={c.enabled !== false} onChange={e => update({ enabled: e.target.checked })} />
+          ENABLE CLOCK
+        </label>
+      </div>
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FORMAT</label>

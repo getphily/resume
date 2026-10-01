@@ -147,8 +147,12 @@ function LogoBug({ config, scale }: { config: ChyronConfig; scale: number }) {
             src={logo.imageUrl}
             alt="Logo"
             style={{
-              width: logo.spanRows ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale}px` : `${B.titleBarHeight * scale}px`,
-              height: logo.spanRows ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale}px` : `${B.titleBarHeight * scale}px`,
+              width: logo.spanRows
+                ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale * (logo.aspectRatio === '16:9' ? 16 / 9 : 1)}px`
+                : `${B.titleBarHeight * scale * (logo.aspectRatio === '16:9' ? 16 / 9 : 1)}px`,
+              height: logo.spanRows
+                ? `${(B.titleBarHeight + (config.subheader.enabled ? B.subheaderHeight : 0) + (config.crawl.enabled ? B.crawlBarHeight : 0)) * scale}px`
+                : `${B.titleBarHeight * scale}px`,
               objectFit: 'cover',
             }}
           />

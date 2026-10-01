@@ -39,6 +39,7 @@ export interface ChyronConfig {
     imageUrl: string;
     position: 'LEFT' | 'RIGHT';
     spanRows: boolean; // if true, logo spans all layers instead of just title
+    aspectRatio?: '1:1' | '16:9';
     showLiveBadge?: boolean;
     bgColor: string;
     textColor: string;
