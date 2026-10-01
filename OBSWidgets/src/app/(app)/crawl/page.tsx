@@ -106,6 +106,10 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
           <input type="checkbox" checked={t.bold} onChange={e => update({ bold: e.target.checked })} />
           BOLD
         </label>
+        <label className="form-checkbox-label">
+          <input type="checkbox" checked={t.showCursor || false} onChange={e => update({ showCursor: e.target.checked })} />
+          BLINKING CURSOR
+        </label>
       </div>
     </div>
   );
@@ -259,6 +263,10 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
         <label className="form-checkbox-label">
           <input type="checkbox" checked={s.bold} onChange={e => update({ bold: e.target.checked })} />
           BOLD TEXT
+        </label>
+        <label className="form-checkbox-label">
+          <input type="checkbox" checked={s.showCursor || false} onChange={e => update({ showCursor: e.target.checked })} />
+          BLINKING CURSOR
         </label>
       </div>
       <div style={{ display: 'flex', gap: '15px' }}>

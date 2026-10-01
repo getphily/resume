@@ -274,3 +274,8 @@ h1, h2, h3, h4 {
   cursor: pointer;
   accent-color: #3b82f6;
 }
+
+@keyframes chyron-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

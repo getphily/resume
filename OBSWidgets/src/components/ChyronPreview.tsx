@@ -77,6 +77,9 @@ function TitleLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
           lineHeight: 1,
         }}>
           {title.text || 'HEADLINE TEXT'}
+          {title.showCursor && (
+            <span style={{ animation: 'chyron-blink 1s step-end infinite', marginLeft: '6px' }}>█</span>
+          )}
         </span>
       </div>
 
@@ -288,6 +291,9 @@ function SubheaderLayer({ config, scale }: { config: ChyronConfig; scale: number
         letterSpacing: '0.04em',
       }}>
         {subheader.text || 'SUBTITLE TEXT'}
+        {subheader.showCursor && (
+          <span style={{ animation: 'chyron-blink 1s step-end infinite', marginLeft: '6px' }}>█</span>
+        )}
       </span>
     </div>
   );
