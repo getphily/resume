@@ -53,10 +53,14 @@ const PRESET_COLORS = [
   '#0f172a', // Slate 900
   '#000000', // Black
   '#e63946', // Red
+  '#f97316', // Orange
   '#f59e0b', // Amber
+  '#84cc16', // Lime
   '#10b981', // Emerald
+  '#14b8a6', // Teal
   '#3b82f6', // Blue
   '#8b5cf6', // Violet
+  '#ec4899', // Pink
 ];
 
 function ColorInputWithPalette({ value, onChange }: { value: string, onChange: (val: string) => void }) {

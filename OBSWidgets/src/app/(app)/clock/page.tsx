@@ -18,8 +18,20 @@ const getFontFamily = (font: string) => {
 
 // ─── Color Picker Component ─────────────────────────────────────────
 const PRESET_COLORS = [
-  '#ffffff', '#f8fafc', '#94a3b8', '#0f172a', '#000000', 
-  '#e63946', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'
+  '#ffffff', // White
+  '#f8fafc', // Slate 50
+  '#94a3b8', // Slate 400
+  '#0f172a', // Slate 900
+  '#000000', // Black
+  '#e63946', // Red
+  '#f97316', // Orange
+  '#f59e0b', // Amber
+  '#84cc16', // Lime
+  '#10b981', // Emerald
+  '#14b8a6', // Teal
+  '#3b82f6', // Blue
+  '#8b5cf6', // Violet
+  '#ec4899', // Pink
 ];
 
 function ColorInputWithPalette({ value, onChange }: { value: string, onChange: (val: string) => void }) {
