@@ -68,12 +68,12 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-            <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={t.fontFamily === 'Inter' ? 'active' : ''} onClick={() => update({ fontFamily: 'Inter' })}>Inter</button>
-            <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={t.fontFamily === 'Outfit' ? 'active' : ''} onClick={() => update({ fontFamily: 'Outfit' })}>Outfit</button>
-            <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={t.fontFamily === 'Roboto Mono' ? 'active' : ''} onClick={() => update({ fontFamily: 'Roboto Mono' })}>Roboto</button>
-            <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={t.fontFamily === 'Bebas Neue' ? 'active' : ''} onClick={() => update({ fontFamily: 'Bebas Neue' })}>Bebas</button>
-          </div>
+          <select className="form-select" value={t.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>
+            <option value="Inter">Inter</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Roboto Mono">Roboto Mono</option>
+            <option value="Bebas Neue">Bebas Neue</option>
+          </select>
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT TRANSFORM</label>
@@ -188,11 +188,11 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={l.fontFamily === 'Inter' ? 'active' : ''} onClick={() => update({ fontFamily: 'Inter' })}>Inter</button>
-            <button style={{ flex: 1 }} className={l.fontFamily === 'Outfit' ? 'active' : ''} onClick={() => update({ fontFamily: 'Outfit' })}>Outfit</button>
-            <button style={{ flex: 1 }} className={l.fontFamily === 'Bebas Neue' ? 'active' : ''} onClick={() => update({ fontFamily: 'Bebas Neue' })}>Bebas</button>
-          </div>
+          <select className="form-select" value={l.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>
+            <option value="Inter">Inter</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Bebas Neue">Bebas Neue</option>
+          </select>
         </div>
       </div>
       <div style={{ display: 'flex', gap: '15px' }}>
@@ -232,11 +232,11 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={s.fontFamily === 'Inter' ? 'active' : ''} onClick={() => update({ fontFamily: 'Inter' })}>Inter</button>
-            <button style={{ flex: 1 }} className={s.fontFamily === 'Outfit' ? 'active' : ''} onClick={() => update({ fontFamily: 'Outfit' })}>Outfit</button>
-            <button style={{ flex: 1 }} className={s.fontFamily === 'Bebas Neue' ? 'active' : ''} onClick={() => update({ fontFamily: 'Bebas Neue' })}>Bebas</button>
-          </div>
+          <select className="form-select" value={s.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>
+            <option value="Inter">Inter</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Bebas Neue">Bebas Neue</option>
+          </select>
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TRANSFORM</label>
@@ -284,14 +284,14 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TIMEZONE</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-            <button style={{ flex: '1 1 30%', fontSize: '10px' }} className={c.timezone === 'LOCAL' ? 'active' : ''} onClick={() => update({ timezone: 'LOCAL' })}>LOCAL</button>
-            <button style={{ flex: '1 1 30%', fontSize: '10px' }} className={c.timezone === 'UTC' ? 'active' : ''} onClick={() => update({ timezone: 'UTC' })}>UTC</button>
-            <button style={{ flex: '1 1 30%', fontSize: '10px' }} className={c.timezone === 'America/New_York' ? 'active' : ''} onClick={() => update({ timezone: 'America/New_York' })}>EST</button>
-            <button style={{ flex: '1 1 30%', fontSize: '10px' }} className={c.timezone === 'America/Los_Angeles' ? 'active' : ''} onClick={() => update({ timezone: 'America/Los_Angeles' })}>PST</button>
-            <button style={{ flex: '1 1 30%', fontSize: '10px' }} className={c.timezone === 'Europe/London' ? 'active' : ''} onClick={() => update({ timezone: 'Europe/London' })}>GMT</button>
-            <button style={{ flex: '1 1 30%', fontSize: '10px' }} className={c.timezone === 'Asia/Tokyo' ? 'active' : ''} onClick={() => update({ timezone: 'Asia/Tokyo' })}>JST</button>
-          </div>
+          <select className="form-select" value={c.timezone} onChange={e => update({ timezone: e.target.value })}>
+            <option value="LOCAL">Local Time</option>
+            <option value="UTC">UTC</option>
+            <option value="America/New_York">EST (New York)</option>
+            <option value="America/Los_Angeles">PST (Los Angeles)</option>
+            <option value="Europe/London">GMT (London)</option>
+            <option value="Asia/Tokyo">JST (Tokyo)</option>
+          </select>
         </div>
       </div>
       <div>
@@ -376,24 +376,24 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
           </div>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SEPARATOR</label>
-            <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-              <button style={{ flex: 1 }} className={cr.separator === ' ★ ' ? 'active' : ''} onClick={() => updateCrawl({ separator: ' ★ ' })}>★</button>
-              <button style={{ flex: 1 }} className={cr.separator === ' | ' ? 'active' : ''} onClick={() => updateCrawl({ separator: ' | ' })}>|</button>
-              <button style={{ flex: 1 }} className={cr.separator === ' /// ' ? 'active' : ''} onClick={() => updateCrawl({ separator: ' /// ' })}>///</button>
-              <button style={{ flex: 1, letterSpacing: '-2px' }} className={cr.separator === ' ••• ' ? 'active' : ''} onClick={() => updateCrawl({ separator: ' ••• ' })}>•••</button>
-              <button style={{ flex: 1 }} className={cr.separator === '   ' ? 'active' : ''} onClick={() => updateCrawl({ separator: '   ' })}>Space</button>
-            </div>
+            <select className="form-select" value={cr.separator} onChange={e => updateCrawl({ separator: e.target.value })}>
+              <option value=" ★ ">★ Star</option>
+              <option value=" | ">| Pipe</option>
+              <option value=" /// ">/// Slashes</option>
+              <option value=" ••• ">••• Dots</option>
+              <option value="   ">   (Space)</option>
+            </select>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '15px' }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-            <div className="segmented-control" style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
-              <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={cr.fontFamily === 'Inter' ? 'active' : ''} onClick={() => updateCrawl({ fontFamily: 'Inter' })}>Inter</button>
-              <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={cr.fontFamily === 'Outfit' ? 'active' : ''} onClick={() => updateCrawl({ fontFamily: 'Outfit' })}>Outfit</button>
-              <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={cr.fontFamily === 'Roboto Mono' ? 'active' : ''} onClick={() => updateCrawl({ fontFamily: 'Roboto Mono' })}>Roboto</button>
-              <button style={{ flex: '1 1 45%', fontSize: '11px' }} className={cr.fontFamily === 'Bebas Neue' ? 'active' : ''} onClick={() => updateCrawl({ fontFamily: 'Bebas Neue' })}>Bebas</button>
-            </div>
+            <select className="form-select" value={cr.fontFamily} onChange={e => updateCrawl({ fontFamily: e.target.value })}>
+              <option value="Inter">Inter</option>
+              <option value="Outfit">Outfit</option>
+              <option value="Roboto Mono">Roboto Mono</option>
+              <option value="Bebas Neue">Bebas Neue</option>
+            </select>
           </div>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT SIZE</label>
