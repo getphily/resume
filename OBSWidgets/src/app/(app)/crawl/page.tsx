@@ -781,13 +781,9 @@ export default function ChyronBuilder() {
         flexShrink: 0,
       }}>
         <div style={{ padding: '20px', borderBottom: '1px solid var(--border-rigid)' }}>
-          {activeConfigId ? (
-            <button onClick={() => setActiveConfigId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600 }}>
-              &larr; BACK TO DASHBOARD
-            </button>
-          ) : (
-            <h2 style={{ margin: 0, fontSize: '1.1rem' }}>YOUR CHYRONS</h2>
-          )}
+          <h2 style={{ margin: 0, fontSize: '1.1rem', textTransform: 'uppercase' }}>
+            {activeConfigId ? (config.name || 'EDITOR') : 'YOUR CHYRONS'}
+          </h2>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -924,6 +920,14 @@ export default function ChyronBuilder() {
             </div>
           )}
         </div>
+        
+        {activeConfigId && (
+          <div style={{ padding: '20px', borderTop: '1px solid var(--border-rigid)', marginTop: 'auto' }}>
+            <button onClick={() => setActiveConfigId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, width: '100%', padding: '10px', borderRadius: '6px' }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--module-grey)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+              &larr; BACK TO DASHBOARD
+            </button>
+          </div>
+        )}
       </aside>
 
       {/* ── MAIN CONTENT ──────────────────────────────────────── */}
@@ -960,9 +964,11 @@ export default function ChyronBuilder() {
           <>
             {/* Live Preview Header */}
             <div style={{
+              position: 'sticky', top: 0, zIndex: 10,
               flex: '0 0 auto', padding: '40px 20px',
               display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
               borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-panel)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
             }}>
               <div style={{ display: 'flex', width: '100%', maxWidth: '960px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{config.name.toUpperCase()}</h2>
