@@ -343,6 +343,8 @@ function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
         animation: `scroll-chyron ${getAnimationDuration()} linear infinite`,
         willChange: 'transform',
         backfaceVisibility: 'hidden',
+        WebkitFontSmoothing: 'antialiased',
+        transform: 'translateZ(0)',
         letterSpacing: '0.04em',
         lineHeight: 1,
         paddingLeft: `${16 * scale}px`,
