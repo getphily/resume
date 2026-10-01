@@ -1106,10 +1106,45 @@ export default function ChyronBuilder() {
                     <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/5', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '16px', border: '1px solid var(--border-subtle)' }}>
                       <ChyronPreview config={c.config} scale={0.35} />
                     </div>
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                       <span style={{ fontWeight: 600, fontSize: '15px' }}>{c.config.name || 'Unnamed'}</span>
                       <button onClick={e => deleteConfig(c.id, e)} className="btn-delete" aria-label="Delete chyron" title="Delete chyron">
                         <TrashIcon />
+                      </button>
+                    </div>
+
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.crawl.enabled ? 'var(--vocals-green)' : 'var(--border-rigid)' }} />
+                        {c.config.crawl.enabled ? `${c.config.crawl.blocks.filter((b: any) => b.enabled).length} Active Crawl Blocks` : 'Crawl Disabled'}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.logo.enabled ? 'var(--active-amber)' : 'var(--border-rigid)' }} />
+                        {c.config.logo.enabled ? 'Logo Enabled' : 'Logo Disabled'}
+                      </div>
+                    </div>
+
+                    <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
+                      <input
+                        type="text" readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
+                        onClick={e => (e.target as HTMLInputElement).select()}
+                        className="form-input"
+                        style={{ flex: 1, fontSize: '11px', padding: '6px 8px', margin: 0, height: 'auto', backgroundColor: 'var(--bg-panel)' }}
+                      />
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${c.id}`);
+                          toast.success('URL copied to clipboard!');
+                        }}
+                        style={{
+                          background: 'var(--text-primary)', color: 'var(--bg-panel)',
+                          border: 'none', borderRadius: '4px', cursor: 'pointer',
+                          padding: '0 12px', fontSize: '11px', fontWeight: 600
+                        }}
+                      >
+                        COPY
                       </button>
                     </div>
                   </div>
