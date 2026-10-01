@@ -65,6 +65,7 @@ export interface ChyronConfig {
     showSeconds: boolean;
     showDate: boolean;
     timezone: string;
+    fontSize?: number;
     textColor: string;
     bgColor: string;
     position: 'LEFT' | 'RIGHT';

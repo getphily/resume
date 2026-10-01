@@ -309,11 +309,21 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
           </select>
         </div>
       </div>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>POSITION</label>
-        <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-          <button style={{ flex: 1 }} className={c.position === 'LEFT' ? 'active' : ''} onClick={() => update({ position: 'LEFT' })}>LEFT</button>
-          <button style={{ flex: 1 }} className={c.position === 'RIGHT' ? 'active' : ''} onClick={() => update({ position: 'RIGHT' })}>RIGHT</button>
+      <div style={{ display: 'flex', gap: '15px' }}>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>POSITION</label>
+          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
+            <button style={{ flex: 1 }} className={c.position === 'LEFT' ? 'active' : ''} onClick={() => update({ position: 'LEFT' })}>LEFT</button>
+            <button style={{ flex: 1 }} className={c.position === 'RIGHT' ? 'active' : ''} onClick={() => update({ position: 'RIGHT' })}>RIGHT</button>
+          </div>
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SIZE</label>
+          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
+            <button style={{ flex: 1 }} className={c.fontSize === 0.82 ? 'active' : ''} onClick={() => update({ fontSize: 0.82 })}>SMALL</button>
+            <button style={{ flex: 1 }} className={(c.fontSize === undefined || c.fontSize === 1.0) ? 'active' : ''} onClick={() => update({ fontSize: 1.0 })}>MED</button>
+            <button style={{ flex: 1 }} className={c.fontSize === 1.2 ? 'active' : ''} onClick={() => update({ fontSize: 1.2 })}>LARGE</button>
+          </div>
         </div>
       </div>
       <div className="form-checkbox-group">
