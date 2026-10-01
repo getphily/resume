@@ -204,6 +204,7 @@ function ClockLayer({ config, scale, inline = false }: { config: ChyronConfig; s
     const options: Intl.DateTimeFormatOptions = {
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
       ...(clock.timezone !== 'LOCAL' ? { timeZone: clock.timezone } : {}),
     };
     return time.toLocaleDateString('en-US', options);
@@ -242,11 +243,12 @@ function ClockLayer({ config, scale, inline = false }: { config: ChyronConfig; s
       {clock.showDate && (
         <span style={{
           fontFamily: getFontFamily('Roboto Mono'),
-          fontSize: `${B.dateFontSize * scale * (clock.fontSize || 1.0)}rem`,
+          fontSize: `${B.clockFontSize * scale * (clock.fontSize || 1.0)}rem`,
+          fontWeight: 700,
           color: clock.textColor,
-          opacity: 0.75,
+          fontVariantNumeric: 'tabular-nums',
           whiteSpace: 'nowrap',
-          letterSpacing: '0.03em',
+          letterSpacing: '0.04em',
           lineHeight: 1,
         }}>
           {getDateStr()}
