@@ -218,7 +218,7 @@ function ClockLayer({ config, scale, inline = false }: { config: ChyronConfig; s
       justifyContent: 'center',
       gap: `${3 * scale}px`,
       padding: `${8 * scale}px ${B.clockPadH * scale}px`,
-      backgroundColor: clock.bgColor,
+      backgroundColor: config.title.bgColor,
       flexShrink: 0,
     }}>
       <span style={{
