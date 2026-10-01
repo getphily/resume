@@ -976,8 +976,24 @@ export default function ChyronBuilder() {
                   {saving ? 'SAVING...' : '✓ SAVED'}
                 </span>
               </div>
-              <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', width: '100%', maxWidth: '960px' }} className="preview-window-container">
+              <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', width: '100%', maxWidth: '960px', marginBottom: '16px' }} className="preview-window-container">
                 <ChyronPreview config={config} scale={0.5} />
+              </div>
+              <div style={{ display: 'flex', width: '100%', maxWidth: '960px', gap: '10px' }}>
+                <input
+                  type="text" readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
+                  onClick={e => (e.target as HTMLInputElement).select()}
+                  className="form-input"
+                  style={{ flex: 1, fontSize: '13px', cursor: 'text', backgroundColor: 'var(--bg-input)' }}
+                />
+                <button
+                  className="btn-primary"
+                  onClick={handleCopy}
+                  style={{ margin: 0, padding: '0 20px', backgroundColor: copySuccess ? '#22c55e' : 'var(--accent-primary)', color: '#fff', border: 'none', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '13px', transition: 'all 0.2s ease' }}
+                >
+                  {copySuccess ? '✓ COPIED URL' : 'COPY WIDGET URL'}
+                </button>
               </div>
             </div>
 
