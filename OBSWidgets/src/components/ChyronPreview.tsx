@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ChyronConfig } from '@/types/chyron';
 
 const getFontFamily = (font: string) => {
@@ -305,13 +305,25 @@ function SubheaderLayer({ config, scale }: { config: ChyronConfig; scale: number
 // ─── Crawl Layer ───────────────────────────────────────────────────
 function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) {
   const { crawl } = config;
+  const textRef = useRef<HTMLDivElement>(null);
+  const [textWidth, setTextWidth] = useState(0);
+
+  // We need to measure the text width to compute a constant speed
+  useEffect(() => {
+    if (textRef.current) {
+      setTextWidth(textRef.current.scrollWidth);
+    }
+  }, [config.crawl.blocks, scale, crawl.fontSize, crawl.fontFamily]);
+
   if (!crawl.enabled) return null;
 
-  const getAnimationDuration = () => {
+  // Calculate speed: pixels per second. 
+  // Base it roughly on a 1920px screen taking ~24s for normal speed (80px/sec).
+  const getSpeedPxPerSec = () => {
     switch (crawl.speed) {
-      case 'SLOW': return '40s';
-      case 'FAST': return '14s';
-      default: return '24s';
+      case 'SLOW': return 50;
+      case 'FAST': return 150;
+      default: return 90;
     }
   };
 
@@ -321,6 +333,11 @@ function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
     .join(`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0${crawl.separator}\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0`);
 
   if (!crawlText) return null;
+
+  // Total distance is textWidth + the padding (which is the screen width)
+  const screenWidth = 1920 * scale;
+  const totalDistance = textWidth || screenWidth; // fallback to screen width if not measured yet
+  const durationSeconds = totalDistance / (getSpeedPxPerSec() * scale);
 
   return (
     <div style={{
@@ -332,23 +349,28 @@ function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
       display: 'flex',
       alignItems: 'center',
     }}>
-      <div style={{
-        fontFamily: getFontFamily(crawl.fontFamily),
-        // crawl.fontSize is a multiplier on top of the broadcast base (1.65rem)
-        fontSize: `${crawl.fontSize * B.crawlFontSize * scale}rem`,
-        fontWeight: 700,
-        color: crawl.textColor,
-        whiteSpace: 'nowrap',
-        textTransform: 'uppercase',
-        animation: `scroll-chyron ${getAnimationDuration()} linear infinite`,
-        willChange: 'transform',
-        backfaceVisibility: 'hidden',
-        WebkitFontSmoothing: 'antialiased',
-        transform: 'translateZ(0)',
-        letterSpacing: '0.04em',
-        lineHeight: 1,
-        paddingLeft: `${16 * scale}px`,
-      }}>
+      <div 
+        ref={textRef}
+        style={{
+          display: 'inline-block',
+          fontFamily: getFontFamily(crawl.fontFamily),
+          // crawl.fontSize is a multiplier on top of the broadcast base (1.65rem)
+          fontSize: `${crawl.fontSize * B.crawlFontSize * scale}rem`,
+          fontWeight: 700,
+          color: crawl.textColor,
+          whiteSpace: 'nowrap',
+          textTransform: 'uppercase',
+          animation: textWidth > 0 ? `scroll-chyron ${durationSeconds}s linear infinite` : 'none',
+          willChange: 'transform',
+          backfaceVisibility: 'hidden',
+          WebkitFontSmoothing: 'antialiased',
+          transform: 'translateZ(0)',
+          letterSpacing: '0.04em',
+          lineHeight: 1,
+          paddingLeft: `${screenWidth}px`, // start offscreen
+          paddingRight: '10px',
+        }}
+      >
         {crawlText}
       </div>
     </div>
@@ -391,7 +413,7 @@ export default function ChyronPreview({ config, scale = 1 }: { config: ChyronCon
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@500;600;700;800&family=Outfit:wght@500;600;700&family=VT323&display=swap');
         @keyframes scroll-chyron {
-          from { transform: translate3d(100%, 0, 0); }
+          from { transform: translate3d(0, 0, 0); }
           to { transform: translate3d(-100%, 0, 0); }
         }
         @keyframes pulse-dot {
