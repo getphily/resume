@@ -444,99 +444,70 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Crawl Block Manager */}
-      <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCKS</h3>
-          <button
-            onClick={addBlock}
-            style={{
-              background: 'none', border: '1px solid var(--border-subtle)', color: 'var(--active-amber)',
-              padding: '6px 14px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700,
-              transition: 'all 0.2s ease',
-            }}
-            onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--active-amber)'; }}
-            onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; }}
-          >
-            + ADD BLOCK
-          </button>
-        </div>
+// ─── Properties: Crawl Block ───────────────────────────────────────
+function CrawlBlockProperties({ config, blockId, onChange, onDelete }: { config: ChyronConfig; blockId: string; onChange: (c: ChyronConfig) => void; onDelete: () => void }) {
+  const cr = config.crawl;
+  const blockIndex = cr.blocks.findIndex(b => b.id === blockId);
+  const block = cr.blocks[blockIndex];
 
-        {cr.blocks.map((block, i) => (
-          <div
-            key={block.id}
-            style={{
-              display: 'flex', flexDirection: 'column', gap: '10px',
-              padding: '16px', backgroundColor: block.enabled ? '#f8fafc' : '#f1f5f9',
-              borderRadius: '8px', border: '1px solid var(--border-subtle)',
-              opacity: block.enabled ? 1 : 0.6,
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {/* Block header row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* Reorder buttons */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flexShrink: 0 }}>
-                <button
-                  onClick={() => moveBlock(i, i - 1)}
-                  disabled={i === 0}
-                  style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '2px', color: i === 0 ? '#d1d5db' : 'var(--text-secondary)', fontSize: '10px', lineHeight: 1 }}
-                  aria-label="Move block up"
-                >▲</button>
-                <button
-                  onClick={() => moveBlock(i, i + 1)}
-                  disabled={i === cr.blocks.length - 1}
-                  style={{ background: 'none', border: 'none', cursor: i === cr.blocks.length - 1 ? 'default' : 'pointer', padding: '2px', color: i === cr.blocks.length - 1 ? '#d1d5db' : 'var(--text-secondary)', fontSize: '10px', lineHeight: 1 }}
-                  aria-label="Move block down"
-                >▼</button>
-              </div>
+  if (!block) return <div className="panel"><p>Block not found</p></div>;
 
-              {/* Toggle */}
-              <button
-                onClick={() => updateBlock(block.id, { enabled: !block.enabled })}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
-                aria-label={block.enabled ? 'Disable block' : 'Enable block'}
-              >
-                <EyeIcon visible={block.enabled} />
-              </button>
+  const updateBlock = (patch: Partial<CrawlBlock>) => {
+    const newBlocks = [...cr.blocks];
+    newBlocks[blockIndex] = { ...block, ...patch };
+    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
+  };
 
-              {/* Label */}
-              <input
-                type="text"
-                value={block.label}
-                onChange={e => updateBlock(block.id, { label: e.target.value })}
-                style={{
-                  flex: 1, background: 'transparent', border: 'none', fontWeight: 700,
-                  fontSize: '13px', color: 'var(--text-primary)', outline: 'none',
-                  padding: '4px 0',
-                }}
-                aria-label="Block label"
-              />
+  return (
+    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCK</h3>
+        <label className="form-checkbox-label" style={{ margin: 0, padding: 0 }}>
+          <input type="checkbox" checked={block.enabled} onChange={e => updateBlock({ enabled: e.target.checked })} />
+          ENABLE BLOCK
+        </label>
+      </div>
 
-              {/* Delete */}
-              <button
-                className="btn-delete"
-                onClick={() => deleteBlock(block.id)}
-                aria-label="Delete block"
-                title="Delete block"
-              >
-                <TrashIcon />
-              </button>
-            </div>
+      <div>
+        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LABEL</label>
+        <input
+          type="text"
+          className="form-input"
+          value={block.label}
+          onChange={e => updateBlock({ label: e.target.value })}
+        />
+      </div>
 
-            {/* Block text */}
-            <textarea
-              value={block.text}
-              onChange={e => updateBlock(block.id, { text: e.target.value })}
-              rows={2}
-              className="form-input"
-              style={{ resize: 'vertical', fontSize: '13px' }}
-              placeholder="Enter crawl text..."
-              aria-label="Block text content"
-            />
-          </div>
-        ))}
+      <div>
+        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CRAWL TEXT</label>
+        <textarea
+          value={block.text}
+          onChange={e => updateBlock({ text: e.target.value })}
+          rows={4}
+          className="form-input"
+          style={{ resize: 'vertical', fontSize: '14px' }}
+        />
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <button
+          onClick={() => {
+            if (cr.blocks.length <= 1) {
+              toast.error('You need at least one crawl block');
+              return;
+            }
+            onDelete();
+            const newBlocks = cr.blocks.filter(b => b.id !== blockId);
+            onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
+          }}
+          style={{ padding: '10px', background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, width: '100%' }}
+        >
+          DELETE BLOCK
+        </button>
       </div>
     </div>
   );
@@ -624,7 +595,7 @@ export default function ChyronBuilder() {
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
   const [config, setConfig] = useState<ChyronConfig>(DEFAULT_CHYRON_CONFIG);
   const [selectedLayer, setSelectedLayer] = useState<string | null>('title');
-  const [selectedPanel, setSelectedPanel] = useState<'layer' | 'layout' | 'export'>('layer');
+  const [selectedPanel, setSelectedPanel] = useState<'layer' | 'layout' | 'export' | 'crawlBlock'>('layer');
 
   const [saving, setSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -755,13 +726,21 @@ export default function ChyronBuilder() {
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    const items = Array.from(config.layerOrder);
-    ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
-      if (!items.includes(l as any)) items.push(l as any);
-    });
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    setConfig({ ...config, layerOrder: items as any });
+    
+    if (result.source.droppableId === 'layers-list') {
+      const items = Array.from(config.layerOrder);
+      ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
+        if (!items.includes(l as any)) items.push(l as any);
+      });
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      setConfig({ ...config, layerOrder: items as any });
+    } else if (result.source.droppableId === 'blocks-list') {
+      const newBlocks = Array.from(config.crawl.blocks);
+      const [reorderedItem] = newBlocks.splice(result.source.index, 1);
+      newBlocks.splice(result.destination.index, 0, reorderedItem);
+      setConfig({ ...config, crawl: { ...config.crawl, blocks: newBlocks } });
+    }
   };
 
   const toggleLayer = (layerId: string) => {
@@ -792,14 +771,14 @@ export default function ChyronBuilder() {
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
           {activeConfigId ? (
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* LAYERS header */}
-              <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
-                LAYERS
-              </div>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {/* LAYERS header */}
+                <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+                  LAYERS
+                </div>
 
-              {/* Layer rows */}
-              <DragDropContext onDragEnd={onDragEnd}>
+                {/* Layer rows */}
                 <Droppable droppableId="layers-list">
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef}>
@@ -874,44 +853,130 @@ export default function ChyronBuilder() {
                     </div>
                   )}
                 </Droppable>
-              </DragDropContext>
 
-              {/* Divider */}
-              <div style={{ borderTop: '1px solid var(--border-rigid)', margin: '8px 0' }} />
+                {/* Divider */}
+                <div style={{ borderTop: '1px solid var(--border-rigid)', margin: '8px 0' }} />
 
-              {/* Global panels */}
-              <div style={{ padding: '4px 0' }}>
-                <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
-                  GLOBAL
+                {/* Global panels */}
+                <div style={{ padding: '4px 0' }}>
+                  <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+                    GLOBAL
+                  </div>
+                  <button
+                    onClick={() => { setSelectedPanel('layout'); setSelectedLayer(null); }}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
+                      background: selectedPanel === 'layout' ? 'var(--module-grey)' : 'transparent',
+                      border: 'none', borderLeft: selectedPanel === 'layout' ? '3px solid var(--active-amber)' : '3px solid transparent',
+                      color: selectedPanel === 'layout' ? 'var(--active-amber)' : 'var(--text-secondary)',
+                      fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    Layout & Background
+                  </button>
+                  <button
+                    onClick={() => { setSelectedPanel('export'); setSelectedLayer(null); }}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
+                      background: selectedPanel === 'export' ? 'var(--module-grey)' : 'transparent',
+                      border: 'none', borderLeft: selectedPanel === 'export' ? '3px solid var(--active-amber)' : '3px solid transparent',
+                      color: selectedPanel === 'export' ? 'var(--active-amber)' : 'var(--text-secondary)',
+                      fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    Export & OBS
+                  </button>
                 </div>
-                <button
-                  onClick={() => { setSelectedPanel('layout'); setSelectedLayer(null); }}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
-                    background: selectedPanel === 'layout' ? 'var(--module-grey)' : 'transparent',
-                    border: 'none', borderLeft: selectedPanel === 'layout' ? '3px solid var(--active-amber)' : '3px solid transparent',
-                    color: selectedPanel === 'layout' ? 'var(--active-amber)' : 'var(--text-secondary)',
-                    fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  Layout & Background
-                </button>
-                <button
-                  onClick={() => { setSelectedPanel('export'); setSelectedLayer(null); }}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
-                    background: selectedPanel === 'export' ? 'var(--module-grey)' : 'transparent',
-                    border: 'none', borderLeft: selectedPanel === 'export' ? '3px solid var(--active-amber)' : '3px solid transparent',
-                    color: selectedPanel === 'export' ? 'var(--active-amber)' : 'var(--text-secondary)',
-                    fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                  }}
-                >
-                  Export & OBS
-                </button>
+
+                {/* Divider */}
+                <div style={{ borderTop: '1px solid var(--border-rigid)', margin: '8px 0' }} />
+
+                {/* Crawl Blocks */}
+                <div style={{ padding: '4px 0', paddingBottom: '20px' }}>
+                  <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+                    CRAWL BLOCKS
+                  </div>
+                  <Droppable droppableId="blocks-list">
+                    {(provided) => (
+                      <div {...provided.droppableProps} ref={provided.innerRef}>
+                        {config.crawl.blocks.map((block, i) => {
+                          const isEnabled = block.enabled;
+                          const isSelected = selectedPanel === 'crawlBlock' && selectedLayer === block.id;
+
+                          return (
+                            <Draggable key={block.id} draggableId={block.id} index={i}>
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  onClick={() => { setSelectedLayer(block.id); setSelectedPanel('crawlBlock'); }}
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '10px',
+                                    padding: '12px 16px',
+                                    backgroundColor: isSelected ? 'var(--module-grey)' : (snapshot.isDragging ? 'var(--module-grey)' : 'transparent'),
+                                    borderLeft: isSelected ? '3px solid var(--active-amber)' : '3px solid transparent',
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.15s ease',
+                                    opacity: isEnabled ? 1 : 0.4,
+                                    boxShadow: snapshot.isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : 'none',
+                                    ...provided.draggableProps.style,
+                                  }}
+                                >
+                                  {/* Drag Handle */}
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'grab' }}
+                                  >
+                                    <GripVertical size={16} />
+                                  </div>
+
+                                  {/* Visibility toggle */}
+                                  <button
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      const newBlocks = config.crawl.blocks.map(b => b.id === block.id ? { ...b, enabled: !b.enabled } : b);
+                                      setConfig({ ...config, crawl: { ...config.crawl, blocks: newBlocks } });
+                                    }}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
+                                    aria-label={isEnabled ? `Disable block` : `Enable block`}
+                                  >
+                                    <EyeIcon visible={isEnabled} />
+                                  </button>
+
+                                  {/* Label */}
+                                  <span style={{ flex: 1, fontSize: '13px', fontWeight: 600, color: isSelected ? 'var(--active-amber)' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {block.label}
+                                  </span>
+                                </div>
+                              )}
+                            </Draggable>
+                          );
+                        })}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                  
+                  <div style={{ padding: '8px 20px' }}>
+                    <button
+                      onClick={() => {
+                        const newBlock: CrawlBlock = { id: `block-${Date.now()}`, label: `Block ${config.crawl.blocks.length + 1}`, text: 'NEW CRAWL TEXT', enabled: true };
+                        setConfig({ ...config, crawl: { ...config.crawl, blocks: [...config.crawl.blocks, newBlock] } });
+                        setSelectedLayer(newBlock.id);
+                        setSelectedPanel('crawlBlock');
+                      }}
+                      style={{ background: 'none', border: '1px dashed var(--border-subtle)', color: 'var(--text-secondary)', padding: '8px', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, width: '100%', transition: 'all 0.2s ease' }}
+                      onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--active-amber)'; e.currentTarget.style.color = 'var(--active-amber)'; }}
+                      onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                    >
+                      + ADD CRAWL BLOCK
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            </DragDropContext>
           ) : (
             <div style={{ padding: '20px' }}>
               <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '15px' }}>
@@ -1020,6 +1085,17 @@ export default function ChyronBuilder() {
               )}
               {selectedPanel === 'layout' && (
                 <LayoutProperties config={config} onChange={setConfig} />
+              )}
+              {selectedPanel === 'crawlBlock' && selectedLayer && (
+                <CrawlBlockProperties
+                  config={config}
+                  blockId={selectedLayer}
+                  onChange={setConfig}
+                  onDelete={() => {
+                    setSelectedLayer(null);
+                    setSelectedPanel('layout');
+                  }}
+                />
               )}
               {selectedPanel === 'export' && activeConfigId && (
                 <ExportProperties config={config} activeConfigId={activeConfigId} copySuccess={copySuccess} onCopy={handleCopy} />
