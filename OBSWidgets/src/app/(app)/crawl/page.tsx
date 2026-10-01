@@ -762,7 +762,7 @@ export default function ChyronBuilder() {
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
   const [config, setConfig] = useState<ChyronConfig>(DEFAULT_CHYRON_CONFIG);
   const [selectedLayer, setSelectedLayer] = useState<string | null>('title');
-  const [selectedPanel, setSelectedPanel] = useState<'layer' | 'layout' | 'export' | 'crawlBlock'>('layer');
+  const [selectedPanel, setSelectedPanel] = useState<'layer' | 'layout' | 'export' | 'crawlBlocks'>('layer');
 
   const [saving, setSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
