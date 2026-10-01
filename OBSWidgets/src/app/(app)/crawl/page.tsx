@@ -106,10 +106,6 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
           <input type="checkbox" checked={t.bold} onChange={e => update({ bold: e.target.checked })} />
           BOLD
         </label>
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={t.showCursor || false} onChange={e => update({ showCursor: e.target.checked })} />
-          BLINKING CURSOR
-        </label>
       </div>
     </div>
   );
@@ -264,10 +260,6 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
           <input type="checkbox" checked={s.bold} onChange={e => update({ bold: e.target.checked })} />
           BOLD TEXT
         </label>
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={s.showCursor || false} onChange={e => update({ showCursor: e.target.checked })} />
-          BLINKING CURSOR
-        </label>
       </div>
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
@@ -334,7 +326,7 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
           </div>
         </div>
       </div>
-      <div className="form-checkbox-group">
+      <div className="form-checkbox-group" style={{ flexWrap: 'wrap' }}>
         <label className="form-checkbox-label">
           <input type="checkbox" checked={c.showSeconds} onChange={e => update({ showSeconds: e.target.checked })} />
           SHOW SECONDS
@@ -342,6 +334,10 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
         <label className="form-checkbox-label">
           <input type="checkbox" checked={c.showDate} onChange={e => update({ showDate: e.target.checked })} />
           SHOW DATE
+        </label>
+        <label className="form-checkbox-label">
+          <input type="checkbox" checked={c.blinkColon || false} onChange={e => update({ blinkColon: e.target.checked })} />
+          BLINK COLON
         </label>
       </div>
       <div style={{ display: 'flex', gap: '15px' }}>

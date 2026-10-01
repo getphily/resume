@@ -77,9 +77,6 @@ function TitleLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
           lineHeight: 1,
         }}>
           {title.text || 'HEADLINE TEXT'}
-          {title.showCursor && (
-            <span style={{ animation: 'chyron-blink 1s step-end infinite', marginLeft: '6px' }}>█</span>
-          )}
         </span>
       </div>
 
@@ -233,7 +230,14 @@ function ClockLayer({ config, scale, inline = false }: { config: ChyronConfig; s
         letterSpacing: '0.04em',
         lineHeight: 1,
       }}>
-        {getTimeStr()}
+        {getTimeStr().split(':').map((part, i, arr) => (
+          <span key={i}>
+            {part}
+            {i < arr.length - 1 && (
+              <span style={clock.blinkColon ? { animation: 'chyron-blink 1s step-end infinite' } : {}}>:</span>
+            )}
+          </span>
+        ))}
       </span>
       {clock.showDate && (
         <span style={{
@@ -291,9 +295,6 @@ function SubheaderLayer({ config, scale }: { config: ChyronConfig; scale: number
         letterSpacing: '0.04em',
       }}>
         {subheader.text || 'SUBTITLE TEXT'}
-        {subheader.showCursor && (
-          <span style={{ animation: 'chyron-blink 1s step-end infinite', marginLeft: '6px' }}>█</span>
-        )}
       </span>
     </div>
   );

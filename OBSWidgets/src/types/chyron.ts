@@ -29,7 +29,6 @@ export interface ChyronConfig {
     bgColor: string;
     textTransform: 'uppercase' | 'none';
     bold: boolean;
-    showCursor?: boolean;
   };
 
   // Logo bug
@@ -57,7 +56,6 @@ export interface ChyronConfig {
     bgColor: string;
     textTransform: 'uppercase' | 'none';
     bold: boolean;
-    showCursor?: boolean;
   };
 
   // Clock / date
@@ -71,6 +69,7 @@ export interface ChyronConfig {
     textColor: string;
     bgColor: string;
     position: 'LEFT' | 'RIGHT';
+    blinkColon?: boolean;
   };
 
   // Scrolling crawl
