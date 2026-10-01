@@ -46,6 +46,41 @@ const TrashIcon = () => (
 );
 
 // ─── Layer Names ───────────────────────────────────────────────────
+const PRESET_COLORS = [
+  '#ffffff', // White
+  '#f8fafc', // Slate 50
+  '#94a3b8', // Slate 400
+  '#0f172a', // Slate 900
+  '#000000', // Black
+  '#e63946', // Red
+  '#f59e0b', // Amber
+  '#10b981', // Emerald
+  '#3b82f6', // Blue
+  '#8b5cf6', // Violet
+];
+
+function ColorInputWithPalette({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <input type="color" value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        {PRESET_COLORS.map(c => (
+          <button
+            key={c}
+            onClick={() => onChange(c)}
+            style={{
+              width: '18px', height: '18px', borderRadius: '50%', backgroundColor: c,
+              border: value.toLowerCase() === c.toLowerCase() ? '2px solid var(--active-amber)' : '1px solid var(--border-subtle)',
+              cursor: 'pointer', padding: 0
+            }}
+            title={c}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const LAYER_LABELS: Record<string, string> = {
   title: 'Title Bar',
   logo: 'Logo Bug',
@@ -94,11 +129,11 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <input type="color" value={t.textColor} onChange={e => update({ textColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={t.textColor} onChange={val => update({ textColor: val })} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <input type="color" value={t.bgColor} onChange={e => update({ bgColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={t.bgColor} onChange={val => update({ bgColor: val })} />
         </div>
       </div>
       <div className="form-checkbox-group">
@@ -207,11 +242,11 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <input type="color" value={l.textColor} onChange={e => update({ textColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={l.textColor} onChange={val => update({ textColor: val })} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <input type="color" value={l.bgColor} onChange={e => update({ bgColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={l.bgColor} onChange={val => update({ bgColor: val })} />
         </div>
       </div>
     </div>
@@ -264,11 +299,11 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <input type="color" value={s.textColor} onChange={e => update({ textColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={s.textColor} onChange={val => update({ textColor: val })} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <input type="color" value={s.bgColor} onChange={e => update({ bgColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={s.bgColor} onChange={val => update({ bgColor: val })} />
         </div>
       </div>
     </div>
@@ -343,11 +378,11 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
       <div style={{ display: 'flex', gap: '15px' }}>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <input type="color" value={c.textColor} onChange={e => update({ textColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={c.textColor} onChange={val => update({ textColor: val })} />
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <input type="color" value={c.bgColor} onChange={e => update({ bgColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={c.bgColor} onChange={val => update({ bgColor: val })} />
         </div>
       </div>
     </div>
@@ -436,11 +471,11 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
         <div style={{ display: 'flex', gap: '15px' }}>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-            <input type="color" value={cr.textColor} onChange={e => updateCrawl({ textColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+            <ColorInputWithPalette value={cr.textColor} onChange={val => updateCrawl({ textColor: val })} />
           </div>
           <div style={{ flex: 1 }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-            <input type="color" value={cr.bgColor} onChange={e => updateCrawl({ bgColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+            <ColorInputWithPalette value={cr.bgColor} onChange={val => updateCrawl({ bgColor: val })} />
           </div>
         </div>
       </div>
@@ -702,12 +737,12 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
       {ly.bgMode === 'SOLID' && (
         <div>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND COLOR</label>
-          <input type="color" value={ly.bgColor} onChange={e => update({ bgColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+          <ColorInputWithPalette value={ly.bgColor} onChange={val => update({ bgColor: val })} />
         </div>
       )}
       <div>
         <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>ACCENT COLOR</label>
-        <input type="color" value={ly.accentColor} onChange={e => update({ accentColor: e.target.value })} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+        <ColorInputWithPalette value={ly.accentColor} onChange={val => update({ accentColor: val })} />
         <p style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Used for accent stripes and borders between layers</p>
       </div>
     </div>

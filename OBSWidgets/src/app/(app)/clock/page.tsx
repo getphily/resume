@@ -16,6 +16,34 @@ const getFontFamily = (font: string) => {
   }
 };
 
+// ─── Color Picker Component ─────────────────────────────────────────
+const PRESET_COLORS = [
+  '#ffffff', '#f8fafc', '#94a3b8', '#0f172a', '#000000', 
+  '#e63946', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'
+];
+
+function ColorInputWithPalette({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <input type="color" value={value} onChange={e => onChange(e.target.value)} style={{ width: '100%', height: '44px', padding: '2px', cursor: 'pointer', border: '1px solid var(--border-subtle)', borderRadius: '6px' }} />
+      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+        {PRESET_COLORS.map(c => (
+          <button
+            key={c}
+            onClick={() => onChange(c)}
+            style={{
+              width: '18px', height: '18px', borderRadius: '50%', backgroundColor: c,
+              border: value.toLowerCase() === c.toLowerCase() ? '2px solid var(--active-amber)' : '1px solid var(--border-subtle)',
+              cursor: 'pointer', padding: 0
+            }}
+            title={c}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function ClockPreview({ config, time, scale = 1 }: { config: any, time: Date | null, scale?: number }) {
   if (!time) return null;
   const getTzTime = (d: Date, tz: string) => {
@@ -355,7 +383,7 @@ export default function ClockCustomizer() {
                   <div style={{ display: 'flex', gap: '20px' }}>
                     <div style={{ flex: 1 }}>
                       <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-                      <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ width: '100%', height: '50px', padding: '0', cursor: 'pointer', border: '1px solid var(--border-rigid)' }} />
+                      <ColorInputWithPalette value={textColor} onChange={setTextColor} />
                     </div>
                     <div style={{ flex: 1 }}>
                       <label style={{ display: 'block', marginBottom: '15px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>OPACITY: {opacity}%</label>
@@ -397,7 +425,7 @@ export default function ClockCustomizer() {
                   {bgMode === 'SOLID' && (
                     <div style={{ marginTop: '15px' }}>
                       <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>BG COLOR</label>
-                      <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} style={{ width: '100%', height: '50px', padding: '0', cursor: 'pointer', border: '1px solid var(--border-rigid)' }} />
+                      <ColorInputWithPalette value={bgColor} onChange={setBgColor} />
                     </div>
                   )}
                 </div>
