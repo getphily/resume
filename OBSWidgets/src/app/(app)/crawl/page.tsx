@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { DragHandleDots2Icon, ClockIcon, CalendarIcon } from '@radix-ui/react-icons';
+import { DragHandleDots2Icon, ClockIcon, CalendarIcon, ArrowLeftIcon } from '@radix-ui/react-icons';
 import * as Popover from '@radix-ui/react-popover';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
@@ -928,7 +929,10 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
 // ═══════════════════════════════════════════════════════════════════
 //  MAIN PAGE COMPONENT
 // ═══════════════════════════════════════════════════════════════════
-export default function ChyronBuilder() {
+function ChyronBuilderContent() {
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get('id');
+
   const [session, setSession] = useState<any>(null);
   const [configsList, setConfigsList] = useState<any[]>([]);
   const [loadingList, setLoadingList] = useState(true);
@@ -946,20 +950,29 @@ export default function ChyronBuilder() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { setLoadingList(false); return; }
       setSession(session);
-      fetchConfigs(session.user.id);
+      fetchConfigs(session.user.id, queryId);
     });
-  }, []);
+  }, [queryId]);
 
-  const fetchConfigs = async (userId: string) => {
+  const fetchConfigs = async (userId: string, targetId?: string | null) => {
     setLoadingList(true);
     const { data } = await supabase
       .from('widget_configs')
-      .select('id, config')
+      .select('id, config, widget_type')
       .eq('user_id', userId)
-      .eq('widget_type', 'crawl')
+      .in('widget_type', ['crawl', 'chyron'])
       .order('created_at', { ascending: true });
-    setConfigsList(data || []);
+    const list = data || [];
+    setConfigsList(list);
     setLoadingList(false);
+
+    const toOpen = targetId || queryId;
+    if (toOpen && list.length > 0) {
+      const match = list.find(c => c.id === toOpen);
+      if (match) {
+        loadEditor(match.id, match.config);
+      }
+    }
   };
 
   // ── Autosave ───────────────────────────────────────────────────
@@ -985,8 +998,17 @@ export default function ChyronBuilder() {
       .select('id')
       .single();
     if (data) {
-      setConfigsList([...configsList, { id: data.id, config: newConfig }]);
+      setConfigsList([...configsList, { id: data.id, config: newConfig, widget_type: 'crawl' }]);
       loadEditor(data.id, newConfig);
+    }
+  };
+
+  const handleBackToList = () => {
+    setActiveConfigId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('id');
+      window.history.pushState({}, '', url.pathname);
     }
   };
 
@@ -994,7 +1016,7 @@ export default function ChyronBuilder() {
     setActiveConfigId(id);
     
     // Inject any missing layers into the loaded order
-    const loadedOrder = c.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder;
+    const loadedOrder = c?.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder;
     const finalOrder = [...loadedOrder];
     ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
       if (!finalOrder.includes(l as any)) finalOrder.push(l as any);
@@ -1003,13 +1025,19 @@ export default function ChyronBuilder() {
     // Merge with defaults to handle missing fields from older configs
     const mergedConfig: ChyronConfig = {
       ...DEFAULT_CHYRON_CONFIG,
-      ...c,
-      layout: { ...DEFAULT_CHYRON_CONFIG.layout, ...(c.layout || {}) },
-      title: { ...DEFAULT_CHYRON_CONFIG.title, ...(c.title || {}) },
-      subheader: { ...DEFAULT_CHYRON_CONFIG.subheader, ...(c.subheader || {}) },
-      logo: { ...DEFAULT_CHYRON_CONFIG.logo, ...(c.logo || {}) },
-      clock: { ...DEFAULT_CHYRON_CONFIG.clock, ...(c.clock || {}) },
-      crawl: { ...DEFAULT_CHYRON_CONFIG.crawl, ...(c.crawl || {}) },
+      ...(c || {}),
+      layout: { ...DEFAULT_CHYRON_CONFIG.layout, ...(c?.layout || {}) },
+      title: { ...DEFAULT_CHYRON_CONFIG.title, ...(c?.title || {}) },
+      subheader: { ...DEFAULT_CHYRON_CONFIG.subheader, ...(c?.subheader || {}) },
+      logo: { ...DEFAULT_CHYRON_CONFIG.logo, ...(c?.logo || {}) },
+      clock: { ...DEFAULT_CHYRON_CONFIG.clock, ...(c?.clock || {}) },
+      crawl: { 
+        ...DEFAULT_CHYRON_CONFIG.crawl, 
+        ...(c?.crawl || {}),
+        blocks: (Array.isArray(c?.crawl?.blocks) && c.crawl.blocks.length > 0)
+          ? c.crawl.blocks
+          : DEFAULT_CHYRON_CONFIG.crawl.blocks
+      },
       layerOrder: finalOrder,
     };
     setConfig(mergedConfig);
@@ -1104,7 +1132,14 @@ export default function ChyronBuilder() {
         display: 'flex', flexDirection: 'column', backgroundColor: 'var(--module-bg)',
         flexShrink: 0,
       }}>
-        {!activeConfigId && (
+        {activeConfigId ? (
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-rigid)' }}>
+            <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '8px', color: 'var(--text-secondary)' }}>
+              <ArrowLeftIcon /> Back to Chyrons
+            </Button>
+            <Heading size="3">{config.name || 'Chyron'}</Heading>
+          </div>
+        ) : (
           <div style={{ padding: '20px', borderBottom: '1px solid var(--border-rigid)' }}>
             <h2 style={{ margin: 0, fontSize: '1.1rem', textTransform: 'uppercase' }}>YOUR CHYRONS</h2>
           </div>
@@ -1247,8 +1282,8 @@ export default function ChyronBuilder() {
         
         {activeConfigId && (
           <div style={{ padding: '20px', borderTop: '1px solid var(--border-rigid)', marginTop: 'auto' }}>
-            <button onClick={() => setActiveConfigId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, width: '100%', padding: '10px', borderRadius: '6px' }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--module-grey)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-              &larr; BACK TO DASHBOARD
+            <button onClick={handleBackToList} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, width: '100%', padding: '10px', borderRadius: '6px' }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--module-grey)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+              &larr; BACK TO CHYRONS
             </button>
           </div>
         )}
@@ -1395,5 +1430,13 @@ export default function ChyronBuilder() {
 
       </main>
     </div>
+  );
+}
+
+export default function ChyronBuilder() {
+  return (
+    <Suspense fallback={<div style={{ padding: '40px', color: 'var(--text-secondary)' }}>Loading Chyron Studio...</div>}>
+      <ChyronBuilderContent />
+    </Suspense>
   );
 }

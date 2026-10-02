@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { ScreenPreview } from '@/components/ScreenPreview';
@@ -14,7 +15,10 @@ import { BROADCAST_PRESETS } from '@/lib/presets';
 import { Flex, Box, Card, SegmentedControl, Switch, Button, Heading, Text, Tabs, TextField, Slider, Tooltip, IconButton, Select, Badge, Grid } from '@radix-ui/themes';
 import { TrashIcon, ArrowLeftIcon, PlusIcon, DesktopIcon, PlayIcon, ResetIcon, MagicWandIcon } from '@radix-ui/react-icons';
 
-export default function ScreenCustomizer() {
+function ScreenCustomizerContent() {
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get('id');
+
   const [session, setSession] = useState<any>(null);
   const [configsList, setConfigsList] = useState<any[]>([]);
   const [loadingList, setLoadingList] = useState(true);
@@ -32,15 +36,33 @@ export default function ScreenCustomizer() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { setLoadingList(false); return; }
       setSession(session);
-      fetchConfigs(session.user.id);
+      fetchConfigs(session.user.id, queryId);
     });
-  }, []);
+  }, [queryId]);
 
-  const fetchConfigs = async (userId: string) => {
+  const fetchConfigs = async (userId: string, targetId?: string | null) => {
     setLoadingList(true);
     const { data } = await supabase.from('widget_configs').select('id, config').eq('user_id', userId).eq('widget_type', 'screen').order('created_at', { ascending: true });
-    setConfigsList(data || []);
+    const list = data || [];
+    setConfigsList(list);
     setLoadingList(false);
+
+    const toOpen = targetId || queryId;
+    if (toOpen && list.length > 0) {
+      const match = list.find((c: any) => c.id === toOpen);
+      if (match) {
+        loadEditor(match.id, match.config);
+      }
+    }
+  };
+
+  const handleBackToList = () => {
+    setActiveConfigId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('id');
+      window.history.pushState({}, '', url.pathname);
+    }
   };
 
   useEffect(() => {
@@ -229,7 +251,7 @@ export default function ScreenCustomizer() {
             overflowY: 'auto'
           }}>
             <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <Button variant="ghost" size="2" onClick={() => setActiveConfigId(null)} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+              <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
                 <ArrowLeftIcon /> Back to Screensets
               </Button>
               <TextField.Root 
@@ -671,5 +693,13 @@ export default function ScreenCustomizer() {
       )}
 
     </div>
+  );
+}
+
+export default function ScreenCustomizer() {
+  return (
+    <Suspense fallback={<Box p="6"><Text color="gray">Loading screenset editor...</Text></Box>}>
+      <ScreenCustomizerContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Button, IconButton, Flex, Box, Text, Tooltip, Switch, SegmentedControl, Popover, Slider, Card, TextField, Heading, Badge, Grid } from '@radix-ui/themes';
 import { TrashIcon, PlusIcon, ArrowLeftIcon, SpeakerLoudIcon, PlayIcon, PauseIcon, ResetIcon } from '@radix-ui/react-icons';
@@ -258,7 +259,10 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
 
 // ─── Main Page Component ────────────────────────────────────────────
 
-export default function TimerCustomizer() {
+function TimerCustomizerContent() {
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get('id');
+
   const [session, setSession] = useState<any>(null);
   const [configsList, setConfigsList] = useState<any[]>([]);
   const [loadingList, setLoadingList] = useState(true);
@@ -274,15 +278,33 @@ export default function TimerCustomizer() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { setLoadingList(false); return; }
       setSession(session);
-      fetchConfigs(session.user.id);
+      fetchConfigs(session.user.id, queryId);
     });
-  }, []);
+  }, [queryId]);
 
-  const fetchConfigs = async (userId: string) => {
+  const fetchConfigs = async (userId: string, targetId?: string | null) => {
     setLoadingList(true);
     const { data } = await supabase.from('widget_configs').select('id, config').eq('user_id', userId).eq('widget_type', 'timer').order('created_at', { ascending: true });
-    setConfigsList(data || []);
+    const list = data || [];
+    setConfigsList(list);
     setLoadingList(false);
+
+    const toOpen = targetId || queryId;
+    if (toOpen && list.length > 0) {
+      const match = list.find(c => c.id === toOpen);
+      if (match) {
+        loadEditor(match.id, match.config as TimerConfig);
+      }
+    }
+  };
+
+  const handleBackToList = () => {
+    setActiveConfigId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('id');
+      window.history.pushState({}, '', url.pathname);
+    }
   };
 
   useEffect(() => {
@@ -419,7 +441,7 @@ export default function TimerCustomizer() {
         overflowY: 'auto'
       }}>
         <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <Button variant="ghost" size="2" onClick={() => setActiveConfigId(null)} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+          <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
             <ArrowLeftIcon /> Back to Timers
           </Button>
           <TextField.Root 
@@ -516,5 +538,13 @@ export default function TimerCustomizer() {
 
       </div>
     </div>
+  );
+}
+
+export default function TimerCustomizer() {
+  return (
+    <Suspense fallback={<Box p="6"><Text color="gray">Loading timer editor...</Text></Box>}>
+      <TimerCustomizerContent />
+    </Suspense>
   );
 }

@@ -58,7 +58,7 @@ function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
           <TimerPreview config={item.config} scale={0.5} />
         </div>
       )}
-      {type === 'crawl' && (
+      {(type === 'crawl' || type === 'chyron') && (
         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
           <ChyronPreview config={item.config} scale={0.06} />
         </div>
@@ -89,7 +89,8 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
       const firstPageId = item.config.pages?.[0]?.id || 'starting-soon';
       return `${origin}/embed/screen?id=${item.id}&page=${firstPageId}`;
     }
-    return `${origin}/embed/${item.widget_type}?id=${item.id}`;
+    const embedType = (item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type;
+    return `${origin}/embed/${embedType}?id=${item.id}`;
   };
 
   const primaryUrl = getPrimaryEmbedUrl();
@@ -98,7 +99,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
   const badgeColor = 
     item.widget_type === 'screen' ? 'blue' : 
     item.widget_type === 'timer' ? 'orange' : 
-    item.widget_type === 'crawl' ? 'red' : 'indigo';
+    (item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'red' : 'indigo';
 
   return (
     <Card 
@@ -129,7 +130,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
           <Flex direction="column" gap="1" style={{ minWidth: 0, flex: 1 }}>
             <Flex align="center" gap="2">
               <Badge size="1" color={badgeColor} variant="surface">
-                {item.widget_type.toUpperCase()}
+                {(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()}
               </Badge>
               {item.widget_type === 'screen' && (
                 <Text size="1" color="gray">
@@ -159,7 +160,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
           </Tooltip>
 
           <Button asChild variant="soft" color="gray" size="2">
-            <Link href={`/${item.widget_type}?id=${item.id}`}>
+            <Link href={`/${(item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type}?id=${item.id}`}>
               <Pencil1Icon width={15} height={15} /> Edit
             </Link>
           </Button>
@@ -202,9 +203,9 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
             </Flex>
           ) : (
             <ObsExportCard
-              title={`${item.widget_type.toUpperCase()} EMBED URL`}
+              title={`${(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()} EMBED URL`}
               url={primaryUrl}
-              dimensions={item.widget_type === 'crawl' ? '1920 × 200' : '1920 × 1080'}
+              dimensions={(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? '1920 × 200' : '1920 × 1080'}
               allowTransparency={true}
             />
           )}
