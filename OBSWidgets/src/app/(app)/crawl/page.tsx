@@ -5,10 +5,14 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { DragHandleDots2Icon } from '@radix-ui/react-icons';
+import { DragHandleDots2Icon, ClockIcon, CalendarIcon } from '@radix-ui/react-icons';
+import * as Popover from '@radix-ui/react-popover';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 import { TextFormattingToolbar } from '@/components/TextFormattingToolbar';
+import { ObsExportCard } from '@/components/ObsExportCard';
+import { Card, TextField, SegmentedControl, Switch, Text, Heading, Button, IconButton, Flex, Box, Grid, Select, RadioCards, CheckboxCards, Slider, Tooltip, Badge } from '@radix-ui/themes';
+import { BROADCAST_PRESETS } from '@/lib/presets';
 import type { ChyronConfig, CrawlBlock } from '@/types/chyron';
 import { DEFAULT_CHYRON_CONFIG } from '@/types/chyron';
 
@@ -62,7 +66,7 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
   const update = (patch: Partial<typeof t>) => onChange({ ...config, title: { ...t, ...patch } });
 
   return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>TITLE BAR</h3>
       <TextFormattingToolbar
         text={t.text}
@@ -75,7 +79,7 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
         showBgColor={true}
         onChange={update}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -85,104 +89,176 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
   const update = (patch: Partial<typeof l>) => onChange({ ...config, logo: { ...l, ...patch } });
 
   return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>LOGO BUG</h3>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>MODE</label>
-        <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-          <button style={{ flex: 1 }} className={l.mode === 'TEXT' ? 'active' : ''} onClick={() => update({ mode: 'TEXT' })}>TEXT</button>
-          <button style={{ flex: 1 }} className={l.mode === 'IMAGE' ? 'active' : ''} onClick={() => update({ mode: 'IMAGE' })}>IMAGE</button>
+      
+      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: '200px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>MODE</label>
+          <SegmentedControl.Root size="1" value={l.mode} onValueChange={val => update({ mode: val as any })} style={{ width: '100%' }}>
+            <SegmentedControl.Item value="TEXT">TEXT</SegmentedControl.Item>
+            <SegmentedControl.Item value="IMAGE">IMAGE</SegmentedControl.Item>
+          </SegmentedControl.Root>
+        </div>
+        
+        <div style={{ flex: 2, minWidth: '300px' }}>
+          {l.mode === 'TEXT' ? (
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LOGO TEXT</label>
+              <TextField.Root size="2" value={l.text} onChange={e => update({ text: e.target.value })} placeholder="e.g. CNN, LIVE, C-SPAN" />
+            </div>
+          ) : (
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>IMAGE URL</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <TextField.Root size="2" value={l.imageUrl} onChange={e => update({ imageUrl: e.target.value })} placeholder="Paste image URL" style={{ flex: 1 }} />
+                <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 12px', backgroundColor: 'var(--module-grey)', border: '1px solid var(--border-subtle)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}>
+                  UPLOAD
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const toastId = toast.loading('Uploading image...');
+                    try {
+                      const fileExt = file.name.split('.').pop();
+                      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+                      const { data, error } = await supabase.storage.from('assets').upload(`chyron/${fileName}`, file, { upsert: true });
+                      if (error) {
+                        const { data: data2, error: error2 } = await supabase.storage.from('images').upload(`chyron/${fileName}`, file, { upsert: true });
+                        if (error2) throw error2;
+                        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(`chyron/${fileName}`);
+                        update({ imageUrl: publicUrl });
+                      } else {
+                        const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(`chyron/${fileName}`);
+                        update({ imageUrl: publicUrl });
+                      }
+                      toast.success('Image uploaded!', { id: toastId });
+                    } catch (err: any) {
+                      toast.error(`Upload failed: ${err.message}.`, { id: toastId, duration: 5000 });
+                    }
+                  }} />
+                </label>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-      {l.mode === 'TEXT' ? (
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LOGO TEXT</label>
-          <input type="text" className="form-input" value={l.text} onChange={e => update({ text: e.target.value })} placeholder="e.g. CNN, LIVE, C-SPAN" />
-        </div>
-      ) : (
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>IMAGE URL</label>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input type="text" className="form-input" value={l.imageUrl} onChange={e => update({ imageUrl: e.target.value })} placeholder="Paste image URL" style={{ flex: 1 }} />
-            <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 12px', backgroundColor: 'var(--module-grey)', border: '1px solid var(--border-subtle)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}>
-              UPLOAD
-              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                const toastId = toast.loading('Uploading image...');
-                try {
-                  const fileExt = file.name.split('.').pop();
-                  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-                  // Fallback bucket name is 'images', we assume user has it or we just try
-                  const { data, error } = await supabase.storage.from('assets').upload(`chyron/${fileName}`, file, { upsert: true });
-                  if (error) {
-                    // Try alternative bucket if assets doesn't exist
-                    const { data: data2, error: error2 } = await supabase.storage.from('images').upload(`chyron/${fileName}`, file, { upsert: true });
-                    if (error2) throw error2;
-                    const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(`chyron/${fileName}`);
-                    update({ imageUrl: publicUrl });
-                  } else {
-                    const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(`chyron/${fileName}`);
-                    update({ imageUrl: publicUrl });
-                  }
-                  toast.success('Image uploaded!', { id: toastId });
-                } catch (err: any) {
-                  toast.error(`Upload failed: ${err.message}. Ensure a public 'assets' or 'images' storage bucket exists.`, { id: toastId, duration: 5000 });
-                }
-              }} />
-            </label>
-          </div>
-        </div>
-      )}
-      <div className="form-checkbox-group">
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={l.spanRows || false} onChange={e => update({ spanRows: e.target.checked })} />
-          SPAN ALL ROWS (Makes logo fill height)
-        </label>
+
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        padding: '4px', 
+        width: '100%', 
+        borderRadius: '6px', 
+        backgroundColor: 'var(--bg-panel)',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+        flexWrap: 'wrap',
+        gap: '4px'
+      }}>
+        {/* Toggles */}
+        <Flex gap="1" align="center">
+          <Tooltip content="Span All Rows">
+            <IconButton 
+              variant={l.spanRows ? "soft" : "ghost"} 
+              color={l.spanRows ? "blue" : "gray"}
+              onClick={() => update({ spanRows: !l.spanRows })}
+            >
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 3C1.22386 3 1 3.22386 1 3.5C1 3.77614 1.22386 4 1.5 4H13.5C13.7761 4 14 3.77614 14 3.5C14 3.22386 13.7761 3 13.5 3H1.5ZM1 7.5C1 7.22386 1.22386 7 1.5 7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H1.5C1.22386 8 1 7.77614 1 7.5ZM1 11.5C1 11.2239 1.22386 11 1.5 11H13.5C13.7761 11 14 11.2239 14 11.5C14 11.7761 13.7761 12 13.5 12H1.5C1.22386 12 1 11.7761 1 11.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
+            </IconButton>
+          </Tooltip>
+          {l.mode === 'IMAGE' && (
+            <Tooltip content="Show LIVE Badge">
+              <IconButton 
+                variant={l.showLiveBadge !== false ? "soft" : "ghost"} 
+                color={l.showLiveBadge !== false ? "blue" : "gray"}
+                onClick={() => update({ showLiveBadge: l.showLiveBadge === false })}
+              >
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Flex>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Font & Position & Aspect Ratio */}
+        <Tooltip content="Font Family">
+          <Select.Root size="1" value={l.fontFamily} onValueChange={val => update({ fontFamily: val })}>
+            <Select.Trigger variant="ghost" color="gray" />
+            <Select.Content>
+              <Select.Item value="Inter">Inter</Select.Item>
+              <Select.Item value="Outfit">Outfit</Select.Item>
+              <Select.Item value="Bebas Neue">Bebas Neue</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Tooltip>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        <Tooltip content="Position">
+          <Select.Root size="1" value={l.position} onValueChange={val => update({ position: val as any })}>
+            <Select.Trigger variant="ghost" color="gray" />
+            <Select.Content>
+              <Select.Item value="LEFT">Left</Select.Item>
+              <Select.Item value="RIGHT">Right</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Tooltip>
+
         {l.mode === 'IMAGE' && (
-          <label className="form-checkbox-label" style={{ marginTop: '10px' }}>
-            <input type="checkbox" checked={l.showLiveBadge !== false} onChange={e => update({ showLiveBadge: e.target.checked })} />
-            SHOW "LIVE" BADGE OVERLAY
-          </label>
+          <>
+            <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+            <Tooltip content="Aspect Ratio">
+              <Select.Root size="1" value={l.aspectRatio || '1:1'} onValueChange={val => update({ aspectRatio: val as any })}>
+                <Select.Trigger variant="ghost" color="gray" />
+                <Select.Content>
+                  <Select.Item value="1:1">1:1 Square</Select.Item>
+                  <Select.Item value="16:9">16:9 Wide</Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </Tooltip>
+          </>
         )}
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Colors */}
+        <Popover.Root>
+          <Tooltip content="Text Color">
+            <Popover.Trigger asChild>
+              <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600 }}>T</span>
+                <div style={{ width: '14px', height: '14px', backgroundColor: l.textColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
+              </IconButton>
+            </Popover.Trigger>
+          </Tooltip>
+          <Popover.Portal>
+            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
+              <ColorInputWithPalette value={l.textColor} onChange={val => update({ textColor: val })} />
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+
+        <Popover.Root>
+          <Tooltip content="Background Color">
+            <Popover.Trigger asChild>
+              <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600 }}>BG</span>
+                <div style={{ width: '14px', height: '14px', backgroundColor: l.bgColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
+              </IconButton>
+            </Popover.Trigger>
+          </Tooltip>
+          <Popover.Portal>
+            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND</label>
+              <ColorInputWithPalette value={l.bgColor} onChange={val => update({ bgColor: val })} />
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+
       </div>
-      {l.mode === 'IMAGE' && (
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>ASPECT RATIO</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={l.aspectRatio !== '16:9' ? 'active' : ''} onClick={() => update({ aspectRatio: '1:1' })}>1:1 (SQUARE)</button>
-            <button style={{ flex: 1 }} className={l.aspectRatio === '16:9' ? 'active' : ''} onClick={() => update({ aspectRatio: '16:9' })}>16:9 (WIDE)</button>
-          </div>
-        </div>
-      )}
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>POSITION</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={l.position === 'LEFT' ? 'active' : ''} onClick={() => update({ position: 'LEFT' })}>LEFT</button>
-            <button style={{ flex: 1 }} className={l.position === 'RIGHT' ? 'active' : ''} onClick={() => update({ position: 'RIGHT' })}>RIGHT</button>
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-          <select className="form-select" value={l.fontFamily} onChange={e => update({ fontFamily: e.target.value })}>
-            <option value="Inter">Inter</option>
-            <option value="Outfit">Outfit</option>
-            <option value="Bebas Neue">Bebas Neue</option>
-          </select>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <ColorInputWithPalette value={l.textColor} onChange={val => update({ textColor: val })} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <ColorInputWithPalette value={l.bgColor} onChange={val => update({ bgColor: val })} />
-        </div>
-      </div>
-    </div>
+    </Card>
   );
 }
 
@@ -192,7 +268,7 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
   const update = (patch: Partial<typeof s>) => onChange({ ...config, subheader: { ...s, ...patch } });
 
   return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>SUBHEADER</h3>
       <TextFormattingToolbar
         text={s.text}
@@ -205,7 +281,7 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
         showBgColor={true}
         onChange={update}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -215,76 +291,154 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
   const update = (patch: Partial<typeof c>) => onChange({ ...config, clock: { ...c, ...patch } });
 
   return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CLOCK / DATE</h3>
-        <label className="form-checkbox-label" style={{ margin: 0, padding: 0 }}>
-          <input type="checkbox" checked={c.enabled !== false} onChange={e => update({ enabled: e.target.checked })} />
-          ENABLE CLOCK
-        </label>
+        <Flex align="center" gap="2">
+          <Switch size="1" checked={c.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
+          <Text size="2" weight="bold" color="gray">ENABLE CLOCK</Text>
+        </Flex>
       </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FORMAT</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={c.format === '12HR' ? 'active' : ''} onClick={() => update({ format: '12HR' })}>12 HR</button>
-            <button style={{ flex: 1 }} className={c.format === '24HR' ? 'active' : ''} onClick={() => update({ format: '24HR' })}>24 HR</button>
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TIMEZONE</label>
-          <select className="form-select" value={c.timezone} onChange={e => update({ timezone: e.target.value })}>
-            <option value="LOCAL">Local Time</option>
-            <option value="UTC">UTC</option>
-            <option value="America/New_York">EST (New York)</option>
-            <option value="America/Los_Angeles">PST (Los Angeles)</option>
-            <option value="Europe/London">GMT (London)</option>
-            <option value="Asia/Tokyo">JST (Tokyo)</option>
-          </select>
-        </div>
+
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'center',
+        padding: '4px', 
+        width: '100%', 
+        borderRadius: '6px', 
+        backgroundColor: 'var(--bg-panel)',
+        border: '1px solid var(--border-subtle)',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+        flexWrap: 'wrap',
+        gap: '4px'
+      }}>
+        {/* Format */}
+        <Tooltip content="Time Format">
+          <Select.Root size="1" value={c.format} onValueChange={val => update({ format: val as any })}>
+            <Select.Trigger variant="ghost" color="gray" />
+            <Select.Content>
+              <Select.Item value="12HR">12 HR</Select.Item>
+              <Select.Item value="24HR">24 HR</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Tooltip>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Timezone */}
+        <Tooltip content="Timezone">
+          <Select.Root size="1" value={c.timezone} onValueChange={val => update({ timezone: val })}>
+            <Select.Trigger variant="ghost" color="gray" />
+            <Select.Content>
+              <Select.Item value="LOCAL">Local Time</Select.Item>
+              <Select.Item value="UTC">UTC</Select.Item>
+              <Select.Item value="America/New_York">EST</Select.Item>
+              <Select.Item value="America/Los_Angeles">PST</Select.Item>
+              <Select.Item value="Europe/London">GMT</Select.Item>
+              <Select.Item value="Asia/Tokyo">JST</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Tooltip>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Position */}
+        <Tooltip content="Position">
+          <Select.Root size="1" value={c.position} onValueChange={val => update({ position: val as any })}>
+            <Select.Trigger variant="ghost" color="gray" />
+            <Select.Content>
+              <Select.Item value="LEFT">Left Align</Select.Item>
+              <Select.Item value="RIGHT">Right Align</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Tooltip>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Size */}
+        <Tooltip content="Font Size">
+          <Select.Root size="1" value={c.fontSize === 0.82 ? '0.82' : c.fontSize === 1.2 ? '1.2' : '1.0'} onValueChange={val => update({ fontSize: parseFloat(val) })}>
+            <Select.Trigger variant="ghost" color="gray" />
+            <Select.Content>
+              <Select.Item value="0.82">Small</Select.Item>
+              <Select.Item value="1.0">Medium</Select.Item>
+              <Select.Item value="1.2">Large</Select.Item>
+            </Select.Content>
+          </Select.Root>
+        </Tooltip>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Toggles */}
+        <Flex gap="1" align="center">
+          <Tooltip content="Show Seconds">
+            <IconButton 
+              variant={c.showSeconds ? "soft" : "ghost"} 
+              color={c.showSeconds ? "blue" : "gray"}
+              onClick={() => update({ showSeconds: !c.showSeconds })}
+            >
+              <ClockIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Show Date">
+            <IconButton 
+              variant={c.showDate ? "soft" : "ghost"} 
+              color={c.showDate ? "blue" : "gray"}
+              onClick={() => update({ showDate: !c.showDate })}
+            >
+              <CalendarIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Blink Colon">
+            <IconButton 
+              variant={c.blinkColon ? "soft" : "ghost"} 
+              color={c.blinkColon ? "blue" : "gray"}
+              onClick={() => update({ blinkColon: !c.blinkColon })}
+            >
+              <span style={{ fontWeight: 'bold' }}>:</span>
+            </IconButton>
+          </Tooltip>
+        </Flex>
+
+        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+        {/* Colors */}
+        <Popover.Root>
+          <Tooltip content="Text Color">
+            <Popover.Trigger asChild>
+              <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600 }}>T</span>
+                <div style={{ width: '14px', height: '14px', backgroundColor: c.textColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
+              </IconButton>
+            </Popover.Trigger>
+          </Tooltip>
+          <Popover.Portal>
+            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
+              <ColorInputWithPalette value={c.textColor} onChange={val => update({ textColor: val })} />
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+
+        <Popover.Root>
+          <Tooltip content="Background Color">
+            <Popover.Trigger asChild>
+              <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600 }}>BG</span>
+                <div style={{ width: '14px', height: '14px', backgroundColor: c.bgColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
+              </IconButton>
+            </Popover.Trigger>
+          </Tooltip>
+          <Popover.Portal>
+            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND</label>
+              <ColorInputWithPalette value={c.bgColor} onChange={val => update({ bgColor: val })} />
+            </Popover.Content>
+          </Popover.Portal>
+        </Popover.Root>
+
       </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>POSITION</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={c.position === 'LEFT' ? 'active' : ''} onClick={() => update({ position: 'LEFT' })}>LEFT</button>
-            <button style={{ flex: 1 }} className={c.position === 'RIGHT' ? 'active' : ''} onClick={() => update({ position: 'RIGHT' })}>RIGHT</button>
-          </div>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SIZE</label>
-          <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-            <button style={{ flex: 1 }} className={c.fontSize === 0.82 ? 'active' : ''} onClick={() => update({ fontSize: 0.82 })}>SMALL</button>
-            <button style={{ flex: 1 }} className={(c.fontSize === undefined || c.fontSize === 1.0) ? 'active' : ''} onClick={() => update({ fontSize: 1.0 })}>MED</button>
-            <button style={{ flex: 1 }} className={c.fontSize === 1.2 ? 'active' : ''} onClick={() => update({ fontSize: 1.2 })}>LARGE</button>
-          </div>
-        </div>
-      </div>
-      <div className="form-checkbox-group" style={{ flexWrap: 'wrap' }}>
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={c.showSeconds} onChange={e => update({ showSeconds: e.target.checked })} />
-          SHOW SECONDS
-        </label>
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={c.showDate} onChange={e => update({ showDate: e.target.checked })} />
-          SHOW DATE
-        </label>
-        <label className="form-checkbox-label">
-          <input type="checkbox" checked={c.blinkColon || false} onChange={e => update({ blinkColon: e.target.checked })} />
-          BLINK COLON
-        </label>
-      </div>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-          <ColorInputWithPalette value={c.textColor} onChange={val => update({ textColor: val })} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-          <ColorInputWithPalette value={c.bgColor} onChange={val => update({ bgColor: val })} />
-        </div>
-      </div>
-    </div>
+    </Card>
   );
 }
 
@@ -326,58 +480,114 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Crawl Settings */}
-      <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL SETTINGS</h3>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SPEED</label>
-            <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-              <button style={{ flex: 1 }} className={cr.speed === 'SLOW' ? 'active' : ''} onClick={() => updateCrawl({ speed: 'SLOW' })}>SLOW</button>
-              <button style={{ flex: 1 }} className={cr.speed === 'NORMAL' ? 'active' : ''} onClick={() => updateCrawl({ speed: 'NORMAL' })}>NORMAL</button>
-              <button style={{ flex: 1 }} className={cr.speed === 'FAST' ? 'active' : ''} onClick={() => updateCrawl({ speed: 'FAST' })}>FAST</button>
-            </div>
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SEPARATOR</label>
-            <select className="form-select" value={cr.separator} onChange={e => updateCrawl({ separator: e.target.value })}>
-              <option value=" ★ ">★ Star</option>
-              <option value=" | ">| Pipe</option>
-              <option value=" /// ">/// Slashes</option>
-              <option value=" ••• ">••• Dots</option>
-              <option value="   ">   (Space)</option>
-            </select>
-          </div>
+        
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          padding: '4px', 
+          width: '100%', 
+          borderRadius: '6px', 
+          backgroundColor: 'var(--bg-panel)',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+          flexWrap: 'wrap',
+          gap: '4px'
+        }}>
+          {/* Speed */}
+          <Tooltip content="Scroll Speed">
+            <Select.Root size="1" value={cr.speed} onValueChange={val => updateCrawl({ speed: val as any })}>
+              <Select.Trigger variant="ghost" color="gray" />
+              <Select.Content>
+                <Select.Item value="SLOW">Slow</Select.Item>
+                <Select.Item value="NORMAL">Normal</Select.Item>
+                <Select.Item value="FAST">Fast</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Tooltip>
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+          {/* Separator */}
+          <Tooltip content="Item Separator">
+            <Select.Root size="1" value={cr.separator} onValueChange={val => updateCrawl({ separator: val })}>
+              <Select.Trigger variant="ghost" color="gray" />
+              <Select.Content>
+                <Select.Item value=" ★ ">★ Star</Select.Item>
+                <Select.Item value=" | ">| Pipe</Select.Item>
+                <Select.Item value=" /// ">/// Slashes</Select.Item>
+                <Select.Item value=" ••• ">••• Dots</Select.Item>
+                <Select.Item value="   "> (Space)</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Tooltip>
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+          {/* Font & Size */}
+          <Tooltip content="Font Family">
+            <Select.Root size="1" value={cr.fontFamily} onValueChange={val => updateCrawl({ fontFamily: val })}>
+              <Select.Trigger variant="ghost" color="gray" />
+              <Select.Content>
+                <Select.Item value="Inter">Inter</Select.Item>
+                <Select.Item value="Outfit">Outfit</Select.Item>
+                <Select.Item value="Roboto Mono">Roboto Mono</Select.Item>
+                <Select.Item value="Bebas Neue">Bebas Neue</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Tooltip>
+
+          <Tooltip content="Font Size">
+            <Select.Root size="1" value={cr.fontSize === 0.82 ? '0.82' : cr.fontSize === 1.2 ? '1.2' : '1.0'} onValueChange={val => updateCrawl({ fontSize: parseFloat(val) })}>
+              <Select.Trigger variant="ghost" color="gray" />
+              <Select.Content>
+                <Select.Item value="0.82">Small</Select.Item>
+                <Select.Item value="1.0">Medium</Select.Item>
+                <Select.Item value="1.2">Large</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Tooltip>
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+
+          {/* Colors */}
+          <Popover.Root>
+            <Tooltip content="Text Color">
+              <Popover.Trigger asChild>
+                <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600 }}>T</span>
+                  <div style={{ width: '14px', height: '14px', backgroundColor: cr.textColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
+                </IconButton>
+              </Popover.Trigger>
+            </Tooltip>
+            <Popover.Portal>
+              <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
+                <ColorInputWithPalette value={cr.textColor} onChange={val => updateCrawl({ textColor: val })} />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+
+          <Popover.Root>
+            <Tooltip content="Background Color">
+              <Popover.Trigger asChild>
+                <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600 }}>BG</span>
+                  <div style={{ width: '14px', height: '14px', backgroundColor: cr.bgColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
+                </IconButton>
+              </Popover.Trigger>
+            </Tooltip>
+            <Popover.Portal>
+              <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND</label>
+                <ColorInputWithPalette value={cr.bgColor} onChange={val => updateCrawl({ bgColor: val })} />
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
+
         </div>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT</label>
-            <select className="form-select" value={cr.fontFamily} onChange={e => updateCrawl({ fontFamily: e.target.value })}>
-              <option value="Inter">Inter</option>
-              <option value="Outfit">Outfit</option>
-              <option value="Roboto Mono">Roboto Mono</option>
-              <option value="Bebas Neue">Bebas Neue</option>
-            </select>
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>FONT SIZE</label>
-            <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-              <button style={{ flex: 1 }} className={cr.fontSize === 0.82 ? 'active' : ''} onClick={() => updateCrawl({ fontSize: 0.82 })}>SMALL</button>
-              <button style={{ flex: 1 }} className={cr.fontSize === 1.0 ? 'active' : ''} onClick={() => updateCrawl({ fontSize: 1.0 })}>MEDIUM</button>
-              <button style={{ flex: 1 }} className={cr.fontSize === 1.2 ? 'active' : ''} onClick={() => updateCrawl({ fontSize: 1.2 })}>LARGE</button>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '15px' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>TEXT COLOR</label>
-            <ColorInputWithPalette value={cr.textColor} onChange={val => updateCrawl({ textColor: val })} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND</label>
-            <ColorInputWithPalette value={cr.bgColor} onChange={val => updateCrawl({ bgColor: val })} />
-          </div>
-        </div>
-      </div>
+      </Card>
     </div>
   );
 }
@@ -448,18 +658,12 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
   };
 
   return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCKS</h3>
-        <button
-          onClick={() => addBlockAt(0)}
-          style={{
-            background: 'var(--active-amber)', color: '#fff', border: 'none', borderRadius: '4px',
-            padding: '6px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer'
-          }}
-        >
+        <Button onClick={() => addBlockAt(0)} size="1" color="amber" variant="solid" style={{ fontWeight: 700 }}>
           + ADD BLOCK
-        </button>
+        </Button>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
@@ -529,9 +733,8 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
                           <div style={{ padding: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                             <div>
                               <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LABEL</label>
-                              <input
-                                type="text"
-                                className="form-input"
+                              <TextField.Root
+                                size="2"
                                 value={block.label}
                                 onChange={e => updateBlock(block.id, { label: e.target.value })}
                               />
@@ -544,16 +747,19 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
                                 onChange={e => updateBlock(block.id, { text: e.target.value })}
                                 rows={3}
                                 className="form-input"
-                                style={{ resize: 'vertical', fontSize: '14px' }}
+                                style={{ resize: 'vertical', fontSize: '14px', width: '100%' }}
                               />
                             </div>
 
-                            <button
+                            <Button
                               onClick={() => deleteBlock(block.id)}
-                              style={{ padding: '8px', background: '#fee2e2', color: '#ef4444', border: '1px solid #fecaca', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, width: '100%', marginTop: '5px' }}
+                              size="1"
+                              color="red"
+                              variant="soft"
+                              style={{ width: '100%', marginTop: '5px' }}
                             >
                               DELETE BLOCK
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -570,38 +776,41 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
       <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-rigid)' }}>
         {selectedBlockIds.size > 0 && (
           !showBulkDeleteConfirm ? (
-            <button
+            <Button
               onClick={() => setShowBulkDeleteConfirm(true)}
-              style={{
-                padding: '10px', background: 'transparent', color: '#ef4444', border: '1px solid #fecaca',
-                borderRadius: '6px', cursor: 'pointer', fontSize: '12px', fontWeight: 700, width: '100%',
-                transition: 'background 0.15s ease'
-              }}
-              onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
-              onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+              size="2"
+              color="red"
+              variant="outline"
+              style={{ width: '100%' }}
             >
               DELETE SELECTED ({selectedBlockIds.size})
-            </button>
+            </Button>
           ) : (
-            <div style={{ padding: '16px', background: '#fee2e2', borderRadius: '8px', border: '1px solid #fecaca' }}>
-              <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#b91c1c', fontWeight: 600 }}>
+            <Box p="3" style={{ backgroundColor: 'var(--red-3)', borderRadius: '8px', border: '1px solid var(--red-6)' }}>
+              <Text size="2" weight="bold" color="red" mb="2" as="p">
                 Are you sure you want to delete {selectedBlockIds.size} block{selectedBlockIds.size !== 1 ? 's' : ''}? This action cannot be undone.
-              </p>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
+              </Text>
+              <Flex gap="2">
+                <Button
                   onClick={bulkDeleteBlocks}
-                  style={{ flex: 1, padding: '8px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+                  size="2"
+                  color="red"
+                  variant="solid"
+                  style={{ flex: 1, cursor: 'pointer' }}
                 >
                   YES, DELETE
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setShowBulkDeleteConfirm(false)}
-                  style={{ flex: 1, padding: '8px', background: 'transparent', color: '#ef4444', border: '1px solid #ef4444', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 700 }}
+                  size="2"
+                  color="red"
+                  variant="soft"
+                  style={{ flex: 1, cursor: 'pointer' }}
                 >
                   CANCEL
-                </button>
-              </div>
-            </div>
+                </Button>
+              </Flex>
+            </Box>
           )
         )}
         {selectedBlockIds.size === 0 && (
@@ -610,7 +819,7 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
           </p>
         )}
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -620,69 +829,100 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
   const update = (patch: Partial<typeof ly>) => onChange({ ...config, layout: { ...ly, ...patch } });
 
   return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>LAYOUT & BACKGROUND</h3>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CHYRON NAME</label>
-        <input type="text" className="form-input" value={config.name} onChange={e => onChange({ ...config, name: e.target.value })} />
-      </div>
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND MODE</label>
-        <div className="segmented-control" style={{ display: 'flex', width: '100%' }}>
-          <button style={{ flex: 1 }} className={ly.bgMode === 'TRANSPARENT' ? 'active' : ''} onClick={() => update({ bgMode: 'TRANSPARENT' })}>TRANSPARENT</button>
-          <button style={{ flex: 1 }} className={ly.bgMode === 'SOLID' ? 'active' : ''} onClick={() => update({ bgMode: 'SOLID' })}>SOLID</button>
-        </div>
-      </div>
-      {ly.bgMode === 'SOLID' && (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Curated Broadcast Themes */}
+      <Card size="2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <Flex justify="between" align="center">
+          <Heading size="3" style={{ color: 'var(--text-secondary)' }}>CURATED BROADCAST THEMES</Heading>
+          <Badge color="indigo" size="1" variant="surface">1-Click Apply</Badge>
+        </Flex>
+        <Text size="2" color="gray">
+          Apply harmonious broadcast palettes designed for professional stream aesthetics:
+        </Text>
+        <Grid columns="2" gap="2">
+          {BROADCAST_PRESETS.map(preset => (
+            <Button
+              key={preset.name}
+              variant="surface"
+              size="2"
+              onClick={() => {
+                onChange({
+                  ...config,
+                  layout: {
+                    ...config.layout,
+                    bgColor: preset.bgColor,
+                    accentColor: preset.accentColor,
+                  },
+                  title: {
+                    ...config.title,
+                    bgColor: preset.bgColor,
+                    textColor: preset.textColor,
+                  },
+                  subheader: {
+                    ...config.subheader,
+                    bgColor: preset.bgColor,
+                    textColor: '#94a3b8',
+                  },
+                  logo: {
+                    ...config.logo,
+                    bgColor: preset.accentColor,
+                    textColor: '#ffffff',
+                  },
+                  clock: {
+                    ...config.clock,
+                    bgColor: preset.bgColor === '#111111' ? '#1f2937' : '#0f172a',
+                    textColor: preset.textColor,
+                  },
+                  crawl: {
+                    ...config.crawl,
+                    bgColor: preset.bgColor === '#111111' ? '#18181b' : '#0f172a',
+                    textColor: preset.textColor,
+                  }
+                });
+                toast.success(`Applied ${preset.name} palette!`);
+              }}
+              style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer', height: 'auto', padding: '8px 10px' }}
+            >
+              <Flex gap="1" align="center">
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.accentColor }} />
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.bgColor, border: '1px solid var(--border-subtle)' }} />
+              </Flex>
+              <Text size="2" weight="medium">{preset.name}</Text>
+            </Button>
+          ))}
+        </Grid>
+      </Card>
+
+      <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>LAYOUT & BACKGROUND</h3>
         <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND COLOR</label>
-          <ColorInputWithPalette value={ly.bgColor} onChange={val => update({ bgColor: val })} />
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CHYRON NAME</label>
+          <TextField.Root size="2" value={config.name} onChange={e => onChange({ ...config, name: e.target.value })} />
         </div>
-      )}
-      <div>
-        <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>ACCENT COLOR</label>
-        <ColorInputWithPalette value={ly.accentColor} onChange={val => update({ accentColor: val })} />
-        <p style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Used for accent stripes and borders between layers</p>
-      </div>
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND MODE</label>
+          <SegmentedControl.Root size="1" value={ly.bgMode} onValueChange={val => update({ bgMode: val as any })} style={{ width: '100%' }}>
+            <SegmentedControl.Item value="TRANSPARENT">TRANSPARENT</SegmentedControl.Item>
+            <SegmentedControl.Item value="SOLID">SOLID</SegmentedControl.Item>
+          </SegmentedControl.Root>
+        </div>
+        {ly.bgMode === 'SOLID' && (
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND COLOR</label>
+            <ColorInputWithPalette value={ly.bgColor} onChange={val => update({ bgColor: val })} />
+          </div>
+        )}
+        <div>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>ACCENT COLOR</label>
+          <ColorInputWithPalette value={ly.accentColor} onChange={val => update({ accentColor: val })} />
+          <p style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Used for accent stripes and borders between layers</p>
+        </div>
+      </Card>
     </div>
   );
 }
 
-// ─── Properties: Export ────────────────────────────────────────────
-function ExportProperties({ config, activeConfigId, copySuccess, onCopy }: { config: ChyronConfig; activeConfigId: string; copySuccess: boolean; onCopy: () => void }) {
-  return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>EXPORT TO OBS</h3>
-      <p style={{ fontSize: '14px', color: 'var(--text-primary)', lineHeight: 1.6 }}>
-        Copy this URL and paste it into a new <strong>Browser Source</strong> in OBS Studio.
-      </p>
-      <ul style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.8, paddingLeft: '20px' }}>
-        <li>Set Dimensions to <strong>1920×200</strong> (or adjust to fit your layout)</li>
-        <li>Ensure <strong>&quot;Allow transparency&quot;</strong> is checked</li>
-        <li>Changes sync to OBS in real-time!</li>
-      </ul>
-      <div style={{ backgroundColor: '#f8fafc', padding: '20px', border: '1px solid var(--border-subtle)', borderRadius: '8px', marginTop: '5px' }}>
-        <p style={{ color: 'var(--text-primary)', fontSize: '12px', marginBottom: '12px', fontWeight: 600 }}>YOUR UNIQUE WIDGET URL:</p>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <input
-            type="text" readOnly
-            value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
-            onClick={e => (e.target as HTMLInputElement).select()}
-            className="form-input"
-            style={{ flex: 1, fontSize: '13px', cursor: 'text' }}
-          />
-          <button
-            className="btn-primary"
-            onClick={onCopy}
-            style={{ margin: 0, padding: '0 20px', backgroundColor: copySuccess ? '#22c55e' : 'var(--accent-primary)', color: '#fff', border: 'none', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '13px' }}
-          >
-            {copySuccess ? '✓ COPIED' : 'COPY'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -716,7 +956,7 @@ export default function ChyronBuilder() {
       .from('widget_configs')
       .select('id, config')
       .eq('user_id', userId)
-      .eq('widget_type', 'chyron')
+      .eq('widget_type', 'crawl')
       .order('created_at', { ascending: true });
     setConfigsList(data || []);
     setLoadingList(false);
@@ -741,7 +981,7 @@ export default function ChyronBuilder() {
     const newConfig = { ...DEFAULT_CHYRON_CONFIG, name: `Chyron ${configsList.length + 1}` };
     const { data } = await supabase
       .from('widget_configs')
-      .insert({ user_id: session.user.id, widget_type: 'chyron', config: newConfig })
+      .insert({ user_id: session.user.id, widget_type: 'crawl', config: newConfig })
       .select('id')
       .single();
     if (data) {
@@ -806,7 +1046,7 @@ export default function ChyronBuilder() {
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}`);
+    await navigator.clipboard.writeText(`${window.location.origin}/embed/crawl?id=${activeConfigId}`);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -958,50 +1198,37 @@ export default function ChyronBuilder() {
                 {/* Divider */}
                 <div style={{ borderTop: '1px solid var(--border-rigid)', margin: '8px 0' }} />
 
-                {/* Global panels */}
-                <div style={{ padding: '4px 0' }}>
-                  <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+                <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ padding: '8px 12px 4px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
                     GLOBAL
                   </div>
-                  <button
+                  <Button
+                    size="3"
+                    variant={selectedPanel === 'crawlBlocks' ? 'soft' : 'ghost'}
+                    color={selectedPanel === 'crawlBlocks' ? 'amber' : 'gray'}
                     onClick={() => { setSelectedPanel('crawlBlocks'); setSelectedLayer(null); }}
-                    style={{
-                      display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
-                      background: selectedPanel === 'crawlBlocks' ? 'var(--module-grey)' : 'transparent',
-                      border: 'none', borderLeft: selectedPanel === 'crawlBlocks' ? '3px solid var(--active-amber)' : '3px solid transparent',
-                      color: selectedPanel === 'crawlBlocks' ? 'var(--active-amber)' : 'var(--text-secondary)',
-                      fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
                   >
-                    Crawl Blocks
-                  </button>
-                  <button
+                    <Text weight="bold" size="2">Crawl Blocks</Text>
+                  </Button>
+                  <Button
+                    size="3"
+                    variant={selectedPanel === 'layout' ? 'soft' : 'ghost'}
+                    color={selectedPanel === 'layout' ? 'amber' : 'gray'}
                     onClick={() => { setSelectedPanel('layout'); setSelectedLayer(null); }}
-                    style={{
-                      display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
-                      background: selectedPanel === 'layout' ? 'var(--module-grey)' : 'transparent',
-                      border: 'none', borderLeft: selectedPanel === 'layout' ? '3px solid var(--active-amber)' : '3px solid transparent',
-                      color: selectedPanel === 'layout' ? 'var(--active-amber)' : 'var(--text-secondary)',
-                      fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
                   >
-                    Layout & Background
-                  </button>
-                  <button
+                    <Text weight="bold" size="2">Layout & Background</Text>
+                  </Button>
+                  <Button
+                    size="3"
+                    variant={selectedPanel === 'export' ? 'soft' : 'ghost'}
+                    color={selectedPanel === 'export' ? 'amber' : 'gray'}
                     onClick={() => { setSelectedPanel('export'); setSelectedLayer(null); }}
-                    style={{
-                      display: 'block', width: '100%', textAlign: 'left', padding: '12px 20px',
-                      background: selectedPanel === 'export' ? 'var(--module-grey)' : 'transparent',
-                      border: 'none', borderLeft: selectedPanel === 'export' ? '3px solid var(--active-amber)' : '3px solid transparent',
-                      color: selectedPanel === 'export' ? 'var(--active-amber)' : 'var(--text-secondary)',
-                      fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '13px', cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                    }}
+                    style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
                   >
-                    Export & OBS
-                  </button>
+                    <Text weight="bold" size="2">Export & OBS</Text>
+                  </Button>
                 </div>
               </div>
             </DragDropContext>
@@ -1036,57 +1263,57 @@ export default function ChyronBuilder() {
             {loadingList ? <p>Loading...</p> : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                 {configsList.map(c => (
-                  <div key={c.id} className="panel" onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', padding: '20px', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} onMouseOver={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'} onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'}>
-                    <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/5', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '16px', border: '1px solid var(--border-subtle)' }}>
-                      <ChyronPreview config={c.config} scale={0.35} />
-                    </div>
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                      <span style={{ fontWeight: 600, fontSize: '15px' }}>{c.config.name || 'Unnamed'}</span>
-                      <button onClick={e => deleteConfig(c.id, e)} className="btn-delete" aria-label="Delete chyron" title="Delete chyron">
-                        <TrashIcon />
-                      </button>
-                    </div>
-
-                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.crawl.enabled ? 'var(--vocals-green)' : 'var(--border-rigid)' }} />
-                        {c.config.crawl.enabled ? `${c.config.crawl.blocks.filter((b: any) => b.enabled).length} Active Crawl Blocks` : 'Crawl Disabled'}
+                  <Card key={c.id} onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease', padding: 0 }} className="hover-card">
+                    <Box p="4">
+                      <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/5', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '16px', border: '1px solid var(--border-subtle)' }}>
+                        <ChyronPreview config={c.config} scale={0.35} />
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.logo.enabled ? 'var(--active-amber)' : 'var(--border-rigid)' }} />
-                        {c.config.logo.enabled ? 'Logo Enabled' : 'Logo Disabled'}
+                      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <Text size="3" weight="bold">{c.config.name || 'Unnamed'}</Text>
+                        <IconButton size="1" color="gray" variant="ghost" onClick={e => deleteConfig(c.id, e)} title="Delete chyron">
+                          <TrashIcon />
+                        </IconButton>
                       </div>
-                    </div>
 
-                    <div onClick={e => e.stopPropagation()} style={{ display: 'flex', gap: '8px', marginTop: 'auto' }}>
-                      <input
-                        type="text" readOnly
-                        value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
-                        onClick={e => (e.target as HTMLInputElement).select()}
-                        className="form-input"
-                        style={{ flex: 1, fontSize: '11px', padding: '6px 8px', margin: 0, height: 'auto', backgroundColor: 'var(--bg-panel)' }}
-                      />
-                      <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${c.id}`);
-                          toast.success('URL copied to clipboard!');
-                        }}
-                        style={{
-                          background: 'var(--text-primary)', color: 'var(--bg-panel)',
-                          border: 'none', borderRadius: '4px', cursor: 'pointer',
-                          padding: '0 12px', fontSize: '11px', fontWeight: 600
-                        }}
-                      >
-                        COPY
-                      </button>
-                    </div>
-                  </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.crawl.enabled ? 'var(--vocals-green)' : 'var(--border-rigid)' }} />
+                          {c.config.crawl.enabled ? `${c.config.crawl.blocks.filter((b: any) => b.enabled).length} Active Crawl Blocks` : 'Crawl Disabled'}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.logo.enabled ? 'var(--active-amber)' : 'var(--border-rigid)' }} />
+                          {c.config.logo.enabled ? 'Logo Enabled' : 'Logo Disabled'}
+                        </div>
+                      </div>
+
+                      <Flex gap="2" onClick={e => e.stopPropagation()} style={{ marginTop: 'auto' }}>
+                        <TextField.Root
+                          size="1"
+                          readOnly
+                          value={typeof window !== 'undefined' ? `${window.location.origin}/embed/crawl?id=${c.id}` : ''}
+                          onClick={e => (e.target as HTMLInputElement).select()}
+                          style={{ flex: 1 }}
+                        />
+                        <Button
+                          size="1"
+                          variant="solid"
+                          color="gray"
+                          onClick={e => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(`${window.location.origin}/embed/crawl?id=${c.id}`);
+                            toast.success('URL copied to clipboard!');
+                          }}
+                        >
+                          COPY
+                        </Button>
+                      </Flex>
+                    </Box>
+                  </Card>
                 ))}
                 {configsList.length < 3 && (
-                  <div className="panel" onClick={handleCreateNew} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '150px', border: '2px dashed var(--border-rigid)', background: 'transparent' }}>
-                    <span style={{ color: 'var(--active-amber)', fontWeight: 'bold' }}>+ CREATE NEW CHYRON</span>
-                  </div>
+                  <Card onClick={handleCreateNew} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '150px', border: '2px dashed var(--border-rigid)', background: 'transparent' }}>
+                    <Text color="amber" weight="bold">+ CREATE NEW CHYRON</Text>
+                  </Card>
                 )}
               </div>
             )}
@@ -1111,22 +1338,24 @@ export default function ChyronBuilder() {
               <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', width: '100%', maxWidth: '960px', marginBottom: '16px' }} className="preview-window-container">
                 <ChyronPreview config={config} scale={0.5} />
               </div>
-              <div style={{ display: 'flex', width: '100%', maxWidth: '960px', gap: '10px' }}>
-                <input
-                  type="text" readOnly
-                  value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
+              <Flex gap="2" style={{ width: '100%', maxWidth: '960px' }}>
+                <TextField.Root
+                  size="2"
+                  readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/embed/crawl?id=${activeConfigId}` : ''}
                   onClick={e => (e.target as HTMLInputElement).select()}
-                  className="form-input"
-                  style={{ flex: 1, fontSize: '13px', cursor: 'text', backgroundColor: 'var(--bg-input)' }}
+                  style={{ flex: 1 }}
                 />
-                <button
-                  className="btn-primary"
+                <Button
+                  size="2"
                   onClick={handleCopy}
-                  style={{ margin: 0, padding: '0 20px', backgroundColor: copySuccess ? '#22c55e' : 'var(--accent-primary)', color: '#fff', border: 'none', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', whiteSpace: 'nowrap', fontSize: '13px', transition: 'all 0.2s ease' }}
+                  variant="solid"
+                  color={copySuccess ? 'green' : undefined}
+                  style={{ padding: '0 20px', fontWeight: 700, cursor: 'pointer' }}
                 >
                   {copySuccess ? '✓ COPIED URL' : 'COPY WIDGET URL'}
-                </button>
-              </div>
+                </Button>
+              </Flex>
             </div>
 
             {/* Properties Panel */}
@@ -1153,7 +1382,12 @@ export default function ChyronBuilder() {
                 <CrawlBlocksManager config={config} onChange={setConfig} />
               )}
               {selectedPanel === 'export' && activeConfigId && (
-                <ExportProperties config={config} activeConfigId={activeConfigId} copySuccess={copySuccess} onCopy={handleCopy} />
+                <ObsExportCard
+                  url={typeof window !== 'undefined' ? `${window.location.origin}/embed/crawl?id=${activeConfigId}` : ''}
+                  dimensions="1920 × 200"
+                  allowTransparency={true}
+                  notes={["Designed to overlay seamlessly at the bottom of your 1920×1080 stream canvas."]}
+                />
               )}
             </div>
           </>

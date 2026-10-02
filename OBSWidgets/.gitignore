@@ -39,3 +39,20 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Scratch files & screenshots
+*.png
+screenshot*.js
+refactor.*
+test_db.js
+create-bucket.ts
+test-buckets.ts
+

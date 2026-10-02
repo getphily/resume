@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -8,126 +8,11 @@ import { ScreenPreview } from '@/components/ScreenPreview';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 import { TextFormattingToolbar } from '@/components/TextFormattingToolbar';
 import { ImageUploadOrUrl } from '@/components/ImageUploadOrUrl';
+import { ObsExportCard } from '@/components/ObsExportCard';
 import { DEFAULT_SCREEN_CONFIG, ScreenConfig, ScreenPage } from '@/types/screen';
-import { Flex, Box, Card, Grid, SegmentedControl, Switch, Button, Heading, Text, Tabs, TextField } from '@radix-ui/themes';
-
-// ─── Text Toolbar ───────────────────────────────────────────────────
-// Compact, horizontal toolbar with segmented controls per AGENTS.md.
-// Row 1: Font | Title Size | Subtitle Size
-// Row 2: Title Color | Subtitle Color | Drop Shadow | Glow
-
-function GlobalSettings({ config, setConfig }: { config: ScreenConfig, setConfig: (c: ScreenConfig) => void }) {
-  const { layout } = config;
-  const update = (patch: Partial<ScreenConfig['layout']>) =>
-    setConfig({ ...config, layout: { ...layout, ...patch } });
-
-  return (
-    <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>GLOBAL SETTINGS</h3>
-      
-      {/* Typography & Colors via Toolbar */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>TITLE TYPOGRAPHY</label>
-          <TextFormattingToolbar
-            fontFamily={layout.fontFamily}
-            fontSize={layout.titleSize}
-            textColor={layout.accentColor}
-            opacity={layout.titleOpacity ?? 1}
-            onChange={patch => update({ 
-              ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
-              ...(patch.fontSize && { titleSize: patch.fontSize }),
-              ...(patch.textColor && { accentColor: patch.textColor }),
-              ...('opacity' in patch && { titleOpacity: patch.opacity })
-            })}
-          />
-        </div>
-
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>SUBTITLE TYPOGRAPHY</label>
-          <TextFormattingToolbar
-            fontFamily={layout.fontFamily}
-            fontSize={layout.subtitleSize}
-            textColor={layout.textColor}
-            opacity={layout.subtitleOpacity ?? 1}
-            onChange={patch => update({ 
-              ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
-              ...(patch.fontSize && { subtitleSize: patch.fontSize }),
-              ...(patch.textColor && { textColor: patch.textColor }),
-              ...('opacity' in patch && { subtitleOpacity: patch.opacity })
-            })}
-          />
-        </div>
-
-        <div>
-          <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>TIMER TYPOGRAPHY</label>
-          <TextFormattingToolbar
-            fontFamily={layout.fontFamily}
-            fontSize="MEDIUM"
-            textColor={layout.timerColor || layout.textColor}
-            opacity={layout.timerOpacity ?? 1}
-            onChange={patch => update({ 
-              ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
-              ...(patch.textColor && { timerColor: patch.textColor }),
-              ...('opacity' in patch && { timerOpacity: patch.opacity })
-            })}
-          />
-        </div>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      {/* Effects */}
-      <div className="text-toolbar">
-        <div className="toolbar-group">
-          <label>Shadow</label>
-          <SegmentedControl.Root size="1" value={layout.dropShadow ? 'ON' : 'OFF'} onValueChange={v => update({ dropShadow: v === 'ON' })}>
-            <SegmentedControl.Item value="OFF">Off</SegmentedControl.Item>
-            <SegmentedControl.Item value="ON">On</SegmentedControl.Item>
-          </SegmentedControl.Root>
-        </div>
-
-        <div className="toolbar-group">
-          <label>Glow</label>
-          <SegmentedControl.Root size="1" value={layout.glow} onValueChange={v => update({ glow: v as any })}>
-            {(['OFF', 'SUBTLE', 'NEON'] as const).map(gl => (
-              <SegmentedControl.Item key={gl} value={gl}>
-                {gl.charAt(0) + gl.slice(1).toLowerCase()}
-              </SegmentedControl.Item>
-            ))}
-          </SegmentedControl.Root>
-        </div>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      {/* Background */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 15px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <label style={{ margin: 0, fontWeight: 600, fontSize: '13px', width: '120px' }}>Background Color</label>
-            <ColorInputWithPalette value={layout.bgColor} onChange={e => update({ bgColor: e })} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <label style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>Opacity</label>
-            <input type="range" min="0" max="1" step="0.05" value={layout.bgOpacity ?? 1} onChange={e => update({ bgOpacity: parseFloat(e.target.value) })} style={{ width: '100px', accentColor: 'var(--accent-primary)' }} />
-          </div>
-        </div>
-      </div>
-
-      <div style={{ marginTop: '10px' }}>
-        <ImageUploadOrUrl 
-          label="BACKGROUND IMAGE"
-          value={layout.bgImageUrl || ''} 
-          onChange={val => update({ bgImageUrl: val })} 
-        />
-        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '5px' }}>Overrides background color if provided.</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Page Component ────────────────────────────────────────────
+import { BROADCAST_PRESETS } from '@/lib/presets';
+import { Flex, Box, Card, SegmentedControl, Switch, Button, Heading, Text, Tabs, TextField, Slider, Tooltip, IconButton, Select, Badge, Grid } from '@radix-ui/themes';
+import { TrashIcon, ArrowLeftIcon, PlusIcon, DesktopIcon, PlayIcon, ResetIcon, MagicWandIcon } from '@radix-ui/react-icons';
 
 export default function ScreenCustomizer() {
   const [session, setSession] = useState<any>(null);
@@ -136,14 +21,12 @@ export default function ScreenCustomizer() {
   
   // Editor State
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'PAGES' | 'LOGO' | 'EXPORT'>('PAGES');
   const [previewPageId, setPreviewPageId] = useState<string>('starting-soon');
+  const [activeTab, setActiveTab] = useState<string>('pages');
   
   // Settings
   const [config, setConfig] = useState<ScreenConfig>(DEFAULT_SCREEN_CONFIG);
-  
   const [saving, setSaving] = useState(false);
-  const [copySuccess, setCopySuccess] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -179,12 +62,12 @@ export default function ScreenCustomizer() {
     if (data) {
       setConfigsList([...configsList, { id: data.id, config: newConfig }]);
       loadEditor(data.id, newConfig);
+      toast.success('New screenset created!');
     }
   };
 
   const loadEditor = (id: string, c: ScreenConfig) => {
     setActiveConfigId(id); 
-    setActiveTab('PAGES');
     setConfig(c);
     setPreviewPageId(c.pages.length > 0 ? c.pages[0].id : '');
   };
@@ -193,9 +76,10 @@ export default function ScreenCustomizer() {
     e.stopPropagation();
     toast(
       (t) => (
-        <div>
-          <p style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 500 }}>Delete this screenset?</p>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Delete this screenset?</p>
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>This action cannot be undone.</p>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
             <button 
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -210,14 +94,14 @@ export default function ScreenCustomizer() {
             </button>
             <button 
               onClick={() => toast.dismiss(t.id)} 
-              style={{ padding: '6px 12px', background: 'var(--bg-main)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              style={{ padding: '6px 12px', background: 'var(--bg-panel)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
             >
               Cancel
             </button>
           </div>
         </div>
       ),
-      { duration: Infinity }
+      { duration: Infinity, position: 'top-center' }
     );
   };
 
@@ -230,343 +114,561 @@ export default function ScreenCustomizer() {
 
   const addPage = () => {
     const newId = `page-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const newPage: ScreenPage = { 
+      id: newId, 
+      name: `Page ${config.pages.length + 1}`, 
+      title: 'STREAM TITLE', 
+      subtitle: 'Optional subtitle text...',
+      timer: { enabled: false, durationMinutes: 5, endTime: null }
+    };
     setConfig(prev => ({
       ...prev,
-      pages: [...prev.pages, { 
-        id: newId, 
-        name: 'New Page', 
-        title: 'NEW PAGE', 
-        subtitle: '',
-        timer: { enabled: false, durationMinutes: 5, endTime: null }
-      }]
+      pages: [...prev.pages, newPage]
     }));
+    setPreviewPageId(newId);
+    toast.success('New page added to screenset');
   };
 
   const deletePage = (id: string) => {
+    if (config.pages.length <= 1) {
+      toast.error('You need at least one page in your screenset');
+      return;
+    }
     setConfig(prev => ({
       ...prev,
       pages: prev.pages.filter(p => p.id !== id)
     }));
-    // If we're previewing the deleted page, switch to first remaining
     if (previewPageId === id) {
       const remaining = config.pages.filter(p => p.id !== id);
       setPreviewPageId(remaining.length > 0 ? remaining[0].id : '');
     }
+    toast.success('Page deleted');
   };
 
-  const handleCopy = async (pageId: string) => {
-    const baseUrl = typeof window !== 'undefined' ? window.location.href.split('/screen')[0] : '';
-    await navigator.clipboard.writeText(`${baseUrl}/embed/screen?id=${activeConfigId}&page=${pageId}`);
-    setCopySuccess(pageId);
-    setTimeout(() => setCopySuccess(null), 2000);
+  const updateLayout = (patch: Partial<ScreenConfig['layout']>) => {
+    setConfig(prev => ({ ...prev, layout: { ...prev.layout, ...patch } }));
   };
-
-  const TabButton = ({ tab, label }: { tab: typeof activeTab, label: string }) => (
-    <button 
-      onClick={() => setActiveTab(tab)}
-      style={{
-        display: 'block', width: '100%', textAlign: 'left', padding: '15px 20px', background: activeTab === tab ? 'var(--bg-main)' : 'transparent',
-        border: 'none', borderBottom: '1px solid var(--border-subtle)', color: activeTab === tab ? 'var(--accent-primary)' : 'var(--text-secondary)',
-        fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.1s'
-      }}
-    >
-      {label}
-    </button>
-  );
 
   if (!session) return <main style={{ padding: '40px' }}><p>Please <Link href="/auth">Sign In</Link></p></main>;
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+    <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
       
-      {/* LEFT SIDEBAR */}
-      <aside style={{ width: '280px', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)' }}>
-        <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          {activeConfigId ? (
-            <button onClick={() => setActiveConfigId(null)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              &larr; BACK TO DASHBOARD
-            </button>
-          ) : (
-            <h2 style={{ margin: 0, fontSize: '1.2rem' }}>YOUR SCREEN SETS</h2>
-          )}
-        </div>
-        
-        <div style={{ flex: 1, overflowY: 'auto' }}>
-          {activeConfigId ? (
-            <>
-              <TabButton tab="PAGES" label="1. PAGES & LAYOUT" />
-              <TabButton tab="LOGO" label="2. LOGO" />
-              <TabButton tab="EXPORT" label="3. EXPORT TO OBS" />
-            </>
-          ) : (
-            <div style={{ padding: '20px' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>
-                Select a screenset to edit, or create a new one.
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                <span>STORAGE</span>
-                <span style={{ color: configsList.length >= 5 ? '#FF0000' : 'var(--text-primary)' }}>{configsList.length} / 5 USED</span>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
+      {/* ── 1. CATALOG VIEW ── */}
+      {!activeConfigId ? (
+        <Box p="6" style={{ maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
+          <Flex justify="between" align="end" mb="5">
+            <Box>
+              <Text size="2" color="gray" mb="1" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.08em' }}>WIDGETS</Text>
+              <Heading size="7">Screen Sets</Heading>
+              <Text size="2" color="gray" mt="1">Full-screen 1920×1080 overlay presets for Starting Soon, Be Right Back, and Goodbye pages.</Text>
+            </Box>
+            {configsList.length < 5 && (
+              <Button size="3" onClick={handleCreateNew} style={{ cursor: 'pointer' }}>
+                <PlusIcon /> Create Screenset
+              </Button>
+            )}
+          </Flex>
 
-      {/* MAIN CONTENT */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', backgroundColor: 'var(--bg-main)' }}>
-        
-        {!activeConfigId ? (
-          /* DASHBOARD VIEW */
-          <div style={{ padding: '40px', maxWidth: '1000px', width: '100%', margin: '0 auto' }}>
-            {loadingList ? <p>Loading...</p> : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-                {configsList.map(c => (
-                  <div key={c.id} className="panel" onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', padding: '20px', transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }} onMouseOver={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)'} onMouseOut={(e) => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'}>
-                    <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', border: '1px solid var(--border-subtle)' }}>
-                      <div style={{ transform: 'scale(0.15)', transformOrigin: 'center center', width: '1920px', height: '1080px' }}>
+          <Flex justify="between" align="center" mb="4" p="3" style={{ backgroundColor: 'var(--bg-panel)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+            <Text size="2" weight="medium" color="gray">Storage Capacity</Text>
+            <Text size="2" weight="bold" color={configsList.length >= 5 ? "red" : "indigo"}>
+              {configsList.length} / 5 Screensets Used
+            </Text>
+          </Flex>
+
+          {loadingList ? (
+            <Text color="gray">Loading your screensets...</Text>
+          ) : configsList.length === 0 ? (
+            <Card size="4" style={{ textAlign: 'center', backgroundColor: 'var(--bg-panel)', padding: '60px 20px', border: '1px dashed var(--border-subtle)' }}>
+              <Text size="3" color="gray" mb="4" style={{ display: 'block' }}>You don&apos;t have any screensets created yet.</Text>
+              <Button onClick={handleCreateNew} size="3" variant="solid">Create Your First Screenset</Button>
+            </Card>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+              {configsList.map(c => (
+                <Card 
+                  key={c.id} 
+                  onClick={() => loadEditor(c.id, c.config)} 
+                  style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)' }}
+                  className="hover-card"
+                >
+                  <Box p="3">
+                    <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                      <div style={{ transform: 'scale(0.16)', transformOrigin: 'center center', width: '1920px', height: '1080px' }}>
                          <ScreenPreview config={c.config} />
                       </div>
                     </div>
-                    <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontWeight: 600, fontSize: '15px' }}>{c.config.name || 'Unnamed'}</span>
-                      <button onClick={(e) => deleteConfig(c.id, e)} className="btn-delete" aria-label="Delete screenset" title="Delete screenset">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {configsList.length < 5 && (
-                  <div className="panel" onClick={handleCreateNew} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px', border: '2px dashed var(--border-subtle)', background: 'transparent' }}>
-                    <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>+ CREATE NEW SCREENSET</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* EDITOR VIEW */
-          <>
-            {/* Live Preview Header Area */}
-            <div style={{ 
-              flex: '0 0 auto', 
-              padding: '40px 20px', 
-              display: 'flex', 
-              flexDirection: 'column',
-              justifyContent: 'center', 
-              alignItems: 'center', 
-              borderBottom: '1px solid var(--border-subtle)',
-              backgroundColor: 'var(--bg-panel)'
-            }}>
-              <div style={{ display: 'flex', width: '100%', maxWidth: '800px', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <input 
-                  type="text" 
-                  value={config.name} 
-                  onChange={e => setConfig({...config, name: e.target.value})} 
-                  style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, background: 'transparent', border: 'none', borderBottom: '1px solid transparent', outline: 'none' }} 
-                  onFocus={e => e.target.style.borderBottom = '1px solid var(--border-subtle)'}
-                  onBlur={e => e.target.style.borderBottom = '1px solid transparent'}
-                />
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                  {saving ? 'AUTOSAVING...' : 'SAVED'}
-                </span>
-              </div>
-              
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                {config.pages.map(page => (
-                  <button 
-                    key={page.id}
-                    onClick={() => setPreviewPageId(page.id)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '20px',
-                      border: 'none',
-                      background: previewPageId === page.id ? 'var(--accent-primary)' : 'var(--bg-main)',
-                      color: previewPageId === page.id ? '#fff' : 'var(--text-primary)',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      fontSize: '0.85rem'
-                    }}
-                  >
-                    {page.name}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#000' }} className="preview-window-container">
-                 <div style={{ width: '480px', height: '270px', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{ transform: 'scale(0.25)', transformOrigin: 'top left', width: '1920px', height: '1080px' }}>
-                       <ScreenPreview config={config} activePageId={previewPageId} />
-                    </div>
-                 </div>
-              </div>
+                    <Flex justify="between" align="center">
+                      <Flex direction="column" gap="0">
+                        <Text size="3" weight="bold">{c.config.name || 'Unnamed Screenset'}</Text>
+                        <Text size="1" color="gray">{c.config.pages?.length || 0} Pages</Text>
+                      </Flex>
+                      <IconButton size="2" color="red" variant="ghost" onClick={(e) => deleteConfig(c.id, e)} title="Delete screenset">
+                        <TrashIcon />
+                      </IconButton>
+                    </Flex>
+                  </Box>
+                </Card>
+              ))}
+            </div>
+          )}
+        </Box>
+      ) : (
+        /* ── 2. SPLIT WORKSPACE EDITOR VIEW ── */
+        <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+          
+          {/* LEFT: Tabbed Settings Inspector (460px) */}
+          <div style={{ 
+            width: '460px', 
+            minWidth: '400px',
+            backgroundColor: 'var(--bg-panel)',
+            borderRight: '1px solid var(--border-subtle)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflowY: 'auto'
+          }}>
+            <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <Button variant="ghost" size="2" onClick={() => setActiveConfigId(null)} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
+                <ArrowLeftIcon /> Back to Screensets
+              </Button>
+              <TextField.Root 
+                size="3" 
+                placeholder="Screenset Name" 
+                value={config.name} 
+                onChange={e => setConfig({ ...config, name: e.target.value })} 
+                style={{ fontWeight: 'bold', fontSize: '1.2rem' }}
+              />
             </div>
 
-            {/* Settings Workspace Area */}
-            <div style={{ flex: 1, padding: '40px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
-              
-              {activeTab === 'PAGES' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                  <GlobalSettings config={config} setConfig={setConfig} />
+            {/* Navigation Tabs */}
+            <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+              <Box px="4" pt="3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                <Tabs.List size="2">
+                  <Tabs.Trigger value="pages">Pages &amp; Text</Tabs.Trigger>
+                  <Tabs.Trigger value="global">Global Styles</Tabs.Trigger>
+                  <Tabs.Trigger value="logo">Logo &amp; Brand</Tabs.Trigger>
+                  <Tabs.Trigger value="export">OBS Export</Tabs.Trigger>
+                </Tabs.List>
+              </Box>
 
-                  <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>MANAGE PAGES</h3>
-                      <button className="btn-primary" onClick={addPage} style={{ fontSize: '0.8rem', padding: '6px 12px' }}>+ ADD PAGE</button>
-                    </div>
-                    
-                    {config.pages.map(page => {
-                      const currentTimer = {
-                        enabled: page.timer?.enabled ?? false,
-                        durationMinutes: page.timer?.durationMinutes ?? 5,
-                        endTime: page.timer?.endTime ?? null,
-                      };
-                      
-                      return (
-                      <div key={page.id} className="page-card">
-                        {config.pages.length > 1 && (
-                          <button onClick={() => deletePage(page.id)} style={{ position: 'absolute', top: '20px', right: '20px', background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
-                            DELETE
-                          </button>
-                        )}
-                        
-                        <div className="page-field">
-                          <label>PAGE NAME (Internal)</label>
-                          <TextField.Root size="2" value={page.name} onChange={e => updatePage(page.id, { name: e.target.value })} />
-                        </div>
-                        <div className="page-field">
-                          <label>MAIN TITLE</label>
-                          <TextField.Root size="2" value={page.title} onChange={e => updatePage(page.id, { title: e.target.value })} />
-                        </div>
-                        <div className="page-field">
-                          <label>SUBTITLE</label>
-                          <TextField.Root size="2" value={page.subtitle} onChange={e => updatePage(page.id, { subtitle: e.target.value })} />
-                        </div>
+              {/* TAB 1: Pages & Content */}
+              <Tabs.Content value="pages">
+                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <Flex justify="between" align="center">
+                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>PAGES IN SCREENSET</Heading>
+                    <Button size="1" onClick={addPage} style={{ cursor: 'pointer' }}>
+                      <PlusIcon /> Add Page
+                    </Button>
+                  </Flex>
 
-                        {/* TIMER CONTROLS */}
-                        <div className="timer-controls">
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                              <input type="checkbox" style={{ width: '16px', height: '16px', accentColor: 'var(--accent-primary)', cursor: 'pointer' }} checked={currentTimer.enabled} onChange={e => updatePage(page.id, { timer: { ...currentTimer, enabled: e.target.checked } })} />
-                              ENABLE TIMER
-                            </label>
-                            {currentTimer.enabled && currentTimer.endTime && currentTimer.endTime > Date.now() && (
-                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>● LIVE</span>
+                  {config.pages.map((page, idx) => {
+                    const currentTimer = {
+                      enabled: page.timer?.enabled ?? false,
+                      durationMinutes: page.timer?.durationMinutes ?? 5,
+                      endTime: page.timer?.endTime ?? null,
+                    };
+
+                    const isSelected = previewPageId === page.id;
+
+                    return (
+                      <Card 
+                        key={page.id} 
+                        size="2" 
+                        style={{ 
+                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          gap: '12px',
+                          backgroundColor: isSelected ? 'var(--bg-main)' : 'var(--bg-panel)'
+                        }}
+                      >
+                        <Flex justify="between" align="center">
+                          <Flex align="center" gap="2">
+                            <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'var(--border-subtle)', padding: '2px 6px', borderRadius: '4px' }}>
+                              #{idx + 1}
+                            </span>
+                            <Text size="2" weight="bold">{page.name}</Text>
+                          </Flex>
+                          <Flex align="center" gap="2">
+                            <Button 
+                              size="1" 
+                              variant={isSelected ? "solid" : "soft"} 
+                              color={isSelected ? "indigo" : "gray"}
+                              onClick={() => setPreviewPageId(page.id)}
+                            >
+                              {isSelected ? "Previewing" : "Preview"}
+                            </Button>
+                            {config.pages.length > 1 && (
+                              <IconButton size="1" color="red" variant="ghost" onClick={() => deletePage(page.id)}>
+                                <TrashIcon />
+                              </IconButton>
                             )}
-                          </div>
+                          </Flex>
+                        </Flex>
+
+                        <Box>
+                          <Text as="label" size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>PAGE NAME (INTERNAL)</Text>
+                          <TextField.Root size="2" value={page.name} onChange={e => updatePage(page.id, { name: e.target.value })} />
+                        </Box>
+
+                        <Box>
+                          <Text as="label" size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>MAIN TITLE</Text>
+                          <TextField.Root size="2" value={page.title} onChange={e => updatePage(page.id, { title: e.target.value })} />
+                        </Box>
+
+                        <Box>
+                          <Text as="label" size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>SUBTITLE (OPTIONAL)</Text>
+                          <TextField.Root size="2" value={page.subtitle} onChange={e => updatePage(page.id, { subtitle: e.target.value })} placeholder="e.g. Stream will begin shortly..." />
+                        </Box>
+
+                        {/* Page Timer Setting */}
+                        <Box p="3" style={{ backgroundColor: 'var(--bg-panel)', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
+                          <Flex justify="between" align="center" mb="2">
+                            <Text size="2" weight="medium">Include Countdown Timer</Text>
+                            <Switch 
+                              size="2" 
+                              checked={currentTimer.enabled} 
+                              onCheckedChange={checked => updatePage(page.id, { timer: { ...currentTimer, enabled: checked } })} 
+                            />
+                          </Flex>
 
                           {currentTimer.enabled && (
-                            <div className="timer-actions">
-                              <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)' }}>DURATION (MINUTES)</label>
+                            <Flex direction="column" gap="2" pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                              <Flex align="center" gap="2">
+                                <Text size="1" color="gray" style={{ minWidth: '70px' }}>Duration:</Text>
                                 <TextField.Root 
                                   type="number" 
+                                  size="1" 
+                                  min={1}
                                   value={currentTimer.durationMinutes} 
-                                  onChange={e => updatePage(page.id, { timer: { ...currentTimer, durationMinutes: Number(e.target.value) } })} 
-                                  style={{ width: '120px' }} 
+                                  onChange={e => updatePage(page.id, { timer: { ...currentTimer, durationMinutes: Math.max(1, parseInt(e.target.value) || 1) } })}
+                                  style={{ width: '80px' }}
                                 />
-                              </div>
-                              <button 
-                                className="btn-primary" 
-                                onClick={() => updatePage(page.id, { timer: { ...currentTimer, endTime: Date.now() + (currentTimer.durationMinutes * 60000) } })}
-                                style={{ padding: '10px 20px', fontWeight: 'bold' }}
-                              >
-                                START TIMER
-                              </button>
-                              
-                              <button 
-                                onClick={() => updatePage(page.id, { timer: { ...currentTimer, endTime: null } })}
-                                style={{ padding: '10px 20px', backgroundColor: 'transparent', border: '1px solid var(--border-subtle)', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: 'var(--text-secondary)' }}
-                              >
-                                RESET
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )})}
-                  </div>
-                </div>
-              )}
+                                <Text size="1" color="gray">minutes</Text>
+                              </Flex>
 
-              {activeTab === 'LOGO' && (
-                <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>LOGO SETTINGS</h3>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <Switch checked={config.logo.enabled} onCheckedChange={checked => setConfig({...config, logo: {...config.logo, enabled: checked}})} />
-                      <Text size="2" weight="bold" color="gray">ENABLE LOGO</Text>
-                    </div>
-                  </div>
+                              <Flex gap="2" mt="1">
+                                <Button 
+                                  size="1" 
+                                  color="indigo" 
+                                  onClick={() => {
+                                    updatePage(page.id, { timer: { ...currentTimer, endTime: Date.now() + (currentTimer.durationMinutes * 60000) } });
+                                    toast.success('Timer started for page');
+                                  }}
+                                >
+                                  <PlayIcon /> Start Timer
+                                </Button>
+                                <Button 
+                                  size="1" 
+                                  variant="soft" 
+                                  color="gray"
+                                  onClick={() => {
+                                    updatePage(page.id, { timer: { ...currentTimer, endTime: null } });
+                                    toast('Timer reset');
+                                  }}
+                                >
+                                  <ResetIcon /> Reset
+                                </Button>
+                              </Flex>
+                            </Flex>
+                          )}
+                        </Box>
+                      </Card>
+                    );
+                  })}
+                </Box>
+              </Tabs.Content>
+
+              {/* TAB 2: Global Styles */}
+              <Tabs.Content value="global">
+                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   
-                  {config.logo.enabled && (
-                    <>
-                      <div>
+                  {/* Curated Broadcast Themes */}
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <Flex justify="between" align="center">
+                      <Heading size="3" style={{ color: 'var(--text-secondary)' }}>CURATED BROADCAST THEMES</Heading>
+                      <Badge color="indigo" size="1" variant="surface">1-Click Apply</Badge>
+                    </Flex>
+                    <Text size="2" color="gray">
+                      Apply harmonious broadcast palettes designed for professional stream aesthetics:
+                    </Text>
+                    <Grid columns="2" gap="2">
+                      {BROADCAST_PRESETS.map(preset => (
+                        <Button
+                          key={preset.name}
+                          variant="surface"
+                          size="2"
+                          onClick={() => {
+                            updateLayout({
+                              bgColor: preset.bgColor,
+                              accentColor: preset.accentColor,
+                              textColor: preset.textColor,
+                              timerColor: preset.accentColor,
+                              glow: preset.glow,
+                            });
+                            toast.success(`Applied ${preset.name} palette!`);
+                          }}
+                          style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer', height: 'auto', padding: '8px 10px' }}
+                        >
+                          <Flex gap="1" align="center">
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.accentColor }} />
+                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.bgColor, border: '1px solid var(--border-subtle)' }} />
+                          </Flex>
+                          <Text size="2" weight="medium">{preset.name}</Text>
+                        </Button>
+                      ))}
+                    </Grid>
+                  </Card>
+
+                  {/* Background Properties */}
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>BACKGROUND</Heading>
+                    
+                    <Box>
+                      <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>BACKGROUND COLOR &amp; OPACITY</Text>
+                      <ColorInputWithPalette 
+                        value={config.layout.bgColor} 
+                        onChange={val => updateLayout({ bgColor: val })} 
+                        opacity={config.layout.bgOpacity ?? 1}
+                        onOpacityChange={val => updateLayout({ bgOpacity: val })}
+                      />
+                    </Box>
+
+                    <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                      <ImageUploadOrUrl 
+                        label="BACKGROUND IMAGE OVERLAY"
+                        value={config.layout.bgImageUrl || ''} 
+                        onChange={val => updateLayout({ bgImageUrl: val })} 
+                      />
+                    </Box>
+                  </Card>
+
+                  {/* Effects */}
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>SPECIAL EFFECTS</Heading>
+                    
+                    <Flex justify="between" align="center">
+                      <Text size="2" weight="medium">Text Drop Shadow</Text>
+                      <Switch size="2" checked={config.layout.dropShadow} onCheckedChange={checked => updateLayout({ dropShadow: checked })} />
+                    </Flex>
+
+                    <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                      <Text size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>GLOW INTENSITY</Text>
+                      <SegmentedControl.Root size="2" value={config.layout.glow || 'OFF'} onValueChange={val => updateLayout({ glow: val as any })}>
+                        <SegmentedControl.Item value="OFF">Off</SegmentedControl.Item>
+                        <SegmentedControl.Item value="SUBTLE">Subtle</SegmentedControl.Item>
+                        <SegmentedControl.Item value="NEON">Neon</SegmentedControl.Item>
+                      </SegmentedControl.Root>
+                    </Box>
+                  </Card>
+
+                  {/* Title Typography */}
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>TITLE TYPOGRAPHY</Heading>
+                    <TextFormattingToolbar
+                      fontFamily={config.layout.fontFamily}
+                      fontSize={config.layout.titleSize}
+                      textColor={config.layout.accentColor}
+                      opacity={config.layout.titleOpacity ?? 1}
+                      bold={config.layout.titleBold ?? true}
+                      italic={config.layout.titleItalic ?? false}
+                      textTransform={config.layout.titleTransform ?? 'uppercase'}
+                      onChange={patch => updateLayout({ 
+                        ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
+                        ...(patch.fontSize && { titleSize: patch.fontSize }),
+                        ...(patch.textColor && { accentColor: patch.textColor }),
+                        ...(patch.opacity !== undefined && { titleOpacity: patch.opacity }),
+                        ...(patch.bold !== undefined && { titleBold: patch.bold }),
+                        ...(patch.italic !== undefined && { titleItalic: patch.italic }),
+                        ...(patch.textTransform !== undefined && { titleTransform: patch.textTransform }),
+                      })}
+                    />
+                  </Card>
+
+                  {/* Subtitle Typography */}
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>SUBTITLE TYPOGRAPHY</Heading>
+                    <TextFormattingToolbar
+                      fontFamily={config.layout.fontFamily}
+                      fontSize={config.layout.subtitleSize}
+                      textColor={config.layout.textColor}
+                      opacity={config.layout.subtitleOpacity ?? 1}
+                      bold={config.layout.subtitleBold ?? false}
+                      italic={config.layout.subtitleItalic ?? false}
+                      textTransform={config.layout.subtitleTransform ?? 'none'}
+                      onChange={patch => updateLayout({ 
+                        ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
+                        ...(patch.fontSize && { subtitleSize: patch.fontSize }),
+                        ...(patch.textColor && { textColor: patch.textColor }),
+                        ...(patch.opacity !== undefined && { subtitleOpacity: patch.opacity }),
+                        ...(patch.bold !== undefined && { subtitleBold: patch.bold }),
+                        ...(patch.italic !== undefined && { subtitleItalic: patch.italic }),
+                        ...(patch.textTransform !== undefined && { subtitleTransform: patch.textTransform }),
+                      })}
+                    />
+                  </Card>
+
+                  {/* Timer Typography */}
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>COUNTDOWN TYPOGRAPHY</Heading>
+                    <TextFormattingToolbar
+                      fontFamily={config.layout.fontFamily}
+                      fontSize="MEDIUM"
+                      textColor={config.layout.timerColor || config.layout.textColor}
+                      opacity={config.layout.timerOpacity ?? 1}
+                      bold={config.layout.timerBold ?? true}
+                      italic={config.layout.timerItalic ?? false}
+                      textTransform={config.layout.timerTransform ?? 'none'}
+                      onChange={patch => updateLayout({ 
+                        ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
+                        ...(patch.textColor && { timerColor: patch.textColor }),
+                        ...(patch.opacity !== undefined && { timerOpacity: patch.opacity }),
+                        ...(patch.bold !== undefined && { timerBold: patch.bold }),
+                        ...(patch.italic !== undefined && { timerItalic: patch.italic }),
+                        ...(patch.textTransform !== undefined && { timerTransform: patch.textTransform }),
+                      })}
+                    />
+                  </Card>
+
+                </Box>
+              </Tabs.Content>
+
+              {/* TAB 3: Logo & Brand */}
+              <Tabs.Content value="logo">
+                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <Flex justify="between" align="center">
+                      <Heading size="3" style={{ color: 'var(--text-secondary)' }}>LOGO DISPLAY</Heading>
+                      <Switch 
+                        size="2" 
+                        checked={config.logo.enabled} 
+                        onCheckedChange={checked => setConfig({ ...config, logo: { ...config.logo, enabled: checked } })} 
+                      />
+                    </Flex>
+
+                    {config.logo.enabled && (
+                      <Flex direction="column" gap="4">
                         <ImageUploadOrUrl 
                           label="LOGO IMAGE"
                           value={config.logo.imageUrl || ''} 
-                          onChange={val => setConfig({...config, logo: {...config.logo, imageUrl: val}})} 
+                          onChange={val => setConfig({ ...config, logo: { ...config.logo, imageUrl: val } })} 
                         />
-                      </div>
-                      
-                      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-                        <div style={{ flex: 1, minWidth: '300px' }}>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>POSITION</label>
-                          <SegmentedControl.Root size="1" value={config.logo.position} onValueChange={val => setConfig({...config, logo: {...config.logo, position: val as any}})}>
-                            {(['TOP_LEFT', 'TOP_RIGHT', 'CENTER', 'BOTTOM_LEFT', 'BOTTOM_RIGHT'] as const).map(pos => (
-                              <SegmentedControl.Item key={pos} value={pos}>
-                                {pos.replace(/_/g, ' ')}
-                              </SegmentedControl.Item>
-                            ))}
-                          </SegmentedControl.Root>
-                        </div>
-                        <div style={{ flex: 1, minWidth: '200px' }}>
-                          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>SIZE</label>
-                          <SegmentedControl.Root size="1" value={config.logo.size} onValueChange={val => setConfig({...config, logo: {...config.logo, size: val as any}})}>
-                            {(['SMALL', 'MEDIUM', 'LARGE'] as const).map(sz => (
-                              <SegmentedControl.Item key={sz} value={sz}>{sz}</SegmentedControl.Item>
-                            ))}
-                          </SegmentedControl.Root>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
 
-              {activeTab === 'EXPORT' && (
-                <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>EXPORT TO OBS</h3>
-                  <p style={{ fontSize: '1rem', color: 'var(--text-primary)', lineHeight: 1.5 }}>
-                    Here are the embed URLs for each of your pages. Create a <strong>Browser Source</strong> in OBS for each page you want to use.
-                  </p>
-                  <ul style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, paddingLeft: '20px' }}>
-                    <li>Set Dimensions to <strong>1920x1080</strong></li>
-                    <li>Any global style changes apply to all pages instantly!</li>
-                  </ul>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '10px' }}>
-                    {config.pages.map(page => (
-                      <div key={page.id} style={{ backgroundColor: 'var(--bg-main)', padding: '15px', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
-                        <p style={{ color: 'var(--text-primary)', fontSize: '0.85rem', marginBottom: '8px', fontWeight: 600 }}>{page.name.toUpperCase()} WIDGET URL:</p>
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <input type="text" readOnly value={`${typeof window !== 'undefined' ? window.location.href.split('/screen')[0] : ''}/embed/screen?id=${activeConfigId}&page=${page.id}`} onClick={(e) => (e.target as HTMLInputElement).select()} style={{ flex: 1, padding: '12px', fontSize: '1rem', cursor: 'text' }} />
-                          <button className="btn-primary" onClick={() => handleCopy(page.id)} style={{ margin: 0, padding: '0 20px', backgroundColor: copySuccess === page.id ? '#10b981' : 'var(--accent-primary)', color: '#fff', border: 'none', fontWeight: 'bold' }}>
-                            {copySuccess === page.id ? 'COPIED!' : 'COPY'}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                        <Box>
+                          <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>CORNER PLACEMENT</Text>
+                          <Select.Root 
+                            size="2" 
+                            value={config.logo.position} 
+                            onValueChange={val => setConfig({ ...config, logo: { ...config.logo, position: val as any } })}
+                          >
+                            <Select.Trigger style={{ width: '100%' }} />
+                            <Select.Content>
+                              <Select.Item value="TOP_LEFT">Top Left</Select.Item>
+                              <Select.Item value="TOP_RIGHT">Top Right</Select.Item>
+                              <Select.Item value="CENTER">Center (Above Title)</Select.Item>
+                              <Select.Item value="BOTTOM_LEFT">Bottom Left</Select.Item>
+                              <Select.Item value="BOTTOM_RIGHT">Bottom Right</Select.Item>
+                            </Select.Content>
+                          </Select.Root>
+                        </Box>
+
+                        <Box>
+                          <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>LOGO SCALE</Text>
+                          <SegmentedControl.Root 
+                            size="2" 
+                            value={config.logo.size} 
+                            onValueChange={val => setConfig({ ...config, logo: { ...config.logo, size: val as any } })}
+                          >
+                            <SegmentedControl.Item value="SMALL">Small</SegmentedControl.Item>
+                            <SegmentedControl.Item value="MEDIUM">Medium</SegmentedControl.Item>
+                            <SegmentedControl.Item value="LARGE">Large</SegmentedControl.Item>
+                          </SegmentedControl.Root>
+                        </Box>
+                      </Flex>
+                    )}
+                  </Card>
+                </Box>
+              </Tabs.Content>
+
+              {/* TAB 4: OBS Export */}
+              <Tabs.Content value="export">
+                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <Heading size="3" style={{ color: 'var(--text-secondary)' }}>OBS BROWSER SOURCE URLS</Heading>
+                  <Text size="2" color="gray">
+                    Each page in this screenset has its own dedicated 1920×1080 embed URL. Copy each URL and paste into an OBS Browser Source for each stream scene.
+                  </Text>
+
+                  {config.pages.map(page => (
+                    <ObsExportCard
+                      key={page.id}
+                      title={`${page.name.toUpperCase()} OVERLAY`}
+                      url={`${typeof window !== 'undefined' ? window.location.origin : ''}/embed/screen?id=${activeConfigId}&page=${page.id}`}
+                      dimensions="1920 × 1080"
+                      allowTransparency={true}
+                    />
+                  ))}
+                </Box>
+              </Tabs.Content>
+            </Tabs.Root>
+
+          </div>
+
+          {/* RIGHT: Live Preview Canvas */}
+          <div style={{ flex: 1, backgroundColor: 'var(--bg-main)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            
+            {/* Top Preview Header & Page Switcher */}
+            <Flex justify="between" align="center" px="5" py="3" style={{ backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-subtle)', zIndex: 10 }}>
+              <Flex align="center" gap="2" wrap="wrap">
+                <Text size="1" weight="bold" color="gray" mr="2" style={{ textTransform: 'uppercase' }}>PAGE:</Text>
+                {config.pages.map(page => (
+                  <Button 
+                    key={page.id}
+                    size="1"
+                    variant={previewPageId === page.id ? "solid" : "soft"}
+                    color={previewPageId === page.id ? "indigo" : "gray"}
+                    onClick={() => setPreviewPageId(page.id)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {page.name}
+                  </Button>
+                ))}
+              </Flex>
+
+              <Text size="1" color="gray" weight="bold">
+                {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
+              </Text>
+            </Flex>
+
+            {/* Centered Preview Canvas Container */}
+            <div style={{ flex: 1, padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+              <div 
+                className="preview-window-container" 
+                style={{ 
+                  width: '100%', 
+                  maxWidth: '850px', 
+                  aspectRatio: '16/9', 
+                  borderRadius: '16px', 
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.12)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative'
+                }}
+              >
+                <div style={{ width: '850px', height: '478px', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ transform: 'scale(0.4427)', transformOrigin: 'top left', width: '1920px', height: '1080px' }}>
+                    <ScreenPreview config={config} activePageId={previewPageId} />
                   </div>
                 </div>
-              )}
-
+              </div>
             </div>
-          </>
-        )}
-      </main>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

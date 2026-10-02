@@ -10,6 +10,16 @@ const GOOGLE_FONT_MAP: Record<string, string> = {
   'Outfit': 'Outfit:wght@400;500;600;700;800',
   'Bebas Neue': 'Bebas+Neue',
   'Roboto Mono': 'Roboto+Mono:wght@400;500;700',
+  'Roboto': 'Roboto:wght@400;700',
+  'Poppins': 'Poppins:wght@400;700',
+  'Montserrat': 'Montserrat:wght@400;700',
+  'Open Sans': 'Open+Sans:wght@400;700',
+  'Lato': 'Lato:wght@400;700',
+  'Raleway': 'Raleway:wght@400;700',
+  'Nunito': 'Nunito:wght@400;700',
+  'Playfair Display': 'Playfair+Display:wght@400;700',
+  'Oswald': 'Oswald:wght@400;700',
+  'Fira Code': 'Fira+Code:wght@400;700',
 };
 
 interface ScreenPreviewProps {
@@ -172,7 +182,9 @@ export function ScreenPreview({ config, activePageId }: ScreenPreviewProps) {
           <h2
             style={{
               fontSize: subtitleSizeMap[layout.subtitleSize] || '3rem',
-              fontWeight: 500,
+              fontWeight: (layout.subtitleBold ?? false) ? 800 : 500,
+              fontStyle: (layout.subtitleItalic ?? false) ? 'italic' : 'normal',
+              textTransform: layout.subtitleTransform ?? 'none',
               margin: 0,
               marginBottom: '1rem',
               lineHeight: 1.2,
@@ -188,10 +200,11 @@ export function ScreenPreview({ config, activePageId }: ScreenPreviewProps) {
           <h1
             style={{
               fontSize: titleSizeMap[layout.titleSize] || '12rem',
-              fontWeight: 800,
+              fontWeight: (layout.titleBold ?? true) ? 800 : 400,
+              fontStyle: (layout.titleItalic ?? false) ? 'italic' : 'normal',
+              textTransform: layout.titleTransform ?? 'uppercase',
               margin: 0,
               lineHeight: 1.1,
-              textTransform: 'uppercase',
               textShadow: titleShadow,
               color: layout.accentColor,
               opacity: layout.titleOpacity ?? 1,
@@ -205,7 +218,9 @@ export function ScreenPreview({ config, activePageId }: ScreenPreviewProps) {
           <div
             style={{
               fontSize: titleSizeMap[layout.titleSize] || '12rem',
-              fontWeight: 800,
+              fontWeight: (layout.timerBold ?? true) ? 800 : 400,
+              fontStyle: (layout.timerItalic ?? false) ? 'italic' : 'normal',
+              textTransform: layout.timerTransform ?? 'none',
               fontVariantNumeric: 'tabular-nums',
               margin: 0,
               marginTop: '2rem',

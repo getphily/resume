@@ -22,11 +22,20 @@ export interface ScreenConfig {
     subtitleOpacity?: number;
     fontFamily: string;
     titleSize: 'SMALL' | 'MEDIUM' | 'LARGE' | 'EXTRA LARGE';
+    titleBold?: boolean;
+    titleItalic?: boolean;
+    titleTransform?: 'none' | 'uppercase' | 'lowercase';
     subtitleSize: 'SMALL' | 'MEDIUM' | 'LARGE';
+    subtitleBold?: boolean;
+    subtitleItalic?: boolean;
+    subtitleTransform?: 'none' | 'uppercase' | 'lowercase';
     dropShadow: boolean;
     glow: 'OFF' | 'SUBTLE' | 'NEON';
     timerColor?: string;
     timerOpacity?: number;
+    timerBold?: boolean;
+    timerItalic?: boolean;
+    timerTransform?: 'none' | 'uppercase' | 'lowercase';
   };
   logo: {
     enabled: boolean;
@@ -49,11 +58,20 @@ export const DEFAULT_SCREEN_CONFIG: ScreenConfig = {
     subtitleOpacity: 1,
     fontFamily: 'Inter',
     titleSize: 'EXTRA LARGE',
+    titleBold: true,
+    titleItalic: false,
+    titleTransform: 'uppercase',
     subtitleSize: 'MEDIUM',
+    subtitleBold: false,
+    subtitleItalic: false,
+    subtitleTransform: 'none',
     dropShadow: false,
     glow: 'OFF',
     timerColor: '#ffffff',
     timerOpacity: 1,
+    timerBold: true,
+    timerItalic: false,
+    timerTransform: 'none',
   },
   logo: {
     enabled: false,

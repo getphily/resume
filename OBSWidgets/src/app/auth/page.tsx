@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { Box, Flex, Card, Heading, Text, TextField, Button } from '@radix-ui/themes';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -44,76 +45,69 @@ export default function AuthPage() {
   };
 
   return (
-    <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-main)' }}>
+    <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--bg-main)' }}>
       {/* Minimal Brand Header */}
-      <div style={{ padding: '24px 40px', display: 'flex', alignItems: 'center' }}>
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-primary)', textDecoration: 'none' }}>
-          <div style={{ width: '28px', height: '28px', backgroundColor: 'var(--text-primary)', color: 'var(--bg-panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', fontSize: '0.9rem' }}>H</div>
-          getphily.io
+      <Box px="6" py="4">
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <Flex align="center" gap="2">
+            <Box style={{ width: '28px', height: '28px', backgroundColor: 'var(--text-primary)', color: 'var(--bg-panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>H</Box>
+            <Text size="5" weight="bold" style={{ color: 'var(--text-primary)' }}>getphily.io</Text>
+          </Flex>
         </Link>
-      </div>
+      </Box>
 
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div style={{ 
-          width: '100%', 
-          maxWidth: '440px', 
-          backgroundColor: 'var(--bg-panel)', 
-          border: '1px solid var(--border-subtle)', 
-          borderRadius: '12px', 
-          padding: '40px', 
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' 
-        }}>
+      <Flex align="center" justify="center" p="4" style={{ flex: 1 }}>
+        <Card size="4" style={{ width: '100%', maxWidth: '440px' }}>
           
-          <h2 style={{ fontSize: '24px', color: 'var(--text-primary)', marginBottom: '8px', textAlign: 'center' }}>
-            {isLogin ? 'Log in to your account' : 'Create a new account'}
-          </h2>
-          <p style={{ color: 'var(--text-secondary)', textAlign: 'center', marginBottom: '30px', fontSize: '14px' }}>
-            {isLogin ? 'Welcome back! Please enter your details.' : 'Start managing your custom OBS widgets.'}
-          </p>
+          <Flex direction="column" align="center" mb="5">
+            <Heading size="6" mb="2">
+              {isLogin ? 'Log in to your account' : 'Create a new account'}
+            </Heading>
+            <Text size="2" color="gray">
+              {isLogin ? 'Welcome back! Please enter your details.' : 'Start managing your custom OBS widgets.'}
+            </Text>
+          </Flex>
           
           {error && (
-            <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', color: '#ef4444', padding: '12px', borderRadius: '6px', fontSize: '14px', marginBottom: '20px' }}>
-              {error}
-            </div>
+            <Box mb="4" p="3" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 'var(--radius-3)' }}>
+              <Text size="2" style={{ color: '#ef4444' }}>{error}</Text>
+            </Box>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Email address</label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required 
-                style={{ padding: '10px 14px', borderRadius: '6px', border: '1px solid var(--border-input)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', fontSize: '14px' }}
-              />
-            </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <label style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>Password</label>
-              <input 
-                type="password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required 
-                style={{ padding: '10px 14px', borderRadius: '6px', border: '1px solid var(--border-input)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', fontSize: '14px' }}
-              />
-            </div>
+          <form onSubmit={handleSubmit}>
+            <Flex direction="column" gap="4">
+              <Box>
+                <Text as="label" size="2" weight="medium" mb="2" style={{ display: 'block' }}>Email address</Text>
+                <TextField.Root 
+                  type="email" 
+                  size="3"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required 
+                />
+              </Box>
+              
+              <Box>
+                <Text as="label" size="2" weight="medium" mb="2" style={{ display: 'block' }}>Password</Text>
+                <TextField.Root 
+                  type="password" 
+                  size="3"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required 
+                />
+              </Box>
 
-            <button 
-              type="submit" 
-              className="btn-primary" 
-              disabled={loading}
-              style={{ marginTop: '10px', padding: '12px', fontSize: '15px', fontWeight: 600, width: '100%' }}
-            >
-              {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
-            </button>
+              <Button type="submit" size="3" mt="2" disabled={loading} style={{ width: '100%' }}>
+                {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+              </Button>
+            </Flex>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>
+          <Flex justify="center" mt="5">
+            <Text size="2" color="gray">
               {isLogin ? "Don't have an account? " : "Already have an account? "}
               <button 
                 onClick={() => setIsLogin(!isLogin)}
@@ -121,10 +115,10 @@ export default function AuthPage() {
               >
                 {isLogin ? 'Sign up' : 'Log in'}
               </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    </main>
+            </Text>
+          </Flex>
+        </Card>
+      </Flex>
+    </Flex>
   );
 }

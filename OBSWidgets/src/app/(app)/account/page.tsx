@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { Box, Flex, Heading, Text, Card, TextField, Button, Avatar, RadioCards } from '@radix-ui/themes';
 
 export default function AccountPage() {
   const router = useRouter();
@@ -62,6 +63,7 @@ export default function AccountPage() {
       toast.error("Error saving profile: " + error.message);
     } else {
       document.documentElement.setAttribute('data-theme', theme);
+      window.dispatchEvent(new Event('theme-updated'));
       toast.success("Profile updated successfully!");
     }
     setSaving(false);
@@ -97,99 +99,98 @@ export default function AccountPage() {
   };
 
   const TabButton = ({ tab, label }: { tab: typeof activeTab, label: string }) => (
-    <button 
+    <Button 
+      variant={activeTab === tab ? "soft" : "ghost"}
+      color={activeTab === tab ? "blue" : "gray"}
       onClick={() => setActiveTab(tab)}
-      style={{
-        display: 'block', width: '100%', textAlign: 'left', padding: '15px 20px', background: activeTab === tab ? 'var(--module-grey)' : 'transparent',
-        border: 'none', borderBottom: '1px solid var(--border-rigid)', color: activeTab === tab ? 'var(--active-amber)' : 'var(--text-secondary)',
-        fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer', transition: 'all 0.1s'
-      }}
+      style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
     >
       {label}
-    </button>
+    </Button>
   );
 
-  if (loading) return <div style={{ padding: '40px', color: 'var(--text-secondary)' }}>Loading...</div>;
+  if (loading) return <Box p="6"><Text color="gray">Loading...</Text></Box>;
 
   return (
-    <main style={{ padding: '40px', maxWidth: '1400px', margin: '0 auto' }}>
+    <Box p="6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       
       {/* HEADER */}
-      <div style={{ marginBottom: '30px' }}>
-        <Link href="/" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.9rem', marginBottom: '10px', display: 'inline-block' }}>
-          &larr; BACK TO CATALOG
+      <Box mb="6">
+        <Link href="/" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: '8px' }}>
+          <Text size="2" color="gray">&larr; BACK TO DASHBOARD</Text>
         </Link>
-        <h2>ACCOUNT SETTINGS</h2>
-      </div>
+        <Heading size="6">ACCOUNT SETTINGS</Heading>
+      </Box>
 
-      <div style={{ display: 'flex', gap: '30px', alignItems: 'flex-start' }}>
+      <Flex gap="6" align="start">
         
         {/* COLUMN 1: SIDEBAR MENU */}
-        <div style={{ flex: '0 0 250px', backgroundColor: 'var(--chassis-black)', border: '1px solid var(--border-rigid)', borderRadius: '6px', overflow: 'hidden' }}>
+        <Flex direction="column" gap="2" style={{ flex: '0 0 250px' }}>
           <TabButton tab="PROFILE" label="1. PUBLIC PROFILE" />
           <TabButton tab="PREFS" label="2. PREFERENCES" />
-        </div>
+        </Flex>
 
         {/* COLUMN 2: ACTIVE SETTINGS WORK AREA */}
-        <div className="panel" style={{ flex: '1 1 auto', minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '30px', maxWidth: '600px' }}>
+        <Card size="4" style={{ flex: '1 1 auto', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
           
           {activeTab === 'PROFILE' && (
-            <>
-              <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>PUBLIC PROFILE</h3>
+            <Flex direction="column" gap="5" style={{ height: '100%' }}>
+              <Heading size="4" color="gray">PUBLIC PROFILE</Heading>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                <div style={{ 
-                  width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'var(--module-grey)',
-                  border: '2px solid var(--border-rigid)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>NO PIC</span>
-                  )}
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>UPLOAD AVATAR</label>
+              <Flex align="center" gap="5">
+                <Avatar 
+                  size="8" 
+                  src={avatarUrl} 
+                  fallback="??" 
+                  radius="full"
+                />
+                <Box>
+                  <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>UPLOAD AVATAR</Text>
                   <input type="file" accept="image/*" onChange={uploadAvatar} disabled={saving} style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }} />
-                </div>
-              </div>
+                </Box>
+              </Flex>
 
-              <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>USERNAME</label>
-                <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="DJ Name / Username" />
-              </div>
+              <Box>
+                <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>USERNAME</Text>
+                <TextField.Root 
+                  size="2" 
+                  value={username} 
+                  onChange={(e) => setUsername(e.target.value)} 
+                  placeholder="DJ Name / Username" 
+                />
+              </Box>
 
-              <div style={{ marginTop: 'auto' }}>
-                <button className="btn-primary" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
+              <Box mt="auto" pt="5">
+                <Button size="3" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
                   {saving ? 'SAVING...' : 'SAVE PROFILE'}
-                </button>
-              </div>
-            </>
+                </Button>
+              </Box>
+            </Flex>
           )}
 
           {activeTab === 'PREFS' && (
-            <>
-              <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>PREFERENCES</h3>
+            <Flex direction="column" gap="5" style={{ height: '100%' }}>
+              <Heading size="4" color="gray">PREFERENCES</Heading>
               
-              <div>
-                <label style={{ display: 'block', marginBottom: '10px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>WEBSITE THEME</label>
-                <div className="segmented-control">
-                  <button className={theme === 'dark' ? 'active' : ''} onClick={() => setTheme('dark')}>DARK (DJ MODE)</button>
-                  <button className={theme === 'light' ? 'active' : ''} onClick={() => setTheme('light')}>LIGHT (CLEAN MODE)</button>
-                </div>
-              </div>
+              <Box>
+                <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>WEBSITE THEME</Text>
+                <RadioCards.Root size="2" columns="2" value={theme} onValueChange={setTheme}>
+                  <RadioCards.Item value="dark"><Flex width="100%" justify="center"><Text weight="bold">DARK (DJ MODE)</Text></Flex></RadioCards.Item>
+                  <RadioCards.Item value="light"><Flex width="100%" justify="center"><Text weight="bold">LIGHT (CLEAN MODE)</Text></Flex></RadioCards.Item>
+                </RadioCards.Root>
+              </Box>
 
-              <div style={{ marginTop: 'auto' }}>
-                <button className="btn-primary" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
+              <Box mt="auto" pt="5">
+                <Button size="3" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
                   {saving ? 'SAVING...' : 'SAVE PREFERENCES'}
-                </button>
-              </div>
-            </>
+                </Button>
+              </Box>
+            </Flex>
           )}
 
-        </div>
-      </div>
+        </Card>
+      </Flex>
 
-    </main>
+    </Box>
   );
 }

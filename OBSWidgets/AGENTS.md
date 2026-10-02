@@ -40,11 +40,7 @@ The application must strictly follow a "Hostinger Dashboard" inspired layout arc
 This app follows an **opinionated, bounded customization** model. Think Apple: users get meaningful choices, but within guardrails that preserve the overall look and quality.
 
 **Rules:**
-- **Prefer segmented controls over sliders** for any setting where 2–4 named options cover the real-world range (e.g., font size → Small / Medium / Large; speed → Slow / Normal / Fast).
-- **Avoid granular numeric inputs** (sliders, number fields) unless the user genuinely needs pixel-precise control. If a slider has more than ~5 meaningful stops, replace it with named options.
-- **Dropdowns are allowed** for selections like fonts and colors when appropriate. Limit font choices to a curated set (3–5 fonts) instead of raw font-family text inputs.
-- **Text toolbars and complex tools** are allowed to break the above "HOA" rules (like using dropdowns, granular inputs, etc.) if it results in a better, more efficient design for that specific tool. Industry best practices are always allowed.
-- **Color pickers are acceptable** for brand-level customization (text color, background, accent) since color is inherently personal.
+
 - **Prefer themes and curated color palettes** over raw color pickers wherever possible. Offer a set of named, pre-designed color combinations (e.g., "CNN Red", "Breaking Blue", "Dark Minimal") that users can select with one click. Raw color pickers can exist as an "Advanced / Custom" escape hatch, but should not be the primary UX for color selection.
 - When adding new controls, always ask: *"Does this need more than 3-4 options, or can we reduce it to Small / Medium / Large?"*
 

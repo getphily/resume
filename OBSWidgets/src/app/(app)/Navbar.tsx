@@ -3,9 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { Flex, Box, Text, Button, IconButton, Tooltip, Badge } from '@radix-ui/themes';
+import { SunIcon, MoonIcon, PersonIcon, ExitIcon } from '@radix-ui/react-icons';
+import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const [session, setSession] = useState<any>(null);
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -14,44 +18,122 @@ export default function Navbar() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-    return () => subscription.unsubscribe();
+
+    // Sync theme
+    const themeAttr = document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
+    if (themeAttr) setCurrentTheme(themeAttr);
+
+    const onThemeUpdated = () => {
+      const updated = document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
+      if (updated) setCurrentTheme(updated);
+    };
+    window.addEventListener('theme-updated', onThemeUpdated);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener('theme-updated', onThemeUpdated);
+    };
   }, []);
 
+  const toggleTheme = async () => {
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    setCurrentTheme(nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    window.dispatchEvent(new Event('theme-updated'));
+
+    if (session) {
+      await supabase
+        .from('profiles')
+        .upsert({ id: session.user.id, theme: nextTheme, updated_at: new Date().toISOString() });
+    }
+    toast.success(`${nextTheme === 'dark' ? 'Dark' : 'Light'} mode enabled`, { id: 'theme-toast', duration: 1500 });
+  };
+
   return (
-    <nav style={{ 
+    <Flex asChild align="center" justify="between" px="4" style={{ 
       height: '60px', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'space-between',
-      padding: '0 24px',
       backgroundColor: 'var(--bg-navbar)',
       color: 'var(--text-navbar)',
-      zIndex: 10
+      zIndex: 20,
+      borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
     }}>
-      <div style={{ display: 'flex', gap: '30px', alignItems: 'center' }}>
-        {/* Brand / Logo Area */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--text-navbar)', textDecoration: 'none' }}>
-          <div style={{ width: '24px', height: '24px', backgroundColor: 'var(--text-navbar)', color: 'var(--bg-navbar)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', fontSize: '0.8rem' }}>H</div>
-          getphily.io
-        </Link>
-      </div>
-      <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-        {session ? (
-          <>
-            <Link href="/account" style={{ color: 'var(--text-navbar)', opacity: 0.9, textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Account</Link>
-            <button 
-              onClick={() => supabase.auth.signOut()} 
-              style={{ background: 'none', border: 'none', color: 'var(--text-navbar)', opacity: 0.9, cursor: 'pointer', fontSize: '14px', fontWeight: 500, padding: 0 }}
-            >
-              Sign Out
-            </button>
-          </>
-        ) : (
-          <Link href="/auth">
-            <button className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.9rem', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.3)', color: 'white' }}>Sign In</button>
+      <nav>
+        <Flex align="center" gap="4">
+          {/* Brand Logo & Title */}
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <Flex align="center" gap="3">
+              <Box style={{ 
+                width: '32px', 
+                height: '32px', 
+                backgroundColor: 'var(--accent-primary)', 
+                color: '#ffffff', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                borderRadius: '6px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+              }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 7l-7 5 7 5V7z" />
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                </svg>
+              </Box>
+              <Flex direction="column" gap="0">
+                <Text size="3" weight="bold" style={{ color: 'var(--text-navbar)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                  getphily.io
+                </Text>
+                <Text size="1" style={{ color: 'rgba(255, 255, 255, 0.6)', letterSpacing: '0.06em', fontSize: '10px', textTransform: 'uppercase', fontWeight: 600 }}>
+                  OBS Stream Studio
+                </Text>
+              </Flex>
+            </Flex>
           </Link>
-        )}
-      </div>
-    </nav>
+          <Badge size="1" color="indigo" variant="surface" style={{ display: 'none' }}>v2.0</Badge>
+        </Flex>
+        
+        <Flex align="center" gap="3">
+          {/* Theme Switcher Quick Action */}
+          <Tooltip content={`Switch to ${currentTheme === 'dark' ? 'Light' : 'Dark'} mode`}>
+            <IconButton 
+              size="2" 
+              variant="ghost" 
+              onClick={toggleTheme}
+              style={{ color: 'var(--text-navbar)', cursor: 'pointer' }}
+              aria-label="Toggle Theme"
+            >
+              {currentTheme === 'dark' ? <SunIcon width={18} height={18} /> : <MoonIcon width={18} height={18} />}
+            </IconButton>
+          </Tooltip>
+
+          <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 4px' }} />
+
+          {session ? (
+            <Flex align="center" gap="3">
+              <Link href="/account" style={{ textDecoration: 'none' }}>
+                <Button variant="ghost" size="2" style={{ color: 'var(--text-navbar)', opacity: 0.9, gap: '6px' }}>
+                  <PersonIcon /> Account
+                </Button>
+              </Link>
+              <Button 
+                variant="ghost" 
+                size="2"
+                onClick={() => {
+                  supabase.auth.signOut();
+                  toast.success('Signed out');
+                }} 
+                style={{ color: 'var(--text-navbar)', opacity: 0.8, gap: '6px' }}
+              >
+                <ExitIcon /> Sign Out
+              </Button>
+            </Flex>
+          ) : (
+            <Button asChild variant="outline" size="2" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+              <Link href="/auth">Sign In</Link>
+            </Button>
+          )}
+        </Flex>
+      </nav>
+    </Flex>
   );
 }
