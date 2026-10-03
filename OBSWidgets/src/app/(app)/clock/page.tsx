@@ -436,7 +436,7 @@ function ClockCustomizerContent() {
 
               {/* Card 3: OBS Export */}
               <ObsExportCard
-                url={`${typeof window !== 'undefined' ? window.location.origin : ''}/embed/clock?id=${activeConfigId}`}
+                url={`${typeof window !== 'undefined' ? window.location.origin : ''}/widgets/embed/clock?id=${activeConfigId}`}
                 dimensions="1920 × 1080"
                 allowTransparency={true}
               />

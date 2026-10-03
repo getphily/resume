@@ -625,7 +625,7 @@ function ScreenCustomizerContent() {
                     <ObsExportCard
                       key={page.id}
                       title={`${page.name.toUpperCase()} OVERLAY`}
-                      url={`${typeof window !== 'undefined' ? window.location.origin : ''}/embed/screen?id=${activeConfigId}&page=${page.id}`}
+                      url={`${typeof window !== 'undefined' ? window.location.origin : ''}/widgets/embed/screen?id=${activeConfigId}&page=${page.id}`}
                       dimensions="1920 × 1080"
                       allowTransparency={true}
                     />

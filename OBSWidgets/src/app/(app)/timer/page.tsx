@@ -244,7 +244,7 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
 
       {/* 5. Export to OBS */}
       <ObsExportCard
-        url={`${typeof window !== 'undefined' ? window.location.origin : ''}/embed/timer?id=${config.id || ''}`}
+        url={`${typeof window !== 'undefined' ? window.location.origin : ''}/widgets/embed/timer?id=${config.id || ''}`}
         dimensions="1920 × 1080"
         allowTransparency={true}
         notes={[

@@ -87,10 +87,10 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     if (item.widget_type === 'screen') {
       const firstPageId = item.config.pages?.[0]?.id || 'starting-soon';
-      return `${origin}/embed/screen?id=${item.id}&page=${firstPageId}`;
+      return `${origin}/widgets/embed/screen?id=${item.id}&page=${firstPageId}`;
     }
     const embedType = (item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type;
-    return `${origin}/embed/${embedType}?id=${item.id}`;
+    return `${origin}/widgets/embed/${embedType}?id=${item.id}`;
   };
 
   const primaryUrl = getPrimaryEmbedUrl();
@@ -195,7 +195,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
                 <ObsExportCard
                   key={page.id}
                   title={`${page.name.toUpperCase()} PAGE EMBED`}
-                  url={`${typeof window !== 'undefined' ? window.location.origin : ''}/embed/screen?id=${item.id}&page=${page.id}`}
+                  url={`${typeof window !== 'undefined' ? window.location.origin : ''}/widgets/embed/screen?id=${item.id}&page=${page.id}`}
                   dimensions="1920 × 1080"
                   allowTransparency={true}
                 />

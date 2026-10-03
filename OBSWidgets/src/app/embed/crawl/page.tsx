@@ -5,6 +5,33 @@ import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
 import ChyronPreview from '@/components/ChyronPreview';
 import type { ChyronConfig } from '@/types/chyron';
+import { DEFAULT_CHYRON_CONFIG } from '@/types/chyron';
+
+const mergeConfig = (c: any): ChyronConfig => {
+  const loadedOrder = c?.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder;
+  const finalOrder = [...loadedOrder];
+  ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
+    if (!finalOrder.includes(l as any)) finalOrder.push(l as any);
+  });
+
+  return {
+    ...DEFAULT_CHYRON_CONFIG,
+    ...(c || {}),
+    layout: { ...DEFAULT_CHYRON_CONFIG.layout, ...(c?.layout || {}) },
+    title: { ...DEFAULT_CHYRON_CONFIG.title, ...(c?.title || {}) },
+    subheader: { ...DEFAULT_CHYRON_CONFIG.subheader, ...(c?.subheader || {}) },
+    logo: { ...DEFAULT_CHYRON_CONFIG.logo, ...(c?.logo || {}) },
+    clock: { ...DEFAULT_CHYRON_CONFIG.clock, ...(c?.clock || {}) },
+    crawl: { 
+      ...DEFAULT_CHYRON_CONFIG.crawl, 
+      ...(c?.crawl || {}),
+      blocks: (Array.isArray(c?.crawl?.blocks) && c.crawl.blocks.length > 0)
+        ? c.crawl.blocks
+        : DEFAULT_CHYRON_CONFIG.crawl.blocks
+    },
+    layerOrder: finalOrder,
+  };
+};
 
 function ChyronEmbedContent() {
   const searchParams = useSearchParams();
@@ -30,7 +57,7 @@ function ChyronEmbedContent() {
       if (error || !data) {
         setError('Widget not found');
       } else {
-        setConfig(data.config);
+        setConfig(mergeConfig(data.config));
       }
       setLoading(false);
     };
@@ -39,7 +66,7 @@ function ChyronEmbedContent() {
 
     // Real-time sync
     const channel = supabase
-      .channel('schema-db-changes-chyron')
+      .channel(`chyron-embed-${id}`)
       .on(
         'postgres_changes',
         {
@@ -49,7 +76,9 @@ function ChyronEmbedContent() {
           filter: `id=eq.${id}`
         },
         (payload) => {
-          setConfig(payload.new.config);
+          if (payload.new?.config) {
+            setConfig(mergeConfig(payload.new.config));
+          }
         }
       )
       .subscribe();

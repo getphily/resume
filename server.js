@@ -56,6 +56,13 @@ app.use(express.static(path.join(__dirname, 'dist')));
 // Serve kalimotxo project (legacy)
 app.use('/kalimotxo', express.static(path.join(__dirname, 'kalimotxo/dist')));
 
+// Route OBS Embed URLs: redirect /embed/* to /widgets/embed/* for OBS Browser Sources
+app.use('/embed', (req, res) => {
+  const parsed = new URL(req.originalUrl, 'http://localhost');
+  const targetPath = parsed.pathname.endsWith('/') ? parsed.pathname : `${parsed.pathname}/`;
+  res.redirect(301, `/widgets${targetPath}${parsed.search}`);
+});
+
 // Serve OBS Widgets (Next.js static export)
 app.use('/widgets', express.static(path.join(__dirname, 'OBSWidgets/out')));
 
@@ -863,6 +870,9 @@ app.delete('/api/admin/education/:id', checkAdmin, async (req, res) => {
 app.get('*', (req, res, next) => {
   if (req.path.includes('.')) {
     return next();
+  }
+  if (req.path.startsWith('/widgets')) {
+    return res.sendFile(path.join(__dirname, 'OBSWidgets/out', 'index.html'));
   }
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });

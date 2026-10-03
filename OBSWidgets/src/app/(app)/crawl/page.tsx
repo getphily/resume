@@ -1074,7 +1074,7 @@ function ChyronBuilderContent() {
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}/embed/crawl?id=${activeConfigId}`);
+    await navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}`);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
   };
@@ -1325,7 +1325,7 @@ function ChyronBuilderContent() {
                         <TextField.Root
                           size="1"
                           readOnly
-                          value={typeof window !== 'undefined' ? `${window.location.origin}/embed/crawl?id=${c.id}` : ''}
+                          value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
                           onClick={e => (e.target as HTMLInputElement).select()}
                           style={{ flex: 1 }}
                         />
@@ -1335,7 +1335,7 @@ function ChyronBuilderContent() {
                           color="gray"
                           onClick={e => {
                             e.stopPropagation();
-                            navigator.clipboard.writeText(`${window.location.origin}/embed/crawl?id=${c.id}`);
+                            navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${c.id}`);
                             toast.success('URL copied to clipboard!');
                           }}
                         >
@@ -1377,7 +1377,7 @@ function ChyronBuilderContent() {
                 <TextField.Root
                   size="2"
                   readOnly
-                  value={typeof window !== 'undefined' ? `${window.location.origin}/embed/crawl?id=${activeConfigId}` : ''}
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
                   onClick={e => (e.target as HTMLInputElement).select()}
                   style={{ flex: 1 }}
                 />
@@ -1418,7 +1418,7 @@ function ChyronBuilderContent() {
               )}
               {selectedPanel === 'export' && activeConfigId && (
                 <ObsExportCard
-                  url={typeof window !== 'undefined' ? `${window.location.origin}/embed/crawl?id=${activeConfigId}` : ''}
+                  url={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
                   dimensions="1920 × 200"
                   allowTransparency={true}
                   notes={["Designed to overlay seamlessly at the bottom of your 1920×1080 stream canvas."]}
