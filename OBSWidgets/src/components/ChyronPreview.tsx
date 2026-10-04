@@ -304,20 +304,41 @@ function SubheaderLayer({ config, scale }: { config: ChyronConfig; scale: number
 // ─── Crawl Layer ───────────────────────────────────────────────────
 function CrawlLayer({ config, scale, isPaused = false }: { config: ChyronConfig; scale: number; isPaused?: boolean }) {
   const { crawl } = config;
-  const textRef = useRef<HTMLDivElement>(null);
-  const [textWidth, setTextWidth] = useState(0);
+  const singleUnitRef = useRef<HTMLSpanElement>(null);
+  const [unitWidth, setUnitWidth] = useState(0);
 
-  // We need to measure the text width to compute a constant speed
+  const enabledBlocks = crawl.blocks.filter(b => b.enabled && b.text?.trim());
+  if (!crawl.enabled || enabledBlocks.length === 0) return null;
+
+  const sep = crawl.separator || '★';
+  const separatorFormatted = `\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0${sep}\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0`;
+
+  // One full sequence of all blocks, terminated by the separator so the next loop immediately follows
+  const singleSequenceText = enabledBlocks
+    .map(b => b.text.replace(/\n/g, ' ').trim())
+    .join(separatorFormatted) + separatorFormatted;
+
+  // Measure the width of one single sequence using ResizeObserver
   useEffect(() => {
-    if (textRef.current) {
-      setTextWidth(textRef.current.scrollWidth);
-    }
-  }, [config.crawl.blocks, scale, crawl.fontSize, crawl.fontFamily]);
+    if (!singleUnitRef.current) return;
+    const updateWidth = () => {
+      if (singleUnitRef.current) {
+        setUnitWidth(singleUnitRef.current.offsetWidth || singleUnitRef.current.scrollWidth);
+      }
+    };
+    updateWidth();
+    const ro = new ResizeObserver(updateWidth);
+    ro.observe(singleUnitRef.current);
+    return () => ro.disconnect();
+  }, [singleSequenceText, scale, crawl.fontSize, crawl.fontFamily]);
 
-  if (!crawl.enabled) return null;
+  const screenWidth = 1920 * scale;
 
-  // Calculate speed: pixels per second. 
-  // Base it roughly on a 1920px screen taking ~24s for normal speed (80px/sec).
+  // If text is shorter than the screen, repeat it so the track always fills the screen
+  const repeatCount = unitWidth > 0 ? Math.max(1, Math.ceil(screenWidth / unitWidth)) : 2;
+  const trackContent = Array(repeatCount).fill(singleSequenceText).join('');
+
+  // Calculate speed: pixels per second (Normal ~90px/s, Slow ~50px/s, Fast ~150px/s)
   const getSpeedPxPerSec = () => {
     switch (crawl.speed) {
       case 'SLOW': return 50;
@@ -326,17 +347,8 @@ function CrawlLayer({ config, scale, isPaused = false }: { config: ChyronConfig;
     }
   };
 
-  const crawlText = crawl.blocks
-    .filter(b => b.enabled)
-    .map(b => b.text)
-    .join(`\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0${crawl.separator}\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0`);
-
-  if (!crawlText) return null;
-
-  // Total distance is textWidth + the padding (which is the screen width)
-  const screenWidth = 1920 * scale;
-  const totalDistance = textWidth || screenWidth; // fallback to screen width if not measured yet
-  const durationSeconds = totalDistance / (getSpeedPxPerSec() * scale);
+  const oneTrackDistance = unitWidth > 0 ? unitWidth * repeatCount : screenWidth;
+  const durationSeconds = oneTrackDistance / (getSpeedPxPerSec() * scale);
 
   return (
     <div style={{
@@ -347,31 +359,72 @@ function CrawlLayer({ config, scale, isPaused = false }: { config: ChyronConfig;
       minHeight: `${B.crawlBarHeight * scale}px`,
       display: 'flex',
       alignItems: 'center',
+      position: 'relative',
     }}>
-      <div 
-        ref={textRef}
+      {/* Offscreen measurement element to get precise pixel width */}
+      <span
+        ref={singleUnitRef}
         style={{
-          display: 'inline-block',
+          position: 'absolute',
+          visibility: 'hidden',
+          whiteSpace: 'nowrap',
           fontFamily: getFontFamily(crawl.fontFamily),
-          // crawl.fontSize is a multiplier on top of the broadcast base (1.65rem)
           fontSize: `${crawl.fontSize * B.crawlFontSize * scale}rem`,
           fontWeight: 700,
-          color: crawl.textColor,
-          whiteSpace: 'nowrap',
           textTransform: 'uppercase',
-          animation: textWidth > 0 ? `scroll-chyron ${durationSeconds}s linear infinite` : 'none',
+          letterSpacing: '0.04em',
+          pointerEvents: 'none',
+        }}
+        aria-hidden="true"
+      >
+        {singleSequenceText}
+      </span>
+
+      {/* Seamless Infinite Marquee: Track 1 + Track 2 moving together from 0% to -50% with zero gap */}
+      <div
+        style={{
+          display: 'flex',
+          width: 'max-content',
+          animation: `scroll-seamless ${durationSeconds}s linear infinite`,
           animationPlayState: isPaused ? 'paused' : 'running',
           willChange: 'transform',
-          backfaceVisibility: 'hidden',
-          WebkitFontSmoothing: 'antialiased',
           transform: 'translateZ(0)',
-          letterSpacing: '0.04em',
-          lineHeight: 1,
-          paddingLeft: `${screenWidth}px`, // start offscreen
-          paddingRight: '10px',
+          backfaceVisibility: 'hidden',
         }}
       >
-        {crawlText}
+        <span
+          style={{
+            display: 'inline-block',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+            fontFamily: getFontFamily(crawl.fontFamily),
+            fontSize: `${crawl.fontSize * B.crawlFontSize * scale}rem`,
+            fontWeight: 700,
+            color: crawl.textColor,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            lineHeight: 1,
+          }}
+        >
+          {trackContent}
+        </span>
+        <span
+          style={{
+            display: 'inline-block',
+            flexShrink: 0,
+            whiteSpace: 'nowrap',
+            fontFamily: getFontFamily(crawl.fontFamily),
+            fontSize: `${crawl.fontSize * B.crawlFontSize * scale}rem`,
+            fontWeight: 700,
+            color: crawl.textColor,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            lineHeight: 1,
+          }}
+          aria-hidden="true"
+        >
+          {trackContent}
+        </span>
       </div>
     </div>
   );

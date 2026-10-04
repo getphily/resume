@@ -413,9 +413,14 @@ h1, h2, h3, h4 {
 }
 
 /* ─── Broadcast Embed Animations ───────────────────────────────── */
+@keyframes scroll-seamless {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
 @keyframes scroll-chyron {
   from { transform: translate3d(0, 0, 0); }
-  to { transform: translate3d(-100%, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
 }
 
 @keyframes pulse-dot {
