@@ -39,6 +39,15 @@ function ChyronEmbedContent() {
   const [config, setConfig] = useState<ChyronConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      setIsPaused(document.hidden);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   useEffect(() => {
     if (!id) {
@@ -100,7 +109,7 @@ function ChyronEmbedContent() {
       display: 'flex',
       alignItems: 'flex-end',
     }}>
-      <ChyronPreview config={config} scale={1} />
+      <ChyronPreview config={config} scale={1} isPaused={isPaused} />
     </div>
   );
 }

@@ -131,7 +131,6 @@ function LogoBug({ config, scale }: { config: ChyronConfig; scale: number }) {
               display: 'flex',
               alignItems: 'center',
               gap: `${8 * scale}px`, // +33%
-              backdropFilter: 'blur(4px)',
             }}>
               <div style={{
                 width: `${8 * scale}px`, // +33%
@@ -303,7 +302,7 @@ function SubheaderLayer({ config, scale }: { config: ChyronConfig; scale: number
 }
 
 // ─── Crawl Layer ───────────────────────────────────────────────────
-function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) {
+function CrawlLayer({ config, scale, isPaused = false }: { config: ChyronConfig; scale: number; isPaused?: boolean }) {
   const { crawl } = config;
   const textRef = useRef<HTMLDivElement>(null);
   const [textWidth, setTextWidth] = useState(0);
@@ -361,6 +360,7 @@ function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
           whiteSpace: 'nowrap',
           textTransform: 'uppercase',
           animation: textWidth > 0 ? `scroll-chyron ${durationSeconds}s linear infinite` : 'none',
+          animationPlayState: isPaused ? 'paused' : 'running',
           willChange: 'transform',
           backfaceVisibility: 'hidden',
           WebkitFontSmoothing: 'antialiased',
@@ -378,11 +378,11 @@ function CrawlLayer({ config, scale }: { config: ChyronConfig; scale: number }) 
 }
 
 // ─── Composite Chyron Preview ──────────────────────────────────────
-export default function ChyronPreview({ config, scale = 1 }: { config: ChyronConfig; scale?: number }) {
+export default function ChyronPreview({ config, scale = 1, isPaused = false }: { config: ChyronConfig; scale?: number; isPaused?: boolean }) {
   const layerRenderers: Record<string, React.ReactNode> = {
     title: <TitleLayer key="title" config={config} scale={scale} />,
     subheader: <SubheaderLayer key="subheader" config={config} scale={scale} />,
-    crawl: <CrawlLayer key="crawl" config={config} scale={scale} />,
+    crawl: <CrawlLayer key="crawl" config={config} scale={scale} isPaused={isPaused} />,
   };
 
   const layers = config.layerOrder
@@ -410,18 +410,6 @@ export default function ChyronPreview({ config, scale = 1 }: { config: ChyronCon
       overflow: 'hidden',
       position: 'relative',
     }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@500;600;700;800&family=Outfit:wght@500;600;700&family=VT323&display=swap');
-        @keyframes scroll-chyron {
-          from { transform: translate3d(0, 0, 0); }
-          to { transform: translate3d(-100%, 0, 0); }
-        }
-        @keyframes pulse-dot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(0.85); }
-        }
-      `}</style>
-      
       {config.logo.enabled && config.logo.spanRows && (
         <LogoBug config={config} scale={scale} />
       )}
