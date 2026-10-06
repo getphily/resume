@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "@radix-ui/themes/styles.css";
 
 export const metadata: Metadata = {
   title: "getphily's OBS Widgets",
@@ -9,6 +8,13 @@ export const metadata: Metadata = {
 
 import ThemeProvider from "./ThemeProvider";
 import { Toaster } from 'react-hot-toast';
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
+
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export default function RootLayout({
   children,
@@ -16,11 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark">
+    <html lang="en" data-theme="dark" className={cn("font-sans", geist.variable)}>
       <body>
         <ThemeProvider>
-          <Toaster position="top-center" />
-          {children}
+          <TooltipProvider delayDuration={200}>
+            <Toaster position="top-center" />
+            {children}
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

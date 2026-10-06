@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, Heading, Text, Flex, Box, Button, TextField } from '@radix-ui/themes';
-import { CopyIcon, CheckIcon } from '@radix-ui/react-icons';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Copy, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface ObsExportCardProps {
@@ -20,6 +23,7 @@ export function ObsExportCard({
   allowTransparency = true,
   notes,
   title = 'EXPORT TO OBS',
+  className = '',
 }: ObsExportCardProps) {
   const [copied, setCopied] = useState(false);
 
@@ -39,61 +43,68 @@ export function ObsExportCard({
   };
 
   return (
-    <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: 'var(--bg-panel)' }}>
-      <Flex justify="between" align="center">
-        <Heading size="3" style={{ color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <Card className={`border-border bg-card shadow-sm ${className}`}>
+      <CardHeader className="pb-3 pt-5 px-5 flex flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
           {title}
-        </Heading>
-        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent-primary)', backgroundColor: 'var(--bg-main)', padding: '2px 8px', borderRadius: '12px' }}>
+        </CardTitle>
+        <Badge variant="secondary" className="text-[11px] font-semibold text-primary bg-primary/10">
           Browser Source
-        </span>
-      </Flex>
+        </Badge>
+      </CardHeader>
 
-      <Text size="2" color="gray" style={{ lineHeight: 1.5 }}>
-        Copy this URL and paste it into a new <strong>Browser Source</strong> in OBS Studio. Any changes made here sync in real-time without restarting OBS!
-      </Text>
+      <CardContent className="px-5 pb-5 flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Copy this URL and paste it into a new <strong className="text-foreground">Browser Source</strong> in OBS Studio. Any changes made here sync in real-time without restarting OBS!
+        </p>
 
-      <ul style={{ color: 'var(--text-secondary)', fontSize: '13px', lineHeight: 1.6, paddingLeft: '20px', margin: 0 }}>
-        <li>Set Dimensions to <strong>{dimensions}</strong> (or your canvas size)</li>
-        {allowTransparency && (
-          <li>Ensure <strong>&quot;Allow transparency&quot;</strong> is checked in OBS</li>
-        )}
-        {notes?.map((note, index) => (
-          <li key={index}>{note}</li>
-        ))}
-      </ul>
+        <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-5">
+          <li>
+            Set Dimensions to <strong className="text-foreground">{dimensions}</strong> (or your canvas size)
+          </li>
+          {allowTransparency && (
+            <li>
+              Ensure <strong className="text-foreground">&quot;Allow transparency&quot;</strong> is checked in OBS
+            </li>
+          )}
+          {notes?.map((note, index) => (
+            <li key={index}>{note}</li>
+          ))}
+        </ul>
 
-      <Box p="3" style={{ backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-subtle)', borderRadius: '8px' }}>
-        <Text size="1" weight="bold" color="gray" style={{ display: 'block', marginBottom: '8px' }}>
-          YOUR UNIQUE WIDGET URL:
-        </Text>
-        <Flex gap="2" align="center">
-          <TextField.Root
-            size="2"
-            readOnly
-            value={url}
-            onClick={(e) => (e.target as HTMLInputElement).select()}
-            style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: '13px', cursor: 'text' }}
-          />
-          <Button
-            size="2"
-            variant="solid"
-            color={copied ? 'green' : 'indigo'}
-            onClick={handleCopy}
-            style={{ fontWeight: 600, minWidth: '90px', cursor: 'pointer' }}
-          >
-            {copied ? (
-              <>
-                <CheckIcon width={16} height={16} /> Copied!
-              </>
-            ) : (
-              <>
-                <CopyIcon width={16} height={16} /> Copy
-              </>
-            )}
-          </Button>
-        </Flex>
-      </Box>
+        <div className="p-3 bg-muted/50 border border-border rounded-lg flex flex-col gap-2">
+          <span className="text-[10px] font-bold tracking-wider uppercase text-muted-foreground">
+            Your Unique Widget URL:
+          </span>
+          <div className="flex items-center gap-2">
+            <Input
+              readOnly
+              value={url}
+              onClick={(e) => (e.target as HTMLInputElement).select()}
+              className="font-mono text-xs bg-background h-9 selection:bg-primary/20"
+            />
+            <Button
+              size="sm"
+              onClick={handleCopy}
+              className={`h-9 px-3 gap-1.5 font-medium shrink-0 transition-colors ${
+                copied
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" /> Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" /> Copy
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }

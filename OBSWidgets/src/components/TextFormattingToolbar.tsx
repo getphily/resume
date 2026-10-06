@@ -1,10 +1,28 @@
 'use client';
 
 import React from 'react';
-import * as Toolbar from '@radix-ui/react-toolbar';
-import { FontBoldIcon, FontItalicIcon, LetterCaseCapitalizeIcon, Pencil1Icon } from '@radix-ui/react-icons';
+import { Bold, Italic, CaseUpper, Paintbrush } from 'lucide-react';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
-import { Box, Text, TextField, Select, Slider, IconButton, Tooltip, Popover } from '@radix-ui/themes';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type TextFormatPatch = Record<string, any>;
@@ -46,185 +64,226 @@ export function TextFormattingToolbar({
   showBgColor = false,
 }: TextFormatProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
+    <div className="flex flex-col gap-2.5 w-full">
       {text !== undefined && (
-        <TextField.Root 
-          size="2" 
+        <Input 
           value={text} 
           onChange={e => onChange({ text: e.target.value })} 
           placeholder="Text content..." 
+          className="h-9 text-xs"
         />
       )}
 
       {/* Ribbon Control Toolbar */}
-      <Toolbar.Root 
+      <div 
+        role="toolbar"
         aria-label="Text Formatting"
-        style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '4px', 
-          padding: '4px', 
-          backgroundColor: 'var(--bg-panel)', 
-          border: '1px solid var(--border-subtle)', 
-          borderRadius: '6px',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-          flexWrap: 'wrap'
-        }}
+        className="flex items-center gap-1.5 p-1 bg-card border border-border rounded-lg shadow-2xs flex-wrap"
       >
         {/* Font Family Selector */}
-        <Select.Root 
-          size="1" 
-          value={fontFamily || 'Inter'} 
-          onValueChange={f => onChange({ fontFamily: f })}
-        >
-          <Select.Trigger variant="ghost" color="gray" style={{ minWidth: '110px' }} />
-          <Select.Content position="popper">
-            {FONTS_LIST.map(f => (
-              <Select.Item 
-                key={f} 
-                value={f} 
-                style={{ fontFamily: `'${f}', sans-serif`, fontSize: '13px' }}
-              >
-                {f}
-              </Select.Item>
-            ))}
-          </Select.Content>
-        </Select.Root>
+        <div className="w-32">
+          <Select 
+            value={fontFamily || 'Inter'} 
+            onValueChange={f => onChange({ fontFamily: f })}
+          >
+            <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+              <SelectValue placeholder="Font" />
+            </SelectTrigger>
+            <SelectContent>
+              {FONTS_LIST.map(f => (
+                <SelectItem 
+                  key={f} 
+                  value={f} 
+                  style={{ fontFamily: `'${f}', sans-serif` }}
+                  className="text-xs"
+                >
+                  {f}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Toolbar.Separator style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+        <div className="w-px h-4 bg-border mx-0.5" />
 
         {/* Font Size Selector if available */}
         {fontSize !== undefined && (
           typeof fontSize === 'string' ? (
-            <Select.Root 
-              size="1" 
-              value={fontSize} 
-              onValueChange={s => onChange({ fontSize: s })}
-            >
-              <Select.Trigger variant="ghost" color="gray" />
-              <Select.Content position="popper">
-                <Select.Item value="SMALL">Small</Select.Item>
-                <Select.Item value="MEDIUM">Medium</Select.Item>
-                <Select.Item value="LARGE">Large</Select.Item>
-                <Select.Item value="EXTRA LARGE">Extra Large</Select.Item>
-              </Select.Content>
-            </Select.Root>
+            <div className="w-28">
+              <Select 
+                value={fontSize} 
+                onValueChange={s => onChange({ fontSize: s })}
+              >
+                <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SMALL" className="text-xs">Small</SelectItem>
+                  <SelectItem value="MEDIUM" className="text-xs">Medium</SelectItem>
+                  <SelectItem value="LARGE" className="text-xs">Large</SelectItem>
+                  <SelectItem value="EXTRA LARGE" className="text-xs">Extra Large</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           ) : (
-            <Select.Root 
-              size="1" 
-              value={fontSize >= 1.2 ? '1.2' : fontSize <= 0.82 ? '0.82' : '1.0'} 
-              onValueChange={v => onChange({ fontSize: parseFloat(v) })}
-            >
-              <Select.Trigger variant="ghost" color="gray" />
-              <Select.Content position="popper">
-                <Select.Item value="0.82">Small</Select.Item>
-                <Select.Item value="1.0">Medium</Select.Item>
-                <Select.Item value="1.2">Large</Select.Item>
-              </Select.Content>
-            </Select.Root>
+            <div className="w-24">
+              <Select 
+                value={fontSize >= 1.2 ? '1.2' : fontSize <= 0.82 ? '0.82' : '1.0'} 
+                onValueChange={v => onChange({ fontSize: parseFloat(v) })}
+              >
+                <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0.82" className="text-xs">Small</SelectItem>
+                  <SelectItem value="1.0" className="text-xs">Medium</SelectItem>
+                  <SelectItem value="1.2" className="text-xs">Large</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )
         )}
 
         {fontSize !== undefined && (
-          <Toolbar.Separator style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+          <div className="w-px h-4 bg-border mx-0.5" />
         )}
 
         {/* Bold Toggle */}
         {bold !== undefined && (
-          <Tooltip content="Bold">
-            <IconButton 
-              variant={bold ? "soft" : "ghost"} 
-              color={bold ? "blue" : "gray"} 
-              size="1" 
-              onClick={() => onChange({ bold: !bold })}
-              aria-label="Toggle Bold"
-            >
-              <FontBoldIcon />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={bold ? "secondary" : "ghost"} 
+                size="icon" 
+                onClick={() => onChange({ bold: !bold })}
+                aria-label="Toggle Bold"
+                className={`h-7 w-7 ${bold ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+              >
+                <Bold className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Bold</p></TooltipContent>
           </Tooltip>
         )}
 
         {/* Italic Toggle */}
         {italic !== undefined && (
-          <Tooltip content="Italic">
-            <IconButton 
-              variant={italic ? "soft" : "ghost"} 
-              color={italic ? "blue" : "gray"} 
-              size="1" 
-              onClick={() => onChange({ italic: !italic })}
-              aria-label="Toggle Italic"
-            >
-              <FontItalicIcon />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={italic ? "secondary" : "ghost"} 
+                size="icon" 
+                onClick={() => onChange({ italic: !italic })}
+                aria-label="Toggle Italic"
+                className={`h-7 w-7 ${italic ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+              >
+                <Italic className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Italic</p></TooltipContent>
           </Tooltip>
         )}
 
         {/* Uppercase Toggle */}
         {textTransform !== undefined && (
-          <Tooltip content="Uppercase">
-            <IconButton 
-              variant={textTransform === 'uppercase' ? "soft" : "ghost"} 
-              color={textTransform === 'uppercase' ? "blue" : "gray"} 
-              size="1" 
-              onClick={() => onChange({ textTransform: textTransform === 'uppercase' ? 'none' : 'uppercase' })}
-              aria-label="Toggle Uppercase"
-            >
-              <LetterCaseCapitalizeIcon />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={textTransform === 'uppercase' ? "secondary" : "ghost"} 
+                size="icon" 
+                onClick={() => onChange({ textTransform: textTransform === 'uppercase' ? 'none' : 'uppercase' })}
+                aria-label="Toggle Uppercase"
+                className={`h-7 w-7 ${textTransform === 'uppercase' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+              >
+                <CaseUpper className="w-3.5 h-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent><p>Uppercase</p></TooltipContent>
           </Tooltip>
         )}
 
         {(bold !== undefined || italic !== undefined || textTransform !== undefined) && (
-          <Toolbar.Separator style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+          <div className="w-px h-4 bg-border mx-0.5" />
         )}
 
-        {/* Color Popovers */}
+        {/* Text Color Popover */}
         {textColor !== undefined && (
-          <Popover.Root>
-            <Tooltip content="Text Color">
-              <Popover.Trigger>
-                <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', padding: 0, gap: '2px' }}>
-                  <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'sans-serif', lineHeight: 1 }}>A</span>
-                  <div style={{ width: '14px', height: '3px', backgroundColor: textColor, borderRadius: '1px', border: textColor === '#000000' || textColor === '#111111' ? '1px solid rgba(255,255,255,0.2)' : 'none' }} />
-                </IconButton>
-              </Popover.Trigger>
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    aria-label="Text Color"
+                    className="h-7 w-7 flex flex-col items-center justify-center p-0 gap-0.5"
+                  >
+                    <span className="text-xs font-bold leading-none">A</span>
+                    <div 
+                      className="w-3.5 h-1 rounded-xs" 
+                      style={{ backgroundColor: textColor }} 
+                    />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent><p>Text Color</p></TooltipContent>
             </Tooltip>
-            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid var(--border-subtle)', zIndex: 100 }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
+            <PopoverContent sideOffset={5} className="w-64 p-4">
+              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">
+                Text Color
+              </span>
               <ColorInputWithPalette value={textColor} onChange={c => onChange({ textColor: c })} />
               {opacity !== undefined && (
-                <Box mt="3">
-                  <Text as="label" size="1" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>OPACITY</Text>
+                <div className="mt-3 flex flex-col gap-1.5">
+                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Opacity
+                  </span>
                   <Slider min={0} max={1} step={0.05} value={[opacity]} onValueChange={v => onChange({ opacity: v[0] })} />
-                </Box>
+                </div>
               )}
-            </Popover.Content>
-          </Popover.Root>
+            </PopoverContent>
+          </Popover>
         )}
 
+        {/* Background Color Popover */}
         {showBgColor && bgColor !== undefined && (
-          <Popover.Root>
-            <Tooltip content="Background Color">
-              <Popover.Trigger>
-                <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', padding: 0, gap: '2px' }}>
-                  <Pencil1Icon width={13} height={13} />
-                  <div style={{ width: '14px', height: '3px', backgroundColor: bgColor, borderRadius: '1px', border: bgColor === '#000000' || bgColor === '#111111' ? '1px solid rgba(255,255,255,0.2)' : 'none' }} />
-                </IconButton>
-              </Popover.Trigger>
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    aria-label="Background Color"
+                    className="h-7 w-7 flex flex-col items-center justify-center p-0 gap-0.5"
+                  >
+                    <Paintbrush className="w-3 h-3 text-muted-foreground" />
+                    <div 
+                      className="w-3.5 h-1 rounded-xs" 
+                      style={{ backgroundColor: bgColor }} 
+                    />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent><p>Background Color</p></TooltipContent>
             </Tooltip>
-            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', border: '1px solid var(--border-subtle)', zIndex: 100 }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND COLOR</label>
+            <PopoverContent sideOffset={5} className="w-64 p-4">
+              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">
+                Background Color
+              </span>
               <ColorInputWithPalette value={bgColor} onChange={c => onChange({ bgColor: c })} />
               {bgOpacity !== undefined && (
-                <Box mt="3">
-                  <Text as="label" size="1" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>OPACITY</Text>
+                <div className="mt-3 flex flex-col gap-1.5">
+                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Opacity
+                  </span>
                   <Slider min={0} max={1} step={0.05} value={[bgOpacity]} onValueChange={v => onChange({ bgOpacity: v[0] })} />
-                </Box>
+                </div>
               )}
-            </Popover.Content>
-          </Popover.Root>
+            </PopoverContent>
+          </Popover>
         )}
-      </Toolbar.Root>
+      </div>
     </div>
   );
 }

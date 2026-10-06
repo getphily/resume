@@ -1,61 +1,56 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { DragHandleDots2Icon, ClockIcon, CalendarIcon, ArrowLeftIcon } from '@radix-ui/react-icons';
-import * as Popover from '@radix-ui/react-popover';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 import { TextFormattingToolbar } from '@/components/TextFormattingToolbar';
 import { ObsExportCard } from '@/components/ObsExportCard';
-import { Card, TextField, SegmentedControl, Switch, Text, Heading, Button, IconButton, Flex, Box, Grid, Select, RadioCards, CheckboxCards, Slider, Tooltip, Badge } from '@radix-ui/themes';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
 import { BROADCAST_PRESETS } from '@/lib/presets';
 import type { ChyronConfig, CrawlBlock } from '@/types/chyron';
 import { DEFAULT_CHYRON_CONFIG } from '@/types/chyron';
-
-// ─── Drag Handle Icon ──────────────────────────────────────────────
-const DragHandle = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" style={{ opacity: 0.4, cursor: 'grab', flexShrink: 0 }}>
-    <circle cx="5" cy="3" r="1.5" /><circle cx="11" cy="3" r="1.5" />
-    <circle cx="5" cy="8" r="1.5" /><circle cx="11" cy="8" r="1.5" />
-    <circle cx="5" cy="13" r="1.5" /><circle cx="11" cy="13" r="1.5" />
-  </svg>
-);
-
-// ─── Eye Toggle Icon ───────────────────────────────────────────────
-const EyeIcon = ({ visible }: { visible: boolean }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: visible ? 1 : 0.3 }}>
-    {visible ? (
-      <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </>
-    ) : (
-      <>
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-        <line x1="1" y1="1" x2="23" y2="23" />
-      </>
-    )}
-  </svg>
-);
-
-// ─── Trash Icon ────────────────────────────────────────────────────
-const TrashIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" />
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-);
-
-
+import { 
+  GripVertical, 
+  Eye, 
+  EyeOff, 
+  Trash2, 
+  Plus, 
+  ArrowLeft, 
+  Check, 
+  Copy, 
+  Maximize2 
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const LAYER_LABELS: Record<string, string> = {
   title: 'Title Bar',
+  subheader: 'Subheader',
   logo: 'Logo Bug',
   clock: 'Clock / Date',
   crawl: 'Crawl Ticker',
@@ -67,8 +62,8 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
   const update = (patch: Partial<typeof t>) => onChange({ ...config, title: { ...t, ...patch } });
 
   return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>TITLE BAR</h3>
+    <Card className="border-border bg-card p-5 flex flex-col gap-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Title Bar</h3>
       <TextFormattingToolbar
         text={t.text}
         fontFamily={t.fontFamily}
@@ -84,47 +79,88 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
   );
 }
 
+// ─── Properties: Subheader ─────────────────────────────────────────────
+function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
+  const s = config.subheader;
+  const update = (patch: Partial<typeof s>) => onChange({ ...config, subheader: { ...s, ...patch } });
+
+  return (
+    <Card className="border-border bg-card p-5 flex flex-col gap-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Subheader</h3>
+      <TextFormattingToolbar
+        text={s.text}
+        fontFamily={s.fontFamily}
+        fontSize={s.fontSize}
+        bold={s.bold}
+        textTransform={s.textTransform as any}
+        textColor={s.textColor}
+        bgColor={s.bgColor}
+        showBgColor={true}
+        onChange={update}
+      />
+    </Card>
+  );
+}
+
 // ─── Properties: Logo ──────────────────────────────────────────────
 function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
   const l = config.logo;
   const update = (patch: Partial<typeof l>) => onChange({ ...config, logo: { ...l, ...patch } });
 
   return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>LOGO BUG</h3>
+    <Card className="border-border bg-card p-5 flex flex-col gap-4">
+      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Logo Bug</h3>
       
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>MODE</label>
-          <SegmentedControl.Root size="1" value={l.mode} onValueChange={val => update({ mode: val as any })} style={{ width: '100%' }}>
-            <SegmentedControl.Item value="TEXT">TEXT</SegmentedControl.Item>
-            <SegmentedControl.Item value="IMAGE">IMAGE</SegmentedControl.Item>
-          </SegmentedControl.Root>
+      <div className="flex gap-4 flex-wrap">
+        <div className="flex-1 min-w-[180px] flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-foreground">Mode</label>
+          <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-md">
+            <button
+              type="button"
+              onClick={() => update({ mode: 'TEXT' })}
+              className={cn(
+                "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                l.mode === 'TEXT' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              TEXT
+            </button>
+            <button
+              type="button"
+              onClick={() => update({ mode: 'IMAGE' })}
+              className={cn(
+                "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                l.mode === 'IMAGE' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              IMAGE
+            </button>
+          </div>
         </div>
         
-        <div style={{ flex: 2, minWidth: '300px' }}>
+        <div className="flex-2 min-w-[260px] flex flex-col gap-1.5">
           {l.mode === 'TEXT' ? (
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LOGO TEXT</label>
-              <TextField.Root size="2" value={l.text} onChange={e => update({ text: e.target.value })} placeholder="e.g. CNN, LIVE, C-SPAN" />
+              <label className="text-xs font-semibold text-foreground block mb-1.5">Logo Text</label>
+              <Input value={l.text} onChange={e => update({ text: e.target.value })} placeholder="e.g. CNN, LIVE, C-SPAN" className="h-9 text-xs" />
             </div>
           ) : (
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>IMAGE URL</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <TextField.Root size="2" value={l.imageUrl} onChange={e => update({ imageUrl: e.target.value })} placeholder="Paste image URL" style={{ flex: 1 }} />
-                <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 12px', backgroundColor: 'var(--module-grey)', border: '1px solid var(--border-subtle)', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}>
-                  UPLOAD
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
+              <label className="text-xs font-semibold text-foreground block mb-1.5">Image URL</label>
+              <div className="flex gap-2">
+                <Input value={l.imageUrl} onChange={e => update({ imageUrl: e.target.value })} placeholder="Paste image URL" className="flex-1 h-9 text-xs" />
+                <label className="cursor-pointer flex items-center px-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold shrink-0 transition-colors">
+                  Upload
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (!file) return;
                     const toastId = toast.loading('Uploading image...');
                     try {
                       const fileExt = file.name.split('.').pop();
                       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-                      const { data, error } = await supabase.storage.from('assets').upload(`chyron/${fileName}`, file, { upsert: true });
+                      const { error } = await supabase.storage.from('assets').upload(`chyron/${fileName}`, file, { upsert: true });
                       if (error) {
-                        const { data: data2, error: error2 } = await supabase.storage.from('images').upload(`chyron/${fileName}`, file, { upsert: true });
+                        const { error: error2 } = await supabase.storage.from('images').upload(`chyron/${fileName}`, file, { upsert: true });
                         if (error2) throw error2;
                         const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(`chyron/${fileName}`);
                         update({ imageUrl: publicUrl });
@@ -144,144 +180,92 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
         </div>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        padding: '4px', 
-        width: '100%', 
-        borderRadius: '6px', 
-        backgroundColor: 'var(--bg-panel)',
-        border: '1px solid var(--border-subtle)',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-        flexWrap: 'wrap',
-        gap: '4px'
-      }}>
+      <div className="flex items-center gap-1.5 p-1 bg-muted/40 border border-border rounded-lg flex-wrap">
         {/* Toggles */}
-        <Flex gap="1" align="center">
-          <Tooltip content="Span All Rows">
-            <IconButton 
-              variant={l.spanRows ? "soft" : "ghost"} 
-              color={l.spanRows ? "blue" : "gray"}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              size="icon" 
+              variant={l.spanRows ? "secondary" : "ghost"} 
               onClick={() => update({ spanRows: !l.spanRows })}
+              className={cn("h-8 w-8", l.spanRows ? "text-primary bg-primary/10" : "text-muted-foreground")}
+              aria-label="Span All Rows"
             >
-              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 3C1.22386 3 1 3.22386 1 3.5C1 3.77614 1.22386 4 1.5 4H13.5C13.7761 4 14 3.77614 14 3.5C14 3.22386 13.7761 3 13.5 3H1.5ZM1 7.5C1 7.22386 1.22386 7 1.5 7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H1.5C1.22386 8 1 7.77614 1 7.5ZM1 11.5C1 11.2239 1.22386 11 1.5 11H13.5C13.7761 11 14 11.2239 14 11.5C14 11.7761 13.7761 12 13.5 12H1.5C1.22386 12 1 11.7761 1 11.5Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
-            </IconButton>
-          </Tooltip>
-          {l.mode === 'IMAGE' && (
-            <Tooltip content="Show LIVE Badge">
-              <IconButton 
-                variant={l.showLiveBadge !== false ? "soft" : "ghost"} 
-                color={l.showLiveBadge !== false ? "blue" : "gray"}
-                onClick={() => update({ showLiveBadge: l.showLiveBadge === false })}
-              >
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'currentColor' }} />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Flex>
-
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
-
-        {/* Font & Position & Aspect Ratio */}
-        <Tooltip content="Font Family">
-          <Select.Root size="1" value={l.fontFamily} onValueChange={val => update({ fontFamily: val })}>
-            <Select.Trigger variant="ghost" color="gray" />
-            <Select.Content>
-              <Select.Item value="Inter">Inter</Select.Item>
-              <Select.Item value="Outfit">Outfit</Select.Item>
-              <Select.Item value="Bebas Neue">Bebas Neue</Select.Item>
-            </Select.Content>
-          </Select.Root>
+              <Maximize2 className="w-3.5 h-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent><p>Span All Rows</p></TooltipContent>
         </Tooltip>
 
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+        <div className="w-px h-4 bg-border mx-0.5" />
 
-        <Tooltip content="Position">
-          <Select.Root size="1" value={l.position} onValueChange={val => update({ position: val as any })}>
-            <Select.Trigger variant="ghost" color="gray" />
-            <Select.Content>
-              <Select.Item value="LEFT">Left</Select.Item>
-              <Select.Item value="RIGHT">Right</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Tooltip>
-
-        {l.mode === 'IMAGE' && (
-          <>
-            <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
-            <Tooltip content="Aspect Ratio">
-              <Select.Root size="1" value={l.aspectRatio || '1:1'} onValueChange={val => update({ aspectRatio: val as any })}>
-                <Select.Trigger variant="ghost" color="gray" />
-                <Select.Content>
-                  <Select.Item value="1:1">1:1 Square</Select.Item>
-                  <Select.Item value="16:9">16:9 Wide</Select.Item>
-                </Select.Content>
-              </Select.Root>
-            </Tooltip>
-          </>
+        {/* Font dropdown for text mode */}
+        {l.mode === 'TEXT' && (
+          <div className="w-28">
+            <Select value={l.fontFamily || 'Inter'} onValueChange={val => update({ fontFamily: val })}>
+              <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Inter" className="text-xs">Inter</SelectItem>
+                <SelectItem value="Outfit" className="text-xs">Outfit</SelectItem>
+                <SelectItem value="Bebas Neue" className="text-xs">Bebas Neue</SelectItem>
+                <SelectItem value="Roboto Mono" className="text-xs">Roboto Mono</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
 
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+        {/* Position */}
+        <div className="w-24">
+          <Select value={l.position || 'LEFT'} onValueChange={val => update({ position: val as any })}>
+            <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="LEFT" className="text-xs">Left</SelectItem>
+              <SelectItem value="RIGHT" className="text-xs">Right</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Colors */}
-        <Popover.Root>
-          <Tooltip content="Text Color">
-            <Popover.Trigger asChild>
-              <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600 }}>T</span>
-                <div style={{ width: '14px', height: '14px', backgroundColor: l.textColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
-              </IconButton>
-            </Popover.Trigger>
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground">
+                  <span className="font-bold">T</span>
+                  <div className="w-3.5 h-3.5 rounded-xs border border-border" style={{ backgroundColor: l.textColor }} />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent><p>Text Color</p></TooltipContent>
           </Tooltip>
-          <Popover.Portal>
-            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
-              <ColorInputWithPalette value={l.textColor} onChange={val => update({ textColor: val })} />
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
+          <PopoverContent sideOffset={5} className="w-64 p-4">
+            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
+            <ColorInputWithPalette value={l.textColor} onChange={val => update({ textColor: val })} />
+          </PopoverContent>
+        </Popover>
 
-        <Popover.Root>
-          <Tooltip content="Background Color">
-            <Popover.Trigger asChild>
-              <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600 }}>BG</span>
-                <div style={{ width: '14px', height: '14px', backgroundColor: l.bgColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
-              </IconButton>
-            </Popover.Trigger>
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground">
+                  <span className="font-bold">BG</span>
+                  <div className="w-3.5 h-3.5 rounded-xs border border-border" style={{ backgroundColor: l.bgColor }} />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent><p>Background Color</p></TooltipContent>
           </Tooltip>
-          <Popover.Portal>
-            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND</label>
-              <ColorInputWithPalette value={l.bgColor} onChange={val => update({ bgColor: val })} />
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
-
+          <PopoverContent sideOffset={5} className="w-64 p-4">
+            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
+            <ColorInputWithPalette value={l.bgColor} onChange={val => update({ bgColor: val })} />
+          </PopoverContent>
+        </Popover>
       </div>
-    </Card>
-  );
-}
-
-// ─── Properties: Subheader ─────────────────────────────────────────────
-function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
-  const s = config.subheader;
-  const update = (patch: Partial<typeof s>) => onChange({ ...config, subheader: { ...s, ...patch } });
-
-  return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>SUBHEADER</h3>
-      <TextFormattingToolbar
-        text={s.text}
-        fontFamily={s.fontFamily}
-        fontSize={s.fontSize}
-        bold={s.bold}
-        textTransform={s.textTransform as any}
-        textColor={s.textColor}
-        bgColor={s.bgColor}
-        showBgColor={true}
-        onChange={update}
-      />
     </Card>
   );
 }
@@ -292,152 +276,101 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
   const update = (patch: Partial<typeof c>) => onChange({ ...config, clock: { ...c, ...patch } });
 
   return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CLOCK / DATE</h3>
-        <Flex align="center" gap="2">
-          <Switch size="1" checked={c.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
-          <Text size="2" weight="bold" color="gray">ENABLE CLOCK</Text>
-        </Flex>
+    <Card className="border-border bg-card p-5 flex flex-col gap-4">
+      <div className="flex justify-between items-center">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Clock / Date</h3>
+        <div className="flex items-center gap-2">
+          <Switch checked={c.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
+          <span className="text-xs font-bold text-muted-foreground uppercase">Enable Clock</span>
+        </div>
       </div>
 
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        padding: '4px', 
-        width: '100%', 
-        borderRadius: '6px', 
-        backgroundColor: 'var(--bg-panel)',
-        border: '1px solid var(--border-subtle)',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-        flexWrap: 'wrap',
-        gap: '4px'
-      }}>
+      <div className="flex items-center gap-1.5 p-1 bg-muted/40 border border-border rounded-lg flex-wrap">
         {/* Format */}
-        <Tooltip content="Time Format">
-          <Select.Root size="1" value={c.format} onValueChange={val => update({ format: val as any })}>
-            <Select.Trigger variant="ghost" color="gray" />
-            <Select.Content>
-              <Select.Item value="12HR">12 HR</Select.Item>
-              <Select.Item value="24HR">24 HR</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Tooltip>
+        <div className="w-24">
+          <Select value={c.format} onValueChange={val => update({ format: val as any })}>
+            <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="12HR" className="text-xs">12 HR</SelectItem>
+              <SelectItem value="24HR" className="text-xs">24 HR</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+        <div className="w-px h-4 bg-border mx-0.5" />
 
         {/* Timezone */}
-        <Tooltip content="Timezone">
-          <Select.Root size="1" value={c.timezone} onValueChange={val => update({ timezone: val })}>
-            <Select.Trigger variant="ghost" color="gray" />
-            <Select.Content>
-              <Select.Item value="LOCAL">Local Time</Select.Item>
-              <Select.Item value="UTC">UTC</Select.Item>
-              <Select.Item value="America/New_York">EST</Select.Item>
-              <Select.Item value="America/Los_Angeles">PST</Select.Item>
-              <Select.Item value="Europe/London">GMT</Select.Item>
-              <Select.Item value="Asia/Tokyo">JST</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Tooltip>
+        <div className="w-28">
+          <Select value={c.timezone} onValueChange={val => update({ timezone: val })}>
+            <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="LOCAL" className="text-xs">Local Time</SelectItem>
+              <SelectItem value="UTC" className="text-xs">UTC</SelectItem>
+              <SelectItem value="America/New_York" className="text-xs">EST</SelectItem>
+              <SelectItem value="America/Los_Angeles" className="text-xs">PST</SelectItem>
+              <SelectItem value="Europe/London" className="text-xs">GMT</SelectItem>
+              <SelectItem value="Asia/Tokyo" className="text-xs">JST</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+        <div className="w-px h-4 bg-border mx-0.5" />
 
         {/* Position */}
-        <Tooltip content="Position">
-          <Select.Root size="1" value={c.position} onValueChange={val => update({ position: val as any })}>
-            <Select.Trigger variant="ghost" color="gray" />
-            <Select.Content>
-              <Select.Item value="LEFT">Left Align</Select.Item>
-              <Select.Item value="RIGHT">Right Align</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Tooltip>
+        <div className="w-24">
+          <Select value={c.position} onValueChange={val => update({ position: val as any })}>
+            <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="LEFT" className="text-xs">Left Align</SelectItem>
+              <SelectItem value="RIGHT" className="text-xs">Right Align</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
-
-        {/* Size */}
-        <Tooltip content="Font Size">
-          <Select.Root size="1" value={c.fontSize === 0.82 ? '0.82' : c.fontSize === 1.2 ? '1.2' : '1.0'} onValueChange={val => update({ fontSize: parseFloat(val) })}>
-            <Select.Trigger variant="ghost" color="gray" />
-            <Select.Content>
-              <Select.Item value="0.82">Small</Select.Item>
-              <Select.Item value="1.0">Medium</Select.Item>
-              <Select.Item value="1.2">Large</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Tooltip>
-
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
-
-        {/* Toggles */}
-        <Flex gap="1" align="center">
-          <Tooltip content="Show Seconds">
-            <IconButton 
-              variant={c.showSeconds ? "soft" : "ghost"} 
-              color={c.showSeconds ? "blue" : "gray"}
-              onClick={() => update({ showSeconds: !c.showSeconds })}
-            >
-              <ClockIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Show Date">
-            <IconButton 
-              variant={c.showDate ? "soft" : "ghost"} 
-              color={c.showDate ? "blue" : "gray"}
-              onClick={() => update({ showDate: !c.showDate })}
-            >
-              <CalendarIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip content="Blink Colon">
-            <IconButton 
-              variant={c.blinkColon ? "soft" : "ghost"} 
-              color={c.blinkColon ? "blue" : "gray"}
-              onClick={() => update({ blinkColon: !c.blinkColon })}
-            >
-              <span style={{ fontWeight: 'bold' }}>:</span>
-            </IconButton>
-          </Tooltip>
-        </Flex>
-
-        <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+        <div className="w-px h-4 bg-border mx-0.5" />
 
         {/* Colors */}
-        <Popover.Root>
-          <Tooltip content="Text Color">
-            <Popover.Trigger asChild>
-              <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600 }}>T</span>
-                <div style={{ width: '14px', height: '14px', backgroundColor: c.textColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
-              </IconButton>
-            </Popover.Trigger>
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground">
+                  <span className="font-bold">T</span>
+                  <div className="w-3.5 h-3.5 rounded-xs border border-border" style={{ backgroundColor: c.textColor }} />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent><p>Text Color</p></TooltipContent>
           </Tooltip>
-          <Popover.Portal>
-            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
-              <ColorInputWithPalette value={c.textColor} onChange={val => update({ textColor: val })} />
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
+          <PopoverContent sideOffset={5} className="w-64 p-4">
+            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
+            <ColorInputWithPalette value={c.textColor} onChange={val => update({ textColor: val })} />
+          </PopoverContent>
+        </Popover>
 
-        <Popover.Root>
-          <Tooltip content="Background Color">
-            <Popover.Trigger asChild>
-              <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600 }}>BG</span>
-                <div style={{ width: '14px', height: '14px', backgroundColor: c.bgColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
-              </IconButton>
-            </Popover.Trigger>
+        <Popover>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground">
+                  <span className="font-bold">BG</span>
+                  <div className="w-3.5 h-3.5 rounded-xs border border-border" style={{ backgroundColor: c.bgColor }} />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent><p>Background Color</p></TooltipContent>
           </Tooltip>
-          <Popover.Portal>
-            <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND</label>
-              <ColorInputWithPalette value={c.bgColor} onChange={val => update({ bgColor: val })} />
-            </Popover.Content>
-          </Popover.Portal>
-        </Popover.Root>
-
+          <PopoverContent sideOffset={5} className="w-64 p-4">
+            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
+            <ColorInputWithPalette value={c.bgColor} onChange={val => update({ bgColor: val })} />
+          </PopoverContent>
+        </Popover>
       </div>
     </Card>
   );
@@ -458,7 +391,6 @@ function CrawlBlocksManager({
   const [localExpandedId, setLocalExpandedId] = useState<string | null>(null);
   const expandedId = propExpandedId !== undefined ? propExpandedId : localExpandedId;
   const setExpandedId = propSetExpandedId || setLocalExpandedId;
-  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set());
   const cr = config.crawl;
 
@@ -496,14 +428,6 @@ function CrawlBlocksManager({
     onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
   };
 
-  const toggleSelection = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newSet = new Set(selectedBlockIds);
-    if (newSet.has(id)) newSet.delete(id);
-    else newSet.add(id);
-    setSelectedBlockIds(newSet);
-  };
-
   const bulkDeleteBlocks = () => {
     let remainingBlocks = cr.blocks.filter(b => !selectedBlockIds.has(b.id));
     if (remainingBlocks.length === 0) {
@@ -515,187 +439,144 @@ function CrawlBlocksManager({
       }];
     }
     onChange({ ...config, crawl: { ...cr, blocks: remainingBlocks } });
-    setShowBulkDeleteConfirm(false);
     setSelectedBlockIds(new Set());
     setExpandedId(null);
   };
 
   return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Flex align="center" gap="2">
-          <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCKS</h3>
-          <Badge size="1" variant="surface" color="indigo">
+    <Card className="border-border bg-card p-5 flex flex-col gap-4">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Crawl Blocks</h3>
+          <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
             {cr.blocks.length} {cr.blocks.length === 1 ? 'Block' : 'Blocks'}
           </Badge>
-        </Flex>
-        <Button onClick={() => addBlockAt(0)} size="1" color="amber" variant="solid" style={{ fontWeight: 700 }}>
-          + ADD BLOCK
+        </div>
+        <Button onClick={() => addBlockAt(0)} size="sm" className="h-8 gap-1.5 text-xs font-semibold">
+          <Plus className="w-3.5 h-3.5" /> Add Block
         </Button>
       </div>
 
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="crawl-blocks-accordion">
           {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-col gap-2">
               {cr.blocks.map((block, i) => (
-                  <Draggable key={block.id} draggableId={block.id} index={i}>
-                    {(provided, snapshot) => (
+                <Draggable key={block.id} draggableId={block.id} index={i}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      className={cn(
+                        "flex flex-col rounded-lg border border-border overflow-hidden transition-all",
+                        block.enabled ? "bg-card" : "bg-muted/40 opacity-60"
+                      )}
+                      style={provided.draggableProps.style}
+                    >
+                      {/* Header (Accordion Toggle) */}
                       <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        style={{
-                          display: 'flex', flexDirection: 'column',
-                          backgroundColor: block.enabled ? 'var(--bg-panel)' : 'var(--bg-main)',
-                          borderRadius: '8px', border: '1px solid var(--border-subtle)',
-                          opacity: block.enabled ? 1 : 0.6,
-                          overflow: 'hidden',
-                          ...provided.draggableProps.style,
-                        }}
+                        onClick={() => setExpandedId(expandedId === block.id ? null : block.id)}
+                        className={cn(
+                          "flex items-center gap-2.5 px-3 py-2.5 cursor-pointer transition-colors",
+                          expandedId === block.id ? "bg-muted/60" : "hover:bg-muted/30"
+                        )}
                       >
-                        {/* Header (Accordion Toggle) */}
-                        <div
-                          onClick={() => setExpandedId(expandedId === block.id ? null : block.id)}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '10px',
-                            padding: '12px 16px', cursor: 'pointer',
-                            backgroundColor: expandedId === block.id ? 'var(--accent-subtle, var(--bg-main))' : 'transparent',
-                          }}
-                        >
-                          <div {...provided.dragHandleProps} style={{ color: 'var(--text-muted)', cursor: 'grab', display: 'flex', alignItems: 'center' }}>
-                            <DragHandleDots2Icon />
-                          </div>
+                        <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab p-1">
+                          <GripVertical className="w-3.5 h-3.5" />
+                        </div>
 
-                          <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={selectedBlockIds.has(block.id)}
-                              onChange={(e) => {
-                                const newSet = new Set(selectedBlockIds);
-                                if (e.target.checked) newSet.add(block.id);
-                                else newSet.delete(block.id);
-                                setSelectedBlockIds(newSet);
-                              }}
-                              style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                        <div onClick={(e) => e.stopPropagation()} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedBlockIds.has(block.id)}
+                            onChange={(e) => {
+                              const newSet = new Set(selectedBlockIds);
+                              if (e.target.checked) newSet.add(block.id);
+                              else newSet.delete(block.id);
+                              setSelectedBlockIds(newSet);
+                            }}
+                            className="cursor-pointer w-4 h-4 rounded text-primary"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); updateBlock(block.id, { enabled: !block.enabled }); }}
+                          className="bg-transparent border-0 cursor-pointer p-1 text-muted-foreground hover:text-foreground shrink-0"
+                        >
+                          {block.enabled ? <Eye className="w-3.5 h-3.5 text-emerald-500" /> : <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />}
+                        </button>
+
+                        <span className="flex-1 font-semibold text-xs text-foreground truncate">
+                          {block.label || 'Unnamed Block'}
+                        </span>
+
+                        <span className={cn(
+                          "text-[10px] text-muted-foreground transition-transform",
+                          expandedId === block.id && "rotate-180"
+                        )}>
+                          ▼
+                        </span>
+                      </div>
+
+                      {/* Body */}
+                      {expandedId === block.id && (
+                        <div className="p-4 bg-muted/20 border-t border-border flex flex-col gap-3">
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-muted-foreground uppercase">Block Label</label>
+                            <Input 
+                              value={block.label || ''} 
+                              onChange={e => updateBlock(block.id, { label: e.target.value })} 
+                              placeholder="e.g. Headlines, Sponsors, Socials"
+                              className="h-8 text-xs"
                             />
                           </div>
 
-                          <button
-                            onClick={e => { e.stopPropagation(); updateBlock(block.id, { enabled: !block.enabled }); }}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
-                          >
-                            <EyeIcon visible={block.enabled} />
-                          </button>
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-[11px] font-semibold text-muted-foreground uppercase">Crawl Text</label>
+                            <Input 
+                              value={block.text || ''} 
+                              onChange={e => updateBlock(block.id, { text: e.target.value })} 
+                              placeholder="Type scrolling ticker text here..."
+                              className="h-8 text-xs font-mono"
+                            />
+                          </div>
 
-                          <span style={{ flex: 1, fontWeight: 700, fontSize: '13px', color: 'var(--text-primary)' }}>
-                            {block.label || 'Unnamed Block'}
-                          </span>
-
-                          <span style={{ color: 'var(--text-muted)', transform: expandedId === block.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                            ▼
-                          </span>
-                        </div>
-
-                        {/* Body */}
-                        {expandedId === block.id && (
-                          <div style={{ padding: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LABEL</label>
-                              <TextField.Root
-                                size="2"
-                                value={block.label}
-                                onChange={e => updateBlock(block.id, { label: e.target.value })}
-                              />
-                            </div>
-
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CRAWL TEXT</label>
-                              <textarea
-                                value={block.text}
-                                onChange={e => updateBlock(block.id, { text: e.target.value })}
-                                rows={3}
-                                className="form-input"
-                                style={{ 
-                                  resize: 'vertical', 
-                                  fontSize: '14px', 
-                                  width: '100%',
-                                  padding: '8px 12px',
-                                  backgroundColor: 'var(--bg-input)',
-                                  border: '1px solid var(--border-input)',
-                                  color: 'var(--text-primary)',
-                                  borderRadius: '6px'
-                                }}
-                              />
-                            </div>
-
-                            <Button
+                          <div className="flex justify-between items-center pt-2 border-t border-border mt-1">
+                            <span className="text-[11px] text-muted-foreground">Block #{i + 1}</span>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
                               onClick={() => deleteBlock(block.id)}
-                              size="1"
-                              color="red"
-                              variant="soft"
-                              style={{ width: '100%', marginTop: '5px' }}
+                              className="h-7 text-xs text-red-500 hover:text-red-600 hover:bg-red-500/10 gap-1"
                             >
-                              DELETE BLOCK
+                              <Trash2 className="w-3 h-3" /> Delete Block
                             </Button>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </Draggable>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </Draggable>
               ))}
-
               {provided.placeholder}
             </div>
           )}
         </Droppable>
       </DragDropContext>
 
-      <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-rigid)' }}>
-        {selectedBlockIds.size > 0 && (
-          !showBulkDeleteConfirm ? (
-            <Button
-              onClick={() => setShowBulkDeleteConfirm(true)}
-              size="2"
-              color="red"
-              variant="outline"
-              style={{ width: '100%' }}
-            >
-              DELETE SELECTED ({selectedBlockIds.size})
-            </Button>
-          ) : (
-            <Box p="3" style={{ backgroundColor: 'var(--red-3)', borderRadius: '8px', border: '1px solid var(--red-6)' }}>
-              <Text size="2" weight="bold" color="red" mb="2" as="p">
-                Are you sure you want to delete {selectedBlockIds.size} block{selectedBlockIds.size !== 1 ? 's' : ''}? This action cannot be undone.
-              </Text>
-              <Flex gap="2">
-                <Button
-                  onClick={bulkDeleteBlocks}
-                  size="2"
-                  color="red"
-                  variant="solid"
-                  style={{ flex: 1, cursor: 'pointer' }}
-                >
-                  YES, DELETE
-                </Button>
-                <Button
-                  onClick={() => setShowBulkDeleteConfirm(false)}
-                  size="2"
-                  color="red"
-                  variant="soft"
-                  style={{ flex: 1, cursor: 'pointer' }}
-                >
-                  CANCEL
-                </Button>
-              </Flex>
-            </Box>
-          )
-        )}
-        {selectedBlockIds.size === 0 && (
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            Select blocks to bulk delete
-          </p>
-        )}
-      </div>
+      {selectedBlockIds.size > 0 && (
+        <div className="pt-2 border-t border-border flex justify-end">
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={bulkDeleteBlocks}
+            className="h-8 text-xs gap-1.5"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Delete Selected ({selectedBlockIds.size})
+          </Button>
+        </div>
+      )}
     </Card>
   );
 }
@@ -716,119 +597,118 @@ function CrawlProperties({
   const updateCrawl = (patch: Partial<typeof cr>) => onChange({ ...config, crawl: { ...cr, ...patch } });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="flex flex-col gap-4">
       {/* 1. Crawl Settings */}
-      <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <Flex justify="between" align="center">
-          <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL SETTINGS</h3>
-          <Badge size="1" color={cr.enabled ? "green" : "gray"} variant="surface">
+      <Card className="border-border bg-card p-5 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Crawl Settings</h3>
+          <Badge variant={cr.enabled ? "default" : "secondary"} className="text-[10px]">
             {cr.enabled ? "Active" : "Disabled"}
           </Badge>
-        </Flex>
+        </div>
         
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          padding: '4px', 
-          width: '100%', 
-          borderRadius: '6px', 
-          backgroundColor: 'var(--bg-panel)',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-          flexWrap: 'wrap',
-          gap: '4px'
-        }}>
+        <div className="flex items-center gap-1.5 p-1 bg-muted/40 border border-border rounded-lg flex-wrap">
           {/* Speed */}
-          <Tooltip content="Scroll Speed">
-            <Select.Root size="1" value={cr.speed} onValueChange={val => updateCrawl({ speed: val as any })}>
-              <Select.Trigger variant="ghost" color="gray" />
-              <Select.Content>
-                <Select.Item value="SLOW">Slow</Select.Item>
-                <Select.Item value="NORMAL">Normal</Select.Item>
-                <Select.Item value="FAST">Fast</Select.Item>
-              </Select.Content>
-            </Select.Root>
-          </Tooltip>
+          <div className="w-24">
+            <Select value={cr.speed} onValueChange={val => updateCrawl({ speed: val as any })}>
+              <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="SLOW" className="text-xs">Slow</SelectItem>
+                <SelectItem value="NORMAL" className="text-xs">Normal</SelectItem>
+                <SelectItem value="FAST" className="text-xs">Fast</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+          <div className="w-px h-4 bg-border mx-0.5" />
 
           {/* Separator */}
-          <Tooltip content="Item Separator">
-            <Select.Root size="1" value={cr.separator} onValueChange={val => updateCrawl({ separator: val })}>
-              <Select.Trigger variant="ghost" color="gray" />
-              <Select.Content>
-                <Select.Item value=" ★ ">★ Star</Select.Item>
-                <Select.Item value=" | ">| Pipe</Select.Item>
-                <Select.Item value=" /// ">/// Slashes</Select.Item>
-                <Select.Item value=" ••• ">••• Dots</Select.Item>
-                <Select.Item value="   "> (Space)</Select.Item>
-              </Select.Content>
-            </Select.Root>
-          </Tooltip>
+          <div className="w-28">
+            <Select value={cr.separator} onValueChange={val => updateCrawl({ separator: val })}>
+              <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value=" ★ " className="text-xs">★ Star</SelectItem>
+                <SelectItem value=" | " className="text-xs">| Pipe</SelectItem>
+                <SelectItem value=" /// " className="text-xs">/// Slashes</SelectItem>
+                <SelectItem value=" ••• " className="text-xs">••• Dots</SelectItem>
+                <SelectItem value="   " className="text-xs">(Space)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+          <div className="w-px h-4 bg-border mx-0.5" />
 
-          {/* Font & Size */}
-          <Tooltip content="Font Family">
-            <Select.Root size="1" value={cr.fontFamily} onValueChange={val => updateCrawl({ fontFamily: val })}>
-              <Select.Trigger variant="ghost" color="gray" />
-              <Select.Content>
-                <Select.Item value="Inter">Inter</Select.Item>
-                <Select.Item value="Outfit">Outfit</Select.Item>
-                <Select.Item value="Roboto Mono">Roboto Mono</Select.Item>
-                <Select.Item value="Bebas Neue">Bebas Neue</Select.Item>
-              </Select.Content>
-            </Select.Root>
-          </Tooltip>
+          {/* Font Family */}
+          <div className="w-28">
+            <Select value={cr.fontFamily} onValueChange={val => updateCrawl({ fontFamily: val })}>
+              <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Inter" className="text-xs">Inter</SelectItem>
+                <SelectItem value="Outfit" className="text-xs">Outfit</SelectItem>
+                <SelectItem value="Roboto Mono" className="text-xs">Roboto Mono</SelectItem>
+                <SelectItem value="Bebas Neue" className="text-xs">Bebas Neue</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <Tooltip content="Font Size">
-            <Select.Root size="1" value={cr.fontSize === 0.82 ? '0.82' : cr.fontSize === 1.2 ? '1.2' : '1.0'} onValueChange={val => updateCrawl({ fontSize: parseFloat(val) })}>
-              <Select.Trigger variant="ghost" color="gray" />
-              <Select.Content>
-                <Select.Item value="0.82">Small</Select.Item>
-                <Select.Item value="1.0">Medium</Select.Item>
-                <Select.Item value="1.2">Large</Select.Item>
-              </Select.Content>
-            </Select.Root>
-          </Tooltip>
+          {/* Font Size */}
+          <div className="w-24">
+            <Select value={cr.fontSize === 0.82 ? '0.82' : cr.fontSize === 1.2 ? '1.2' : '1.0'} onValueChange={val => updateCrawl({ fontSize: parseFloat(val) })}>
+              <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0.82" className="text-xs">Small</SelectItem>
+                <SelectItem value="1.0" className="text-xs">Medium</SelectItem>
+                <SelectItem value="1.2" className="text-xs">Large</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-subtle)', margin: '0 4px' }} />
+          <div className="w-px h-4 bg-border mx-0.5" />
 
           {/* Colors */}
-          <Popover.Root>
-            <Tooltip content="Text Color">
-              <Popover.Trigger asChild>
-                <IconButton variant="ghost" color="gray" aria-label="Text Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600 }}>T</span>
-                  <div style={{ width: '14px', height: '14px', backgroundColor: cr.textColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
-                </IconButton>
-              </Popover.Trigger>
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground">
+                    <span className="font-bold">T</span>
+                    <div className="w-3.5 h-3.5 rounded-xs border border-border" style={{ backgroundColor: cr.textColor }} />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent><p>Text Color</p></TooltipContent>
             </Tooltip>
-            <Popover.Portal>
-              <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>TEXT COLOR</label>
-                <ColorInputWithPalette value={cr.textColor} onChange={val => updateCrawl({ textColor: val })} />
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
+            <PopoverContent sideOffset={5} className="w-64 p-4">
+              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
+              <ColorInputWithPalette value={cr.textColor} onChange={val => updateCrawl({ textColor: val })} />
+            </PopoverContent>
+          </Popover>
 
-          <Popover.Root>
-            <Tooltip content="Background Color">
-              <Popover.Trigger asChild>
-                <IconButton variant="ghost" color="gray" aria-label="Background Color" style={{ display: 'flex', gap: '6px', alignItems: 'center', width: 'auto', padding: '0 8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600 }}>BG</span>
-                  <div style={{ width: '14px', height: '14px', backgroundColor: cr.bgColor, borderRadius: '3px', border: '1px solid var(--border-subtle)' }} />
-                </IconButton>
-              </Popover.Trigger>
+          <Popover>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2 text-xs text-muted-foreground hover:text-foreground">
+                    <span className="font-bold">BG</span>
+                    <div className="w-3.5 h-3.5 rounded-xs border border-border" style={{ backgroundColor: cr.bgColor }} />
+                  </Button>
+                </PopoverTrigger>
+              </TooltipTrigger>
+              <TooltipContent><p>Background Color</p></TooltipContent>
             </Tooltip>
-            <Popover.Portal>
-              <Popover.Content sideOffset={5} style={{ backgroundColor: 'var(--bg-panel)', padding: '15px', borderRadius: '8px', zIndex: 100, border: '1px solid var(--border-subtle)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }}>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '10px' }}>BACKGROUND</label>
-                <ColorInputWithPalette value={cr.bgColor} onChange={val => updateCrawl({ bgColor: val })} />
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
-
+            <PopoverContent sideOffset={5} className="w-64 p-4">
+              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
+              <ColorInputWithPalette value={cr.bgColor} onChange={val => updateCrawl({ bgColor: val })} />
+            </PopoverContent>
+          </Popover>
         </div>
       </Card>
 
@@ -849,22 +729,26 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
   const update = (patch: Partial<typeof ly>) => onChange({ ...config, layout: { ...ly, ...patch } });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="flex flex-col gap-4">
       {/* Curated Broadcast Themes */}
-      <Card size="2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <Flex justify="between" align="center">
-          <Heading size="3" style={{ color: 'var(--text-secondary)' }}>CURATED BROADCAST THEMES</Heading>
-          <Badge color="indigo" size="1" variant="surface">1-Click Apply</Badge>
-        </Flex>
-        <Text size="2" color="gray">
+      <Card className="border-border bg-card p-5 flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Curated Broadcast Themes
+          </span>
+          <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+            1-Click Apply
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
           Apply harmonious broadcast palettes designed for professional stream aesthetics:
-        </Text>
-        <Grid columns="2" gap="2">
+        </p>
+        <div className="grid grid-cols-2 gap-2">
           {BROADCAST_PRESETS.map(preset => (
             <Button
               key={preset.name}
-              variant="surface"
-              size="2"
+              variant="outline"
+              size="sm"
               onClick={() => {
                 onChange({
                   ...config,
@@ -901,49 +785,64 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
                 });
                 toast.success(`Applied ${preset.name} palette!`);
               }}
-              style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer', height: 'auto', padding: '8px 10px' }}
+              className="justify-start gap-2 h-auto py-2 px-2.5 text-xs font-medium"
             >
-              <Flex gap="1" align="center">
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.accentColor }} />
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.bgColor, border: '1px solid var(--border-subtle)' }} />
-              </Flex>
-              <Text size="2" weight="medium">{preset.name}</Text>
+              <div className="flex gap-1 items-center shrink-0">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.accentColor }} />
+                <div className="w-2.5 h-2.5 rounded-full border border-border" style={{ backgroundColor: preset.bgColor }} />
+              </div>
+              <span className="truncate">{preset.name}</span>
             </Button>
           ))}
-        </Grid>
+        </div>
       </Card>
 
-      <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>LAYOUT & BACKGROUND</h3>
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CHYRON NAME</label>
-          <TextField.Root size="2" value={config.name} onChange={e => onChange({ ...config, name: e.target.value })} />
+      <Card className="border-border bg-card p-5 flex flex-col gap-4">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Layout & Background</h3>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-foreground">Chyron Name</label>
+          <Input value={config.name} onChange={e => onChange({ ...config, name: e.target.value })} className="h-9 text-xs" />
         </div>
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND MODE</label>
-          <SegmentedControl.Root size="1" value={ly.bgMode} onValueChange={val => update({ bgMode: val as any })} style={{ width: '100%' }}>
-            <SegmentedControl.Item value="TRANSPARENT">TRANSPARENT</SegmentedControl.Item>
-            <SegmentedControl.Item value="SOLID">SOLID</SegmentedControl.Item>
-          </SegmentedControl.Root>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-foreground">Background Mode</label>
+          <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-md">
+            <button
+              type="button"
+              onClick={() => update({ bgMode: 'TRANSPARENT' })}
+              className={cn(
+                "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                ly.bgMode === 'TRANSPARENT' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              TRANSPARENT
+            </button>
+            <button
+              type="button"
+              onClick={() => update({ bgMode: 'SOLID' })}
+              className={cn(
+                "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                ly.bgMode === 'SOLID' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              SOLID
+            </button>
+          </div>
         </div>
         {ly.bgMode === 'SOLID' && (
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>BACKGROUND COLOR</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-foreground">Background Color</label>
             <ColorInputWithPalette value={ly.bgColor} onChange={val => update({ bgColor: val })} />
           </div>
         )}
-        <div>
-          <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>ACCENT COLOR</label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-foreground">Accent Color</label>
           <ColorInputWithPalette value={ly.accentColor} onChange={val => update({ accentColor: val })} />
-          <p style={{ marginTop: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>Used for accent stripes and borders between layers</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Used for accent stripes and borders between layers</p>
         </div>
       </Card>
     </div>
   );
 }
-
-
-
 
 // ═══════════════════════════════════════════════════════════════════
 //  MAIN PAGE COMPONENT
@@ -966,7 +865,6 @@ function ChyronBuilderContent() {
   const [saving, setSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // ── Auth ────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { setLoadingList(false); return; }
@@ -996,7 +894,6 @@ function ChyronBuilderContent() {
     }
   };
 
-  // ── Autosave ───────────────────────────────────────────────────
   useEffect(() => {
     if (!activeConfigId || !session) return;
     const saveConfig = async () => {
@@ -1009,7 +906,6 @@ function ChyronBuilderContent() {
     return () => clearTimeout(timer);
   }, [config, activeConfigId, session]);
 
-  // ── Create / Load / Delete ─────────────────────────────────────
   const handleCreateNew = async () => {
     if (!session || configsList.length >= 3) return;
     const newConfig = { ...DEFAULT_CHYRON_CONFIG, name: `Chyron ${configsList.length + 1}` };
@@ -1036,14 +932,12 @@ function ChyronBuilderContent() {
   const loadEditor = (id: string, c: any) => {
     setActiveConfigId(id);
     
-    // Inject any missing layers into the loaded order
     const loadedOrder = c?.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder;
     const finalOrder = [...loadedOrder];
     ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
       if (!finalOrder.includes(l as any)) finalOrder.push(l as any);
     });
 
-    // Merge with defaults to handle missing fields from older configs
     const mergedConfig: ChyronConfig = {
       ...DEFAULT_CHYRON_CONFIG,
       ...(c || {}),
@@ -1070,9 +964,9 @@ function ChyronBuilderContent() {
     e.stopPropagation();
     toast(
       (t) => (
-        <div>
-          <p style={{ margin: '0 0 10px 0', fontSize: '14px', fontWeight: 500 }}>Delete this chyron?</p>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">Delete this chyron?</p>
+          <div className="flex gap-2 mt-2">
             <button
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -1081,37 +975,28 @@ function ChyronBuilderContent() {
                 if (activeConfigId === id) setActiveConfigId(null);
                 toast.success('Chyron deleted');
               }}
-              style={{ padding: '6px 12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
-            >Delete</button>
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
+            >
+              Delete
+            </button>
             <button
               onClick={() => toast.dismiss(t.id)}
-              style={{ padding: '6px 12px', background: '#f8fafc', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
-            >Cancel</button>
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       ),
-      { duration: Infinity }
+      { duration: Infinity, position: 'top-center' }
     );
   };
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}`);
     setCopySuccess(true);
+    toast.success('URL copied to clipboard!');
     setTimeout(() => setCopySuccess(false), 2000);
-  };
-
-  // ── Layer reorder ──────────────────────────────────────────────
-  const moveLayer = (layerId: string, direction: -1 | 1) => {
-    const order = [...config.layerOrder];
-    ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
-      if (!order.includes(l as any)) order.push(l as any);
-    });
-    const idx = order.indexOf(layerId as any);
-    if (idx < 0) return;
-    const newIdx = idx + direction;
-    if (newIdx < 0 || newIdx >= order.length) return;
-    [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
-    setConfig({ ...config, layerOrder: order });
   };
 
   const onDragEnd = (result: DropResult) => {
@@ -1125,11 +1010,6 @@ function ChyronBuilderContent() {
       const [reorderedItem] = items.splice(result.source.index, 1);
       items.splice(result.destination.index, 0, reorderedItem);
       setConfig({ ...config, layerOrder: items as any });
-    } else if (result.source.droppableId === 'blocks-list') {
-      const newBlocks = Array.from(config.crawl.blocks);
-      const [reorderedItem] = newBlocks.splice(result.source.index, 1);
-      newBlocks.splice(result.destination.index, 0, reorderedItem);
-      setConfig({ ...config, crawl: { ...config.crawl, blocks: newBlocks } });
     }
   };
 
@@ -1166,38 +1046,39 @@ function ChyronBuilderContent() {
     setExpandedBlockId(newBlock.id);
   };
 
-  // ── Render ─────────────────────────────────────────────────────
-  if (!session) return <main style={{ padding: '40px' }}><p>Please <Link href="/auth">Sign In</Link></p></main>;
+  if (!session) {
+    return (
+      <main className="p-10">
+        <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
+      </main>
+    );
+  }
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+    <div className="flex w-full h-full overflow-hidden bg-background text-foreground">
 
       {/* ── LEFT SIDEBAR ──────────────────────────────────────── */}
-      <aside style={{
-        width: '280px', borderRight: '1px solid var(--border-rigid)',
-        display: 'flex', flexDirection: 'column', backgroundColor: 'var(--module-bg)',
-        flexShrink: 0,
-      }}>
+      <aside className="w-72 border-r border-border flex flex-col bg-card shrink-0 select-none z-10">
         {activeConfigId ? (
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-rigid)' }}>
-            <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '8px', color: 'var(--text-secondary)' }}>
-              <ArrowLeftIcon /> Back to Chyrons
+          <div className="p-4 border-b border-border flex flex-col gap-2">
+            <Button variant="ghost" size="sm" onClick={handleBackToList} className="w-fit text-xs text-muted-foreground hover:text-foreground -ml-2 gap-1.5 h-8">
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Chyrons
             </Button>
-            <Heading size="3">{config.name || 'Chyron'}</Heading>
+            <h2 className="font-bold text-base text-foreground truncate">{config.name || 'Chyron'}</h2>
           </div>
         ) : (
-          <div style={{ padding: '20px', borderBottom: '1px solid var(--border-rigid)' }}>
-            <h2 style={{ margin: 0, fontSize: '1.1rem', textTransform: 'uppercase' }}>YOUR CHYRONS</h2>
+          <div className="p-4 border-b border-border">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Your Chyrons</h2>
           </div>
         )}
 
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div className="flex-1 overflow-y-auto">
           {activeConfigId ? (
             <DragDropContext onDragEnd={onDragEnd}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <div className="flex flex-col">
                 {/* LAYERS header */}
-                <div style={{ padding: '16px 20px 8px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
-                  LAYERS
+                <div className="px-4 pt-4 pb-2 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+                  Layers
                 </div>
 
                 {/* Layer rows */}
@@ -1225,90 +1106,66 @@ function ChyronBuilderContent() {
                                 <div
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
-                                  style={{ ...provided.draggableProps.style }}
+                                  style={provided.draggableProps.style}
                                 >
                                   <div
                                     onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
-                                    style={{
-                                      display: 'flex', alignItems: 'center', gap: '10px',
-                                      padding: '12px 16px',
-                                      backgroundColor: isSelected ? 'var(--module-grey)' : (snapshot.isDragging ? 'var(--module-grey)' : 'transparent'),
-                                      borderLeft: isSelected ? '3px solid var(--active-amber)' : '3px solid transparent',
-                                      cursor: 'pointer',
-                                      transition: 'background-color 0.15s ease',
-                                      opacity: isEnabled ? 1 : 0.4,
-                                      boxShadow: snapshot.isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : 'none',
-                                    }}
+                                    className={cn(
+                                      "flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer transition-colors border-l-2",
+                                      isSelected
+                                        ? "bg-primary/10 border-primary text-primary"
+                                        : snapshot.isDragging
+                                        ? "bg-muted border-transparent"
+                                        : "hover:bg-muted/40 border-transparent text-foreground",
+                                      !isEnabled && "opacity-40"
+                                    )}
                                   >
                                     {/* Drag Handle */}
                                     <div
                                       {...provided.dragHandleProps}
-                                      style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        color: 'var(--text-muted)',
-                                        cursor: 'grab',
-                                      }}
+                                      className="text-muted-foreground hover:text-foreground cursor-grab p-0.5"
                                     >
-                                      <DragHandleDots2Icon />
+                                      <GripVertical className="w-3.5 h-3.5" />
                                     </div>
 
                                     {/* Visibility toggle */}
                                     <button
+                                      type="button"
                                       onClick={e => { e.stopPropagation(); toggleLayer(layerId); }}
-                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
+                                      className="bg-transparent border-0 cursor-pointer p-0.5 text-muted-foreground hover:text-foreground shrink-0"
                                       aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
                                     >
-                                      <EyeIcon visible={isEnabled} />
+                                      {isEnabled ? <Eye className="w-3.5 h-3.5 text-emerald-500" /> : <EyeOff className="w-3.5 h-3.5" />}
                                     </button>
 
                                     {/* Label */}
-                                    <span style={{
-                                      flex: 1, fontSize: '13px', fontWeight: 600,
-                                      color: isSelected ? 'var(--active-amber)' : 'var(--text-primary)',
-                                    }}>
+                                    <span className="flex-1 text-xs font-semibold truncate">
                                       {LAYER_LABELS[layerId] || layerId}
                                     </span>
 
                                     {layerId === 'crawl' && (
-                                      <Flex align="center" gap="1" onClick={e => { e.stopPropagation(); setIsCrawlExpanded(!isCrawlExpanded); }}>
-                                        <Badge size="1" variant="surface" color="gray" style={{ fontSize: '10px', fontWeight: 600 }}>
+                                      <div 
+                                        className="flex items-center gap-1 cursor-pointer" 
+                                        onClick={e => { e.stopPropagation(); setIsCrawlExpanded(!isCrawlExpanded); }}
+                                      >
+                                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-bold">
                                           {config.crawl.blocks.length}
                                         </Badge>
-                                        <span style={{
-                                          fontSize: '8px',
-                                          color: 'var(--text-muted)',
-                                          transform: isCrawlExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
-                                          transition: 'transform 0.15s ease',
-                                          display: 'inline-block',
-                                          padding: '2px',
-                                          cursor: 'pointer'
-                                        }}>
+                                        <span className={cn(
+                                          "text-[8px] text-muted-foreground transition-transform inline-block p-0.5",
+                                          isCrawlExpanded ? "rotate-0" : "-rotate-90"
+                                        )}>
                                           ▼
                                         </span>
-                                      </Flex>
+                                      </div>
                                     )}
                                   </div>
 
                                   {/* NESTED CRAWL BLOCKS UNDERNEATH CRAWL TICKER IN LAYERS PANEL */}
                                   {layerId === 'crawl' && isCrawlExpanded && (
-                                    <div style={{
-                                      display: 'flex',
-                                      flexDirection: 'column',
-                                      paddingLeft: '32px',
-                                      paddingRight: '12px',
-                                      paddingBottom: '8px',
-                                      gap: '2px',
-                                      position: 'relative',
-                                    }}>
-                                      {/* Tree hierarchy vertical guide line */}
-                                      <div style={{
-                                        position: 'absolute',
-                                        left: '23px',
-                                        top: '0',
-                                        bottom: '12px',
-                                        width: '1px',
-                                        backgroundColor: 'var(--border-subtle)',
-                                      }} />
+                                    <div className="flex flex-col pl-8 pr-3 pb-2 gap-1 relative">
+                                      {/* Vertical tree hierarchy line */}
+                                      <div className="absolute left-6 top-0 bottom-3 w-px bg-border" />
 
                                       {config.crawl.blocks.map((block) => {
                                         const isBlockActive = selectedPanel === 'layer' && selectedLayer === 'crawl' && expandedBlockId === block.id;
@@ -1322,52 +1179,24 @@ function ChyronBuilderContent() {
                                               setSelectedPanel('layer');
                                               setExpandedBlockId(block.id);
                                             }}
-                                            style={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              gap: '8px',
-                                              padding: '6px 8px',
-                                              borderRadius: '4px',
-                                              cursor: 'pointer',
-                                              fontSize: '12px',
-                                              fontWeight: isBlockActive ? 700 : 500,
-                                              color: isBlockActive ? 'var(--active-amber)' : (block.enabled ? 'var(--text-primary)' : 'var(--text-muted)'),
-                                              backgroundColor: isBlockActive ? 'var(--accent-subtle, rgba(255, 89, 0, 0.08))' : 'transparent',
-                                              borderLeft: isBlockActive ? '2px solid var(--active-amber)' : '2px solid transparent',
-                                              transition: 'all 0.15s ease',
-                                              opacity: block.enabled ? 1 : 0.5,
-                                            }}
-                                            onMouseOver={(e) => {
-                                              if (!isBlockActive) e.currentTarget.style.backgroundColor = 'var(--module-grey, rgba(0,0,0,0.04))';
-                                            }}
-                                            onMouseOut={(e) => {
-                                              if (!isBlockActive) e.currentTarget.style.backgroundColor = 'transparent';
-                                            }}
+                                            className={cn(
+                                              "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-xs transition-colors border-l-2",
+                                              isBlockActive
+                                                ? "bg-primary/10 border-primary text-primary font-bold"
+                                                : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground font-medium",
+                                              !block.enabled && "opacity-50"
+                                            )}
                                           >
-                                            {/* Eye toggle for individual block */}
                                             <button
+                                              type="button"
                                               onClick={(e) => toggleBlockEnabled(block.id, e)}
-                                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center' }}
+                                              className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-foreground shrink-0"
                                               title={block.enabled ? "Hide block" : "Show block"}
                                             >
-                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: block.enabled ? 0.9 : 0.35 }}>
-                                                {block.enabled ? (
-                                                  <>
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                                    <circle cx="12" cy="12" r="3" />
-                                                  </>
-                                                ) : (
-                                                  <>
-                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                                                    <line x1="1" y1="1" x2="23" y2="23" />
-                                                  </>
-                                                )}
-                                              </svg>
+                                              {block.enabled ? <Eye className="w-3 h-3 text-emerald-500" /> : <EyeOff className="w-3 h-3" />}
                                             </button>
 
-                                            {/* Block label */}
-                                            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            <span className="flex-1 truncate">
                                               {block.label || 'Unnamed Block'}
                                             </span>
                                           </div>
@@ -1376,25 +1205,12 @@ function ChyronBuilderContent() {
 
                                       {/* Quick Add Block in sidebar */}
                                       <button
+                                        type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           addBlockFromSidebar();
                                         }}
-                                        style={{
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '6px',
-                                          padding: '6px 8px',
-                                          marginTop: '2px',
-                                          background: 'none',
-                                          border: '1px dashed var(--border-subtle)',
-                                          borderRadius: '4px',
-                                          color: 'var(--active-amber)',
-                                          fontSize: '11px',
-                                          fontWeight: 600,
-                                          cursor: 'pointer',
-                                          textAlign: 'left',
-                                        }}
+                                        className="flex items-center gap-1 px-2 py-1.5 mt-1 border border-dashed border-border rounded-md text-[11px] font-semibold text-primary hover:bg-primary/5 cursor-pointer text-left transition-colors"
                                       >
                                         <span>+</span> Add Block
                                       </button>
@@ -1410,115 +1226,147 @@ function ChyronBuilderContent() {
                   )}
                 </Droppable>
 
-                {/* Divider */}
-                <div style={{ borderTop: '1px solid var(--border-rigid)', margin: '8px 0' }} />
+                <div className="h-px bg-border my-2" />
 
-                <div style={{ padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <div style={{ padding: '8px 12px 4px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
-                    GLOBAL
-                  </div>
+                <div className="p-2 flex flex-col gap-1">
+                  <span className="px-3 pt-2 pb-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+                    Global
+                  </span>
                   <Button
-                    size="3"
-                    variant={selectedPanel === 'layout' ? 'soft' : 'ghost'}
-                    color={selectedPanel === 'layout' ? 'amber' : 'gray'}
+                    variant={selectedPanel === 'layout' ? 'secondary' : 'ghost'}
                     onClick={() => { setSelectedPanel('layout'); setSelectedLayer(null); }}
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
+                    className={cn(
+                      "w-full justify-start text-xs font-semibold h-9",
+                      selectedPanel === 'layout' && "bg-primary/10 text-primary border-l-2 border-primary"
+                    )}
                   >
-                    <Text weight="bold" size="2">Layout & Background</Text>
+                    Layout & Background
                   </Button>
                   <Button
-                    size="3"
-                    variant={selectedPanel === 'export' ? 'soft' : 'ghost'}
-                    color={selectedPanel === 'export' ? 'amber' : 'gray'}
+                    variant={selectedPanel === 'export' ? 'secondary' : 'ghost'}
                     onClick={() => { setSelectedPanel('export'); setSelectedLayer(null); }}
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
+                    className={cn(
+                      "w-full justify-start text-xs font-semibold h-9",
+                      selectedPanel === 'export' && "bg-primary/10 text-primary border-l-2 border-primary"
+                    )}
                   >
-                    <Text weight="bold" size="2">Export & OBS</Text>
+                    Export & OBS
                   </Button>
                 </div>
               </div>
             </DragDropContext>
           ) : (
-            <div style={{ padding: '20px' }}>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '15px' }}>
+            <div className="p-5 flex flex-col gap-4">
+              <p className="text-xs text-muted-foreground leading-relaxed">
                 Build a broadcast-style chyron with a title bar, logo, clock, and scrolling crawl.
               </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 700 }}>
-                <span>STORAGE</span>
-                <span style={{ color: configsList.length >= 3 ? '#ef4444' : 'var(--vocals-green)' }}>{configsList.length} / 3 USED</span>
+              <div className="flex justify-between items-center text-xs font-bold">
+                <span className="text-muted-foreground">STORAGE</span>
+                <span className={configsList.length >= 3 ? 'text-red-500' : 'text-emerald-500'}>
+                  {configsList.length} / 3 USED
+                </span>
               </div>
             </div>
           )}
         </div>
         
         {activeConfigId && (
-          <div style={{ padding: '20px', borderTop: '1px solid var(--border-rigid)', marginTop: 'auto' }}>
-            <button onClick={handleBackToList} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, width: '100%', padding: '10px', borderRadius: '6px' }} onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--module-grey)'} onMouseOut={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-              &larr; BACK TO CHYRONS
-            </button>
+          <div className="p-4 border-t border-border mt-auto">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleBackToList}
+              className="w-full text-xs font-semibold h-9 gap-1.5"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to Chyrons
+            </Button>
           </div>
         )}
       </aside>
 
       {/* ── MAIN CONTENT ──────────────────────────────────────── */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', backgroundColor: 'var(--chassis-black)' }}>
+      <main className="flex-1 flex flex-col overflow-y-auto bg-background">
 
         {!activeConfigId ? (
-          /* ── Dashboard View ─────────────────────────────────── */
-          <div style={{ padding: '40px', maxWidth: '1000px', width: '100%', margin: '0 auto' }}>
-            {loadingList ? <p>Loading...</p> : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          /* ── Dashboard Catalog View ────────────────────────── */
+          <div className="p-8 max-w-5xl w-full mx-auto">
+            {loadingList ? <p className="text-sm text-muted-foreground">Loading chyrons...</p> : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {configsList.map(c => (
-                  <Card key={c.id} onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease', padding: 0 }} className="hover-card">
-                    <Box p="4">
-                      <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/5', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '16px', border: '1px solid var(--border-subtle)' }}>
-                        <ChyronPreview config={c.config} scale={0.35} />
-                      </div>
-                      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <Text size="3" weight="bold">{c.config.name || 'Unnamed'}</Text>
-                        <IconButton size="1" color="gray" variant="ghost" onClick={e => deleteConfig(c.id, e)} title="Delete chyron">
-                          <TrashIcon />
-                        </IconButton>
-                      </div>
+                  <Card 
+                    key={c.id} 
+                    onClick={() => loadEditor(c.id, c.config)} 
+                    className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
+                  >
+                    <div className="preview-window-container w-full aspect-[16/5] rounded-md overflow-hidden flex items-end justify-center mb-3.5 border border-border">
+                      <ChyronPreview config={c.config} scale={0.35} />
+                    </div>
+                    <div className="flex justify-between items-center mb-3">
+                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {c.config.name || 'Unnamed'}
+                      </span>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        onClick={e => deleteConfig(c.id, e)} 
+                        title="Delete chyron"
+                        className="h-7 w-7 text-muted-foreground hover:text-red-500"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
 
-                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.crawl.enabled ? 'var(--vocals-green)' : 'var(--border-rigid)' }} />
-                          {c.config.crawl.enabled ? `${c.config.crawl.blocks.filter((b: any) => b.enabled).length} Active Crawl Blocks` : 'Crawl Disabled'}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: c.config.logo.enabled ? 'var(--active-amber)' : 'var(--border-rigid)' }} />
-                          {c.config.logo.enabled ? 'Logo Enabled' : 'Logo Disabled'}
-                        </div>
+                    <div className="text-xs text-muted-foreground mb-4 flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full",
+                          c.config.crawl?.enabled ? "bg-emerald-500" : "bg-muted-foreground/30"
+                        )} />
+                        <span>
+                          {c.config.crawl?.enabled 
+                            ? `${c.config.crawl.blocks?.filter((b: any) => b.enabled).length || 0} Active Crawl Blocks` 
+                            : 'Crawl Disabled'}
+                        </span>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full",
+                          c.config.logo?.enabled ? "bg-amber-500" : "bg-muted-foreground/30"
+                        )} />
+                        <span>{c.config.logo?.enabled ? 'Logo Enabled' : 'Logo Disabled'}</span>
+                      </div>
+                    </div>
 
-                      <Flex gap="2" onClick={e => e.stopPropagation()} style={{ marginTop: 'auto' }}>
-                        <TextField.Root
-                          size="1"
-                          readOnly
-                          value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
-                          onClick={e => (e.target as HTMLInputElement).select()}
-                          style={{ flex: 1 }}
-                        />
-                        <Button
-                          size="1"
-                          variant="solid"
-                          color="gray"
-                          onClick={e => {
-                            e.stopPropagation();
-                            navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${c.id}`);
-                            toast.success('URL copied to clipboard!');
-                          }}
-                        >
-                          COPY
-                        </Button>
-                      </Flex>
-                    </Box>
+                    <div className="flex gap-2 mt-auto" onClick={e => e.stopPropagation()}>
+                      <Input
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
+                        onClick={e => (e.target as HTMLInputElement).select()}
+                        className="h-8 text-xs font-mono flex-1 bg-muted/40"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={e => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${c.id}`);
+                          toast.success('URL copied to clipboard!');
+                        }}
+                        className="h-8 text-xs font-semibold px-3"
+                      >
+                        Copy
+                      </Button>
+                    </div>
                   </Card>
                 ))}
                 {configsList.length < 3 && (
-                  <Card onClick={handleCreateNew} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '150px', border: '2px dashed var(--border-rigid)', background: 'transparent' }}>
-                    <Text color="amber" weight="bold">+ CREATE NEW CHYRON</Text>
+                  <Card 
+                    onClick={handleCreateNew} 
+                    className="cursor-pointer border-dashed border-2 border-border hover:border-primary/50 bg-transparent flex items-center justify-center min-h-[220px] transition-colors"
+                  >
+                    <span className="text-xs font-bold text-primary tracking-wider uppercase flex items-center gap-1.5">
+                      <Plus className="w-4 h-4" /> Create New Chyron
+                    </span>
                   </Card>
                 )}
               </div>
@@ -1528,44 +1376,51 @@ function ChyronBuilderContent() {
           /* ── Editor View ────────────────────────────────────── */
           <>
             {/* Live Preview Header */}
-            <div style={{
-              position: 'sticky', top: 0, zIndex: 10,
-              flex: '0 0 auto', padding: '40px 20px',
-              display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-              borderBottom: '1px solid var(--border-subtle)', backgroundColor: 'var(--bg-panel)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
-            }}>
-              <div style={{ display: 'flex', width: '100%', maxWidth: '960px', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 style={{ margin: 0, fontSize: '1.1rem' }}>{config.name.toUpperCase()}</h2>
-                <span style={{ color: saving ? 'var(--active-amber)' : 'var(--vocals-green)', fontSize: '12px', fontWeight: 700 }}>
-                  {saving ? 'SAVING...' : '✓ SAVED'}
+            <div className="sticky top-0 z-20 shrink-0 py-6 px-8 flex flex-col justify-center items-center border-b border-border bg-card shadow-sm">
+              <div className="flex w-full max-w-4xl justify-between items-center mb-3">
+                <h2 className="text-sm font-bold uppercase tracking-wider text-foreground m-0">
+                  {config.name}
+                </h2>
+                <span className={cn(
+                  "text-[11px] font-bold",
+                  saving ? "text-amber-500" : "text-emerald-500"
+                )}>
+                  {saving ? 'SAVING...' : '✓ LIVE SYNCED'}
                 </span>
               </div>
-              <div style={{ border: '1px solid var(--border-subtle)', borderRadius: '8px', overflow: 'hidden', width: '100%', maxWidth: '960px', marginBottom: '16px' }} className="preview-window-container">
+              <div className="preview-window-container w-full max-w-4xl rounded-lg overflow-hidden border border-border mb-3">
                 <ChyronPreview config={config} scale={0.5} />
               </div>
-              <Flex gap="2" style={{ width: '100%', maxWidth: '960px' }}>
-                <TextField.Root
-                  size="2"
+              <div className="flex gap-2 w-full max-w-4xl">
+                <Input
                   readOnly
                   value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
                   onClick={e => (e.target as HTMLInputElement).select()}
-                  style={{ flex: 1 }}
+                  className="h-9 text-xs font-mono flex-1 bg-background"
                 />
                 <Button
-                  size="2"
+                  size="sm"
                   onClick={handleCopy}
-                  variant="solid"
-                  color={copySuccess ? 'green' : undefined}
-                  style={{ padding: '0 20px', fontWeight: 700, cursor: 'pointer' }}
+                  className={cn(
+                    "h-9 px-4 text-xs font-bold gap-1.5 shrink-0 transition-colors",
+                    copySuccess ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+                  )}
                 >
-                  {copySuccess ? '✓ COPIED URL' : 'COPY WIDGET URL'}
+                  {copySuccess ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" /> Copied URL
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" /> Copy Widget URL
+                    </>
+                  )}
                 </Button>
-              </Flex>
+              </div>
             </div>
 
             {/* Properties Panel */}
-            <div style={{ flex: 1, padding: '30px 40px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+            <div className="flex-1 p-8 max-w-3xl mx-auto w-full">
               {selectedPanel === 'layer' && selectedLayer === 'title' && (
                 <TitleProperties config={config} onChange={setConfig} />
               )}
@@ -1608,7 +1463,7 @@ function ChyronBuilderContent() {
 
 export default function ChyronBuilder() {
   return (
-    <Suspense fallback={<div style={{ padding: '40px', color: 'var(--text-secondary)' }}>Loading Chyron Studio...</div>}>
+    <Suspense fallback={<div className="p-8 text-sm text-muted-foreground">Loading Chyron Studio...</div>}>
       <ChyronBuilderContent />
     </Suspense>
   );

@@ -5,7 +5,13 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Box, Flex, Heading, Text, Card, TextField, Button, Avatar, RadioCards, Badge } from '@radix-ui/themes';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ArrowLeft, User, Sliders } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { ThemeMode, VALID_THEMES } from '@/app/ThemeProvider';
 
 const THEME_OPTIONS = [
@@ -13,7 +19,6 @@ const THEME_OPTIONS = [
     id: 'dark' as ThemeMode,
     name: 'Pioneer DJ Dark',
     badge: 'Standard',
-    badgeColor: 'gray' as const,
     description: 'Chassis black & slate panels with vibrant indigo/amber accents for dark streaming booths.',
     palette: ['#0f172a', '#1e293b', '#6366f1'],
   },
@@ -21,7 +26,6 @@ const THEME_OPTIONS = [
     id: 'light' as ThemeMode,
     name: 'Clean Light',
     badge: 'Standard',
-    badgeColor: 'gray' as const,
     description: 'Minimalist daytime aesthetic with crisp off-white canvas and pure white panels.',
     palette: ['#f4f5f7', '#ffffff', '#4f46e5'],
   },
@@ -29,7 +33,6 @@ const THEME_OPTIONS = [
     id: 'antd-light' as ThemeMode,
     name: 'Ant Design Pro (Light)',
     badge: 'Ant Design Pro',
-    badgeColor: 'blue' as const,
     description: 'Enterprise light layout with signature #f0f2f5 canvas, Daybreak Blue (#1677ff) accent, and dark navy header.',
     palette: ['#001529', '#f0f2f5', '#1677ff'],
   },
@@ -37,7 +40,6 @@ const THEME_OPTIONS = [
     id: 'antd-dark' as ThemeMode,
     name: 'Ant Design Pro (Dark)',
     badge: 'realDark',
-    badgeColor: 'blue' as const,
     description: 'Enterprise realDark specification with deep #000000 layout, #141414 panels, and Daybreak Blue (#1677ff) accent.',
     palette: ['#000000', '#141414', '#1677ff'],
   },
@@ -139,155 +141,192 @@ export default function AccountPage() {
     }
   };
 
-  const TabButton = ({ tab, label }: { tab: typeof activeTab, label: string }) => (
-    <Button 
-      variant={activeTab === tab ? "soft" : "ghost"}
-      color={activeTab === tab ? "blue" : "gray"}
-      onClick={() => setActiveTab(tab)}
-      style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
-    >
-      {label}
-    </Button>
-  );
-
-  if (loading) return <Box p="6"><Text color="gray">Loading...</Text></Box>;
+  if (loading) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto w-full">
+        <p className="text-sm text-muted-foreground">Loading account...</p>
+      </div>
+    );
+  }
 
   return (
-    <Box p="6" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div className="p-6 max-w-5xl mx-auto w-full">
       
-      {/* HEADER */}
-      <Box mb="6">
-        <Link href="/" style={{ textDecoration: 'none', display: 'inline-block', marginBottom: '8px' }}>
-          <Text size="2" color="gray">&larr; BACK TO DASHBOARD</Text>
+      {/* Header */}
+      <div className="mb-6">
+        <Link href="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Dashboard</span>
         </Link>
-        <Heading size="6">ACCOUNT SETTINGS</Heading>
-      </Box>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground uppercase">
+          Account Settings
+        </h1>
+      </div>
 
-      <Flex gap="6" align="start">
+      <div className="flex gap-6 items-start flex-col md:flex-row">
         
-        {/* COLUMN 1: SIDEBAR MENU */}
-        <Flex direction="column" gap="2" style={{ flex: '0 0 250px' }}>
-          <TabButton tab="PROFILE" label="1. PUBLIC PROFILE" />
-          <TabButton tab="PREFS" label="2. PREFERENCES" />
-        </Flex>
+        {/* Navigation Sidebar */}
+        <div className="flex md:flex-col gap-2 w-full md:w-60 shrink-0">
+          <Button
+            variant={activeTab === 'PROFILE' ? 'secondary' : 'ghost'}
+            onClick={() => setActiveTab('PROFILE')}
+            className={cn(
+              "w-full justify-start gap-2.5 h-11 text-xs font-semibold uppercase tracking-wider",
+              activeTab === 'PROFILE' && "bg-primary/10 text-primary border-l-2 border-primary"
+            )}
+          >
+            <User className="w-4 h-4" />
+            <span>1. Public Profile</span>
+          </Button>
 
-        {/* COLUMN 2: ACTIVE SETTINGS WORK AREA */}
-        <Card size="4" style={{ flex: '1 1 auto', minHeight: '400px', display: 'flex', flexDirection: 'column' }}>
-          
-          {activeTab === 'PROFILE' && (
-            <Flex direction="column" gap="5" style={{ height: '100%' }}>
-              <Heading size="4" color="gray">PUBLIC PROFILE</Heading>
-              
-              <Flex align="center" gap="5">
-                <Avatar 
-                  size="8" 
-                  src={avatarUrl} 
-                  fallback="??" 
-                  radius="full"
-                />
-                <Box>
-                  <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>UPLOAD AVATAR</Text>
-                  <input type="file" accept="image/*" onChange={uploadAvatar} disabled={saving} style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }} />
-                </Box>
-              </Flex>
+          <Button
+            variant={activeTab === 'PREFS' ? 'secondary' : 'ghost'}
+            onClick={() => setActiveTab('PREFS')}
+            className={cn(
+              "w-full justify-start gap-2.5 h-11 text-xs font-semibold uppercase tracking-wider",
+              activeTab === 'PREFS' && "bg-primary/10 text-primary border-l-2 border-primary"
+            )}
+          >
+            <Sliders className="w-4 h-4" />
+            <span>2. Preferences</span>
+          </Button>
+        </div>
 
-              <Box>
-                <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>USERNAME</Text>
-                <TextField.Root 
-                  size="2" 
-                  value={username} 
-                  onChange={(e) => setUsername(e.target.value)} 
-                  placeholder="DJ Name / Username" 
-                />
-              </Box>
+        {/* Work Area Card */}
+        <Card className="flex-1 w-full min-h-[420px] border-border bg-card shadow-sm p-6">
+          <CardContent className="p-0 flex flex-col h-full">
+            
+            {activeTab === 'PROFILE' && (
+              <div className="flex flex-col gap-6 flex-1">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                    Public Profile
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">Manage your display identity across your stream widgets.</p>
+                </div>
+                
+                <div className="flex items-center gap-5">
+                  <Avatar className="w-16 h-16 border border-border">
+                    <AvatarImage src={avatarUrl} alt={username || 'User'} />
+                    <AvatarFallback className="font-bold text-lg bg-primary/10 text-primary">
+                      {username ? username.substring(0, 2).toUpperCase() : 'DJ'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Upload Avatar
+                    </label>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={uploadAvatar} 
+                      disabled={saving} 
+                      className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
+                    />
+                  </div>
+                </div>
 
-              <Box mt="auto" pt="5">
-                <Button size="3" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
-                  {saving ? 'SAVING...' : 'SAVE PROFILE'}
-                </Button>
-              </Box>
-            </Flex>
-          )}
+                <div className="flex flex-col gap-2 max-w-md">
+                  <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Username / DJ Name
+                  </label>
+                  <Input 
+                    id="username"
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    placeholder="DJ Name / Username" 
+                    className="h-10 text-sm"
+                  />
+                </div>
 
-          {activeTab === 'PREFS' && (
-            <Flex direction="column" gap="5" style={{ height: '100%' }}>
-              <Box>
-                <Heading size="4" color="gray" mb="1">PREFERENCES</Heading>
-                <Text size="2" color="gray">Customize your workspace appearance and interface styling.</Text>
-              </Box>
-              
-              <Box>
-                <Flex align="center" justify="between" mb="3">
-                  <Text as="label" size="2" weight="bold" color="gray">
-                    WEBSITE THEME
-                  </Text>
-                  <Text size="1" color="gray">
-                    Live preview on selection &bull; Save to persist across devices
-                  </Text>
-                </Flex>
+                <div className="mt-auto pt-6 border-t border-border">
+                  <Button onClick={handleUpdate} disabled={saving} className="w-full sm:w-auto h-10 px-6 font-semibold">
+                    {saving ? 'Saving...' : 'Save Profile'}
+                  </Button>
+                </div>
+              </div>
+            )}
 
-                <RadioCards.Root 
-                  size="2" 
-                  columns={{ initial: '1', sm: '2' }} 
-                  value={theme} 
-                  onValueChange={(val) => {
-                    const nextTheme = val as ThemeMode;
-                    setTheme(nextTheme);
-                    document.documentElement.setAttribute('data-theme', nextTheme);
-                    localStorage.setItem('theme', nextTheme);
-                    window.dispatchEvent(new Event('theme-updated'));
-                  }}
-                >
-                  {THEME_OPTIONS.map((opt) => (
-                    <RadioCards.Item 
-                      key={opt.id} 
-                      value={opt.id} 
-                      style={{ cursor: 'pointer', padding: '14px' }}
-                    >
-                      <Flex direction="column" gap="2" width="100%">
-                        <Flex align="center" justify="between" width="100%">
-                          <Text weight="bold" size="2">{opt.name}</Text>
-                          <Badge color={opt.badgeColor} variant="soft" size="1">
-                            {opt.badge}
-                          </Badge>
-                        </Flex>
-                        <Text size="1" color="gray" style={{ lineHeight: 1.45, minHeight: '38px' }}>
-                          {opt.description}
-                        </Text>
-                        <Flex align="center" justify="between" pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                          <Text size="1" color="gray" weight="medium">Palette:</Text>
-                          <Flex gap="1" align="center">
-                            {opt.palette.map((c, i) => (
-                              <Box
-                                key={i}
-                                style={{
-                                  width: '16px',
-                                  height: '16px',
-                                  borderRadius: '4px',
-                                  backgroundColor: c,
-                                  border: '1px solid rgba(128,128,128,0.3)',
-                                }}
-                              />
-                            ))}
-                          </Flex>
-                        </Flex>
-                      </Flex>
-                    </RadioCards.Item>
-                  ))}
-                </RadioCards.Root>
-              </Box>
+            {activeTab === 'PREFS' && (
+              <div className="flex flex-col gap-6 flex-1">
+                <div>
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                    Preferences
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Customize your workspace appearance and interface styling.
+                  </p>
+                </div>
+                
+                <div>
+                  <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Website Theme
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      Live preview on selection &bull; Save to persist across devices
+                    </span>
+                  </div>
 
-              <Box mt="auto" pt="5">
-                <Button size="3" onClick={handleUpdate} disabled={saving} style={{ width: '100%' }}>
-                  {saving ? 'SAVING...' : 'SAVE PREFERENCES'}
-                </Button>
-              </Box>
-            </Flex>
-          )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {THEME_OPTIONS.map((opt) => {
+                      const isSelected = theme === opt.id;
+                      return (
+                        <div
+                          key={opt.id}
+                          onClick={() => {
+                            const nextTheme = opt.id;
+                            setTheme(nextTheme);
+                            document.documentElement.setAttribute('data-theme', nextTheme);
+                            localStorage.setItem('theme', nextTheme);
+                            window.dispatchEvent(new Event('theme-updated'));
+                          }}
+                          className={cn(
+                            "cursor-pointer p-4 rounded-lg border transition-all flex flex-col gap-2.5 select-none",
+                            isSelected
+                              ? "border-primary bg-primary/5 ring-2 ring-primary/30 shadow-xs"
+                              : "border-border bg-card hover:bg-muted/40"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-semibold text-sm text-foreground">{opt.name}</span>
+                            <Badge variant={isSelected ? "default" : "secondary"} className="text-[10px] px-2 py-0">
+                              {opt.badge}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+                            {opt.description}
+                          </p>
+                          <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
+                            <span className="text-[10px] font-semibold text-muted-foreground uppercase">Palette:</span>
+                            <div className="flex gap-1.5 items-center">
+                              {opt.palette.map((c, i) => (
+                                <div
+                                  key={i}
+                                  className="w-4 h-4 rounded-xs border border-black/10 dark:border-white/10"
+                                  style={{ backgroundColor: c }}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
+                <div className="mt-auto pt-6 border-t border-border">
+                  <Button onClick={handleUpdate} disabled={saving} className="w-full sm:w-auto h-10 px-6 font-semibold">
+                    {saving ? 'Saving...' : 'Save Preferences'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+          </CardContent>
         </Card>
-      </Flex>
+      </div>
 
-    </Box>
+    </div>
   );
 }

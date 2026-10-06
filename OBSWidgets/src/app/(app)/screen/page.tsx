@@ -12,8 +12,21 @@ import { ImageUploadOrUrl } from '@/components/ImageUploadOrUrl';
 import { ObsExportCard } from '@/components/ObsExportCard';
 import { DEFAULT_SCREEN_CONFIG, ScreenConfig, ScreenPage } from '@/types/screen';
 import { BROADCAST_PRESETS } from '@/lib/presets';
-import { Flex, Box, Card, SegmentedControl, Switch, Button, Heading, Text, Tabs, TextField, Slider, Tooltip, IconButton, Select, Badge, Grid } from '@radix-ui/themes';
-import { TrashIcon, ArrowLeftIcon, PlusIcon, DesktopIcon, PlayIcon, ResetIcon, MagicWandIcon } from '@radix-ui/react-icons';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Trash2, ArrowLeft, Plus, Play, RotateCcw } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function ScreenCustomizerContent() {
   const searchParams = useSearchParams();
@@ -98,10 +111,10 @@ function ScreenCustomizerContent() {
     e.stopPropagation();
     toast(
       (t) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Delete this screenset?</p>
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>This action cannot be undone.</p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">Delete this screenset?</p>
+          <p className="m-0 text-xs text-muted-foreground">This action cannot be undone.</p>
+          <div className="flex gap-2 mt-2">
             <button 
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -110,13 +123,13 @@ function ScreenCustomizerContent() {
                 if (activeConfigId === id) setActiveConfigId(null);
                 toast.success('Screenset deleted');
               }} 
-              style={{ padding: '6px 12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Delete
             </button>
             <button 
               onClick={() => toast.dismiss(t.id)} 
-              style={{ padding: '6px 12px', background: 'var(--bg-panel)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -171,456 +184,492 @@ function ScreenCustomizerContent() {
     setConfig(prev => ({ ...prev, layout: { ...prev.layout, ...patch } }));
   };
 
-  if (!session) return <main style={{ padding: '40px' }}><p>Please <Link href="/auth">Sign In</Link></p></main>;
+  if (!session) {
+    return (
+      <main className="p-10">
+        <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
+      </main>
+    );
+  }
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div className="flex w-full h-full overflow-hidden bg-background text-foreground">
       
       {/* ── 1. CATALOG VIEW ── */}
       {!activeConfigId ? (
-        <Box p="6" style={{ maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
-          <Flex justify="between" align="end" mb="5">
-            <Box>
-              <Text size="2" color="gray" mb="1" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.08em' }}>WIDGETS</Text>
-              <Heading size="7">Screen Sets</Heading>
-              <Text size="2" color="gray" mt="1">Full-screen 1920×1080 overlay presets for Starting Soon, Be Right Back, and Goodbye pages.</Text>
-            </Box>
+        <div className="p-6 max-w-5xl mx-auto w-full">
+          <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
+            <div>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Widgets</span>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Screen Sets</h1>
+              <p className="text-sm text-muted-foreground mt-1">Full-screen 1920×1080 overlay presets for Starting Soon, Be Right Back, and Goodbye pages.</p>
+            </div>
             {configsList.length < 5 && (
-              <Button size="3" onClick={handleCreateNew} style={{ cursor: 'pointer' }}>
-                <PlusIcon /> Create Screenset
+              <Button onClick={handleCreateNew} className="gap-2">
+                <Plus className="w-4 h-4" /> Create Screenset
               </Button>
             )}
-          </Flex>
+          </div>
 
-          <Flex justify="between" align="center" mb="4" p="3" style={{ backgroundColor: 'var(--bg-panel)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-            <Text size="2" weight="medium" color="gray">Storage Capacity</Text>
-            <Text size="2" weight="bold" color={configsList.length >= 5 ? "red" : "indigo"}>
+          <div className="flex justify-between items-center mb-6 p-3.5 bg-card rounded-lg border border-border shadow-xs">
+            <span className="text-xs font-semibold text-muted-foreground">Storage Capacity</span>
+            <span className={cn("text-xs font-bold", configsList.length >= 5 ? "text-red-500" : "text-primary")}>
               {configsList.length} / 5 Screensets Used
-            </Text>
-          </Flex>
+            </span>
+          </div>
 
           {loadingList ? (
-            <Text color="gray">Loading your screensets...</Text>
+            <p className="text-sm text-muted-foreground">Loading your screensets...</p>
           ) : configsList.length === 0 ? (
-            <Card size="4" style={{ textAlign: 'center', backgroundColor: 'var(--bg-panel)', padding: '60px 20px', border: '1px dashed var(--border-subtle)' }}>
-              <Text size="3" color="gray" mb="4" style={{ display: 'block' }}>You don&apos;t have any screensets created yet.</Text>
-              <Button onClick={handleCreateNew} size="3" variant="solid">Create Your First Screenset</Button>
+            <Card className="text-center py-16 px-6 border-dashed border-border bg-card">
+              <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any screensets created yet.</p>
+              <Button onClick={handleCreateNew}>Create Your First Screenset</Button>
             </Card>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {configsList.map(c => (
                 <Card 
                   key={c.id} 
                   onClick={() => loadEditor(c.id, c.config)} 
-                  style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)' }}
-                  className="hover-card"
+                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
                 >
-                  <Box p="3">
-                    <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
-                      <div style={{ transform: 'scale(0.16)', transformOrigin: 'center center', width: '1920px', height: '1080px' }}>
-                         <ScreenPreview config={c.config} />
-                      </div>
+                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5">
+                    <div className="scale-[0.16] origin-center w-[1920px] h-[1080px]">
+                      <ScreenPreview config={c.config} />
                     </div>
-                    <Flex justify="between" align="center">
-                      <Flex direction="column" gap="0">
-                        <Text size="3" weight="bold">{c.config.name || 'Unnamed Screenset'}</Text>
-                        <Text size="1" color="gray">{c.config.pages?.length || 0} Pages</Text>
-                      </Flex>
-                      <IconButton size="2" color="red" variant="ghost" onClick={(e) => deleteConfig(c.id, e)} title="Delete screenset">
-                        <TrashIcon />
-                      </IconButton>
-                    </Flex>
-                  </Box>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {c.config.name || 'Unnamed Screenset'}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{c.config.pages?.length || 0} Pages</span>
+                    </div>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      onClick={(e) => deleteConfig(c.id, e)} 
+                      title="Delete screenset"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </div>
           )}
-        </Box>
+        </div>
       ) : (
         /* ── 2. SPLIT WORKSPACE EDITOR VIEW ── */
-        <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+        <div className="flex w-full h-full overflow-hidden">
           
           {/* LEFT: Tabbed Settings Inspector (460px) */}
-          <div style={{ 
-            width: '460px', 
-            minWidth: '400px',
-            backgroundColor: 'var(--bg-panel)',
-            borderRight: '1px solid var(--border-subtle)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflowY: 'auto'
-          }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                <ArrowLeftIcon /> Back to Screensets
+          <div className="w-[460px] min-w-[400px] bg-card border-r border-border flex flex-col overflow-y-auto shrink-0 z-10">
+            <div className="p-5 border-b border-border flex flex-col gap-3">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBackToList} 
+                className="w-fit text-xs text-muted-foreground hover:text-foreground -ml-2 gap-1.5 h-8"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> Back to Screensets
               </Button>
-              <TextField.Root 
-                size="3" 
+              <Input 
                 placeholder="Screenset Name" 
                 value={config.name} 
                 onChange={e => setConfig({ ...config, name: e.target.value })} 
-                style={{ fontWeight: 'bold', fontSize: '1.2rem' }}
+                className="font-bold text-base h-10"
               />
             </div>
 
             {/* Navigation Tabs */}
-            <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-              <Box px="4" pt="3" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
-                <Tabs.List size="2">
-                  <Tabs.Trigger value="pages">Pages &amp; Text</Tabs.Trigger>
-                  <Tabs.Trigger value="global">Global Styles</Tabs.Trigger>
-                  <Tabs.Trigger value="logo">Logo &amp; Brand</Tabs.Trigger>
-                  <Tabs.Trigger value="export">OBS Export</Tabs.Trigger>
-                </Tabs.List>
-              </Box>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <div className="px-4 pt-2 border-b border-border">
+                <TabsList className="grid grid-cols-4 w-full h-9">
+                  <TabsTrigger value="pages" className="text-xs">Pages</TabsTrigger>
+                  <TabsTrigger value="global" className="text-xs">Styles</TabsTrigger>
+                  <TabsTrigger value="logo" className="text-xs">Logo</TabsTrigger>
+                  <TabsTrigger value="export" className="text-xs">Export</TabsTrigger>
+                </TabsList>
+              </div>
 
               {/* TAB 1: Pages & Content */}
-              <Tabs.Content value="pages">
-                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <Flex justify="between" align="center">
-                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>PAGES IN SCREENSET</Heading>
-                    <Button size="1" onClick={addPage} style={{ cursor: 'pointer' }}>
-                      <PlusIcon /> Add Page
-                    </Button>
-                  </Flex>
+              <TabsContent value="pages" className="p-4 flex flex-col gap-4 m-0">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Pages in Screenset
+                  </span>
+                  <Button size="sm" onClick={addPage} className="h-8 gap-1.5 text-xs font-semibold">
+                    <Plus className="w-3.5 h-3.5" /> Add Page
+                  </Button>
+                </div>
 
-                  {config.pages.map((page, idx) => {
-                    const currentTimer = {
-                      enabled: page.timer?.enabled ?? false,
-                      durationMinutes: page.timer?.durationMinutes ?? 5,
-                      endTime: page.timer?.endTime ?? null,
-                    };
+                {config.pages.map((page, idx) => {
+                  const currentTimer = {
+                    enabled: page.timer?.enabled ?? false,
+                    durationMinutes: page.timer?.durationMinutes ?? 5,
+                    endTime: page.timer?.endTime ?? null,
+                  };
 
-                    const isSelected = previewPageId === page.id;
+                  const isSelected = previewPageId === page.id;
 
-                    return (
-                      <Card 
-                        key={page.id} 
-                        size="2" 
-                        style={{ 
-                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-                          display: 'flex', 
-                          flexDirection: 'column', 
-                          gap: '12px',
-                          backgroundColor: isSelected ? 'var(--bg-main)' : 'var(--bg-panel)'
-                        }}
-                      >
-                        <Flex justify="between" align="center">
-                          <Flex align="center" gap="2">
-                            <span style={{ fontSize: '11px', fontWeight: 700, backgroundColor: 'var(--border-subtle)', padding: '2px 6px', borderRadius: '4px' }}>
-                              #{idx + 1}
-                            </span>
-                            <Text size="2" weight="bold">{page.name}</Text>
-                          </Flex>
-                          <Flex align="center" gap="2">
+                  return (
+                    <Card 
+                      key={page.id} 
+                      className={cn(
+                        "p-4 flex flex-col gap-3 transition-all",
+                        isSelected ? "border-primary bg-primary/5 ring-1 ring-primary/20" : "border-border bg-card"
+                      )}
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded text-muted-foreground">
+                            #{idx + 1}
+                          </span>
+                          <span className="text-sm font-semibold text-foreground">{page.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            size="sm" 
+                            variant={isSelected ? "default" : "secondary"} 
+                            onClick={() => setPreviewPageId(page.id)}
+                            className="h-7 text-xs font-medium"
+                          >
+                            {isSelected ? "Previewing" : "Preview"}
+                          </Button>
+                          {config.pages.length > 1 && (
                             <Button 
-                              size="1" 
-                              variant={isSelected ? "solid" : "soft"} 
-                              color={isSelected ? "indigo" : "gray"}
-                              onClick={() => setPreviewPageId(page.id)}
+                              size="icon" 
+                              variant="ghost" 
+                              onClick={() => deletePage(page.id)}
+                              className="h-7 w-7 text-muted-foreground hover:text-red-500"
                             >
-                              {isSelected ? "Previewing" : "Preview"}
+                              <Trash2 className="w-3.5 h-3.5" />
                             </Button>
-                            {config.pages.length > 1 && (
-                              <IconButton size="1" color="red" variant="ghost" onClick={() => deletePage(page.id)}>
-                                <TrashIcon />
-                              </IconButton>
-                            )}
-                          </Flex>
-                        </Flex>
-
-                        <Box>
-                          <Text as="label" size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>PAGE NAME (INTERNAL)</Text>
-                          <TextField.Root size="2" value={page.name} onChange={e => updatePage(page.id, { name: e.target.value })} />
-                        </Box>
-
-                        <Box>
-                          <Text as="label" size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>MAIN TITLE</Text>
-                          <TextField.Root size="2" value={page.title} onChange={e => updatePage(page.id, { title: e.target.value })} />
-                        </Box>
-
-                        <Box>
-                          <Text as="label" size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>SUBTITLE (OPTIONAL)</Text>
-                          <TextField.Root size="2" value={page.subtitle} onChange={e => updatePage(page.id, { subtitle: e.target.value })} placeholder="e.g. Stream will begin shortly..." />
-                        </Box>
-
-                        {/* Page Timer Setting */}
-                        <Box p="3" style={{ backgroundColor: 'var(--bg-panel)', borderRadius: '6px', border: '1px solid var(--border-subtle)' }}>
-                          <Flex justify="between" align="center" mb="2">
-                            <Text size="2" weight="medium">Include Countdown Timer</Text>
-                            <Switch 
-                              size="2" 
-                              checked={currentTimer.enabled} 
-                              onCheckedChange={checked => updatePage(page.id, { timer: { ...currentTimer, enabled: checked } })} 
-                            />
-                          </Flex>
-
-                          {currentTimer.enabled && (
-                            <Flex direction="column" gap="2" pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                              <Flex align="center" gap="2">
-                                <Text size="1" color="gray" style={{ minWidth: '70px' }}>Duration:</Text>
-                                <TextField.Root 
-                                  type="number" 
-                                  size="1" 
-                                  min={1}
-                                  value={currentTimer.durationMinutes} 
-                                  onChange={e => updatePage(page.id, { timer: { ...currentTimer, durationMinutes: Math.max(1, parseInt(e.target.value) || 1) } })}
-                                  style={{ width: '80px' }}
-                                />
-                                <Text size="1" color="gray">minutes</Text>
-                              </Flex>
-
-                              <Flex gap="2" mt="1">
-                                <Button 
-                                  size="1" 
-                                  color="indigo" 
-                                  onClick={() => {
-                                    updatePage(page.id, { timer: { ...currentTimer, endTime: Date.now() + (currentTimer.durationMinutes * 60000) } });
-                                    toast.success('Timer started for page');
-                                  }}
-                                >
-                                  <PlayIcon /> Start Timer
-                                </Button>
-                                <Button 
-                                  size="1" 
-                                  variant="soft" 
-                                  color="gray"
-                                  onClick={() => {
-                                    updatePage(page.id, { timer: { ...currentTimer, endTime: null } });
-                                    toast('Timer reset');
-                                  }}
-                                >
-                                  <ResetIcon /> Reset
-                                </Button>
-                              </Flex>
-                            </Flex>
                           )}
-                        </Box>
-                      </Card>
-                    );
-                  })}
-                </Box>
-              </Tabs.Content>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase">Page Name (Internal)</label>
+                        <Input value={page.name} onChange={e => updatePage(page.id, { name: e.target.value })} className="h-8 text-xs" />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase">Main Title</label>
+                        <Input value={page.title} onChange={e => updatePage(page.id, { title: e.target.value })} className="h-8 text-xs" />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-[11px] font-semibold text-muted-foreground uppercase">Subtitle (Optional)</label>
+                        <Input value={page.subtitle} onChange={e => updatePage(page.id, { subtitle: e.target.value })} placeholder="e.g. Stream will begin shortly..." className="h-8 text-xs" />
+                      </div>
+
+                      {/* Page Timer Setting */}
+                      <div className="p-3 bg-muted/40 rounded-md border border-border flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs font-medium text-foreground">Include Countdown Timer</span>
+                          <Switch 
+                            checked={currentTimer.enabled} 
+                            onCheckedChange={checked => updatePage(page.id, { timer: { ...currentTimer, enabled: checked } })} 
+                          />
+                        </div>
+
+                        {currentTimer.enabled && (
+                          <div className="flex flex-col gap-2 pt-2 border-t border-border">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground min-w-[60px]">Duration:</span>
+                              <Input 
+                                type="number" 
+                                min={1}
+                                value={currentTimer.durationMinutes} 
+                                onChange={e => updatePage(page.id, { timer: { ...currentTimer, durationMinutes: Math.max(1, parseInt(e.target.value) || 1) } })}
+                                className="w-20 h-7 text-xs"
+                              />
+                              <span className="text-xs text-muted-foreground">minutes</span>
+                            </div>
+
+                            <div className="flex gap-2 mt-1">
+                              <Button 
+                                size="sm" 
+                                onClick={() => {
+                                  updatePage(page.id, { timer: { ...currentTimer, endTime: Date.now() + (currentTimer.durationMinutes * 60000) } });
+                                  toast.success('Timer started for page');
+                                }}
+                                className="h-7 text-xs gap-1 font-semibold"
+                              >
+                                <Play className="w-3 h-3" /> Start Timer
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="secondary" 
+                                onClick={() => {
+                                  updatePage(page.id, { timer: { ...currentTimer, endTime: null } });
+                                  toast('Timer reset');
+                                }}
+                                className="h-7 text-xs gap-1 font-semibold"
+                              >
+                                <RotateCcw className="w-3 h-3" /> Reset
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </TabsContent>
 
               {/* TAB 2: Global Styles */}
-              <Tabs.Content value="global">
-                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <TabsContent value="global" className="p-4 flex flex-col gap-4 m-0">
+                {/* Curated Broadcast Themes */}
+                <Card className="border-border bg-card p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Curated Broadcast Themes
+                    </span>
+                    <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+                      1-Click Apply
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Apply harmonious broadcast palettes designed for professional stream aesthetics:
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {BROADCAST_PRESETS.map(preset => (
+                      <Button
+                        key={preset.name}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          updateLayout({
+                            bgColor: preset.bgColor,
+                            accentColor: preset.accentColor,
+                            textColor: preset.textColor,
+                            timerColor: preset.accentColor,
+                            glow: preset.glow,
+                          });
+                          toast.success(`Applied ${preset.name} palette!`);
+                        }}
+                        className="justify-start gap-2 h-auto py-2 px-2.5 text-xs font-medium"
+                      >
+                        <div className="flex gap-1 items-center shrink-0">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.accentColor }} />
+                          <div className="w-2.5 h-2.5 rounded-full border border-border" style={{ backgroundColor: preset.bgColor }} />
+                        </div>
+                        <span className="truncate">{preset.name}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* Background Properties */}
+                <Card className="border-border bg-card p-4 flex flex-col gap-3.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Background
+                  </span>
                   
-                  {/* Curated Broadcast Themes */}
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <Flex justify="between" align="center">
-                      <Heading size="3" style={{ color: 'var(--text-secondary)' }}>CURATED BROADCAST THEMES</Heading>
-                      <Badge color="indigo" size="1" variant="surface">1-Click Apply</Badge>
-                    </Flex>
-                    <Text size="2" color="gray">
-                      Apply harmonious broadcast palettes designed for professional stream aesthetics:
-                    </Text>
-                    <Grid columns="2" gap="2">
-                      {BROADCAST_PRESETS.map(preset => (
-                        <Button
-                          key={preset.name}
-                          variant="surface"
-                          size="2"
-                          onClick={() => {
-                            updateLayout({
-                              bgColor: preset.bgColor,
-                              accentColor: preset.accentColor,
-                              textColor: preset.textColor,
-                              timerColor: preset.accentColor,
-                              glow: preset.glow,
-                            });
-                            toast.success(`Applied ${preset.name} palette!`);
-                          }}
-                          style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer', height: 'auto', padding: '8px 10px' }}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-foreground">Background Color &amp; Opacity</label>
+                    <ColorInputWithPalette 
+                      value={config.layout.bgColor} 
+                      onChange={val => updateLayout({ bgColor: val })} 
+                      opacity={config.layout.bgOpacity ?? 1}
+                      onOpacityChange={val => updateLayout({ bgOpacity: val })}
+                    />
+                  </div>
+
+                  <div className="pt-2 border-t border-border">
+                    <ImageUploadOrUrl 
+                      label="Background Image Overlay"
+                      value={config.layout.bgImageUrl || ''} 
+                      onChange={val => updateLayout({ bgImageUrl: val })} 
+                    />
+                  </div>
+                </Card>
+
+                {/* Effects */}
+                <Card className="border-border bg-card p-4 flex flex-col gap-3.5">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Special Effects
+                  </span>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-foreground">Text Drop Shadow</span>
+                    <Switch checked={config.layout.dropShadow} onCheckedChange={checked => updateLayout({ dropShadow: checked })} />
+                  </div>
+
+                  <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-foreground">Glow Intensity</label>
+                    <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-md">
+                      {(['OFF', 'SUBTLE', 'NEON'] as const).map(g => (
+                        <button
+                          key={g}
+                          type="button"
+                          onClick={() => updateLayout({ glow: g })}
+                          className={cn(
+                            "py-1 text-xs font-semibold rounded-sm transition-all cursor-pointer capitalize",
+                            (config.layout.glow || 'OFF') === g ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                          )}
                         >
-                          <Flex gap="1" align="center">
-                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.accentColor }} />
-                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.bgColor, border: '1px solid var(--border-subtle)' }} />
-                          </Flex>
-                          <Text size="2" weight="medium">{preset.name}</Text>
-                        </Button>
+                          {g.toLowerCase()}
+                        </button>
                       ))}
-                    </Grid>
-                  </Card>
+                    </div>
+                  </div>
+                </Card>
 
-                  {/* Background Properties */}
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>BACKGROUND</Heading>
-                    
-                    <Box>
-                      <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>BACKGROUND COLOR &amp; OPACITY</Text>
-                      <ColorInputWithPalette 
-                        value={config.layout.bgColor} 
-                        onChange={val => updateLayout({ bgColor: val })} 
-                        opacity={config.layout.bgOpacity ?? 1}
-                        onOpacityChange={val => updateLayout({ bgOpacity: val })}
-                      />
-                    </Box>
+                {/* Title Typography */}
+                <Card className="border-border bg-card p-4 flex flex-col gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Title Typography
+                  </span>
+                  <TextFormattingToolbar
+                    fontFamily={config.layout.fontFamily}
+                    fontSize={config.layout.titleSize}
+                    textColor={config.layout.accentColor}
+                    opacity={config.layout.titleOpacity ?? 1}
+                    bold={config.layout.titleBold ?? true}
+                    italic={config.layout.titleItalic ?? false}
+                    textTransform={config.layout.titleTransform ?? 'uppercase'}
+                    onChange={patch => updateLayout({ 
+                      ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
+                      ...(patch.fontSize && { titleSize: patch.fontSize }),
+                      ...(patch.textColor && { accentColor: patch.textColor }),
+                      ...(patch.opacity !== undefined && { titleOpacity: patch.opacity }),
+                      ...(patch.bold !== undefined && { titleBold: patch.bold }),
+                      ...(patch.italic !== undefined && { titleItalic: patch.italic }),
+                      ...(patch.textTransform !== undefined && { titleTransform: patch.textTransform }),
+                    })}
+                  />
+                </Card>
 
-                    <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                      <ImageUploadOrUrl 
-                        label="BACKGROUND IMAGE OVERLAY"
-                        value={config.layout.bgImageUrl || ''} 
-                        onChange={val => updateLayout({ bgImageUrl: val })} 
-                      />
-                    </Box>
-                  </Card>
+                {/* Subtitle Typography */}
+                <Card className="border-border bg-card p-4 flex flex-col gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Subtitle Typography
+                  </span>
+                  <TextFormattingToolbar
+                    fontFamily={config.layout.fontFamily}
+                    fontSize={config.layout.subtitleSize}
+                    textColor={config.layout.textColor}
+                    opacity={config.layout.subtitleOpacity ?? 1}
+                    bold={config.layout.subtitleBold ?? false}
+                    italic={config.layout.subtitleItalic ?? false}
+                    textTransform={config.layout.subtitleTransform ?? 'none'}
+                    onChange={patch => updateLayout({ 
+                      ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
+                      ...(patch.fontSize && { subtitleSize: patch.fontSize }),
+                      ...(patch.textColor && { textColor: patch.textColor }),
+                      ...(patch.opacity !== undefined && { subtitleOpacity: patch.opacity }),
+                      ...(patch.bold !== undefined && { subtitleBold: patch.bold }),
+                      ...(patch.italic !== undefined && { subtitleItalic: patch.italic }),
+                      ...(patch.textTransform !== undefined && { subtitleTransform: patch.textTransform }),
+                    })}
+                  />
+                </Card>
 
-                  {/* Effects */}
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>SPECIAL EFFECTS</Heading>
-                    
-                    <Flex justify="between" align="center">
-                      <Text size="2" weight="medium">Text Drop Shadow</Text>
-                      <Switch size="2" checked={config.layout.dropShadow} onCheckedChange={checked => updateLayout({ dropShadow: checked })} />
-                    </Flex>
-
-                    <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                      <Text size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>GLOW INTENSITY</Text>
-                      <SegmentedControl.Root size="2" value={config.layout.glow || 'OFF'} onValueChange={val => updateLayout({ glow: val as any })}>
-                        <SegmentedControl.Item value="OFF">Off</SegmentedControl.Item>
-                        <SegmentedControl.Item value="SUBTLE">Subtle</SegmentedControl.Item>
-                        <SegmentedControl.Item value="NEON">Neon</SegmentedControl.Item>
-                      </SegmentedControl.Root>
-                    </Box>
-                  </Card>
-
-                  {/* Title Typography */}
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>TITLE TYPOGRAPHY</Heading>
-                    <TextFormattingToolbar
-                      fontFamily={config.layout.fontFamily}
-                      fontSize={config.layout.titleSize}
-                      textColor={config.layout.accentColor}
-                      opacity={config.layout.titleOpacity ?? 1}
-                      bold={config.layout.titleBold ?? true}
-                      italic={config.layout.titleItalic ?? false}
-                      textTransform={config.layout.titleTransform ?? 'uppercase'}
-                      onChange={patch => updateLayout({ 
-                        ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
-                        ...(patch.fontSize && { titleSize: patch.fontSize }),
-                        ...(patch.textColor && { accentColor: patch.textColor }),
-                        ...(patch.opacity !== undefined && { titleOpacity: patch.opacity }),
-                        ...(patch.bold !== undefined && { titleBold: patch.bold }),
-                        ...(patch.italic !== undefined && { titleItalic: patch.italic }),
-                        ...(patch.textTransform !== undefined && { titleTransform: patch.textTransform }),
-                      })}
-                    />
-                  </Card>
-
-                  {/* Subtitle Typography */}
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>SUBTITLE TYPOGRAPHY</Heading>
-                    <TextFormattingToolbar
-                      fontFamily={config.layout.fontFamily}
-                      fontSize={config.layout.subtitleSize}
-                      textColor={config.layout.textColor}
-                      opacity={config.layout.subtitleOpacity ?? 1}
-                      bold={config.layout.subtitleBold ?? false}
-                      italic={config.layout.subtitleItalic ?? false}
-                      textTransform={config.layout.subtitleTransform ?? 'none'}
-                      onChange={patch => updateLayout({ 
-                        ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
-                        ...(patch.fontSize && { subtitleSize: patch.fontSize }),
-                        ...(patch.textColor && { textColor: patch.textColor }),
-                        ...(patch.opacity !== undefined && { subtitleOpacity: patch.opacity }),
-                        ...(patch.bold !== undefined && { subtitleBold: patch.bold }),
-                        ...(patch.italic !== undefined && { subtitleItalic: patch.italic }),
-                        ...(patch.textTransform !== undefined && { subtitleTransform: patch.textTransform }),
-                      })}
-                    />
-                  </Card>
-
-                  {/* Timer Typography */}
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <Heading size="3" style={{ color: 'var(--text-secondary)' }}>COUNTDOWN TYPOGRAPHY</Heading>
-                    <TextFormattingToolbar
-                      fontFamily={config.layout.fontFamily}
-                      fontSize="MEDIUM"
-                      textColor={config.layout.timerColor || config.layout.textColor}
-                      opacity={config.layout.timerOpacity ?? 1}
-                      bold={config.layout.timerBold ?? true}
-                      italic={config.layout.timerItalic ?? false}
-                      textTransform={config.layout.timerTransform ?? 'none'}
-                      onChange={patch => updateLayout({ 
-                        ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
-                        ...(patch.textColor && { timerColor: patch.textColor }),
-                        ...(patch.opacity !== undefined && { timerOpacity: patch.opacity }),
-                        ...(patch.bold !== undefined && { timerBold: patch.bold }),
-                        ...(patch.italic !== undefined && { timerItalic: patch.italic }),
-                        ...(patch.textTransform !== undefined && { timerTransform: patch.textTransform }),
-                      })}
-                    />
-                  </Card>
-
-                </Box>
-              </Tabs.Content>
+                {/* Timer Typography */}
+                <Card className="border-border bg-card p-4 flex flex-col gap-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Countdown Typography
+                  </span>
+                  <TextFormattingToolbar
+                    fontFamily={config.layout.fontFamily}
+                    fontSize="MEDIUM"
+                    textColor={config.layout.timerColor || config.layout.textColor}
+                    opacity={config.layout.timerOpacity ?? 1}
+                    bold={config.layout.timerBold ?? true}
+                    italic={config.layout.timerItalic ?? false}
+                    textTransform={config.layout.timerTransform ?? 'none'}
+                    onChange={patch => updateLayout({ 
+                      ...(patch.fontFamily && { fontFamily: patch.fontFamily }),
+                      ...(patch.textColor && { timerColor: patch.textColor }),
+                      ...(patch.opacity !== undefined && { timerOpacity: patch.opacity }),
+                      ...(patch.bold !== undefined && { timerBold: patch.bold }),
+                      ...(patch.italic !== undefined && { timerItalic: patch.italic }),
+                      ...(patch.textTransform !== undefined && { timerTransform: patch.textTransform }),
+                    })}
+                  />
+                </Card>
+              </TabsContent>
 
               {/* TAB 3: Logo & Brand */}
-              <Tabs.Content value="logo">
-                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <Flex justify="between" align="center">
-                      <Heading size="3" style={{ color: 'var(--text-secondary)' }}>LOGO DISPLAY</Heading>
-                      <Switch 
-                        size="2" 
-                        checked={config.logo.enabled} 
-                        onCheckedChange={checked => setConfig({ ...config, logo: { ...config.logo, enabled: checked } })} 
+              <TabsContent value="logo" className="p-4 flex flex-col gap-4 m-0">
+                <Card className="border-border bg-card p-4 flex flex-col gap-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Logo Display
+                    </span>
+                    <Switch 
+                      checked={config.logo.enabled} 
+                      onCheckedChange={checked => setConfig({ ...config, logo: { ...config.logo, enabled: checked } })} 
+                    />
+                  </div>
+
+                  {config.logo.enabled && (
+                    <div className="flex flex-col gap-4">
+                      <ImageUploadOrUrl 
+                        label="Logo Image"
+                        value={config.logo.imageUrl || ''} 
+                        onChange={val => setConfig({ ...config, logo: { ...config.logo, imageUrl: val } })} 
                       />
-                    </Flex>
 
-                    {config.logo.enabled && (
-                      <Flex direction="column" gap="4">
-                        <ImageUploadOrUrl 
-                          label="LOGO IMAGE"
-                          value={config.logo.imageUrl || ''} 
-                          onChange={val => setConfig({ ...config, logo: { ...config.logo, imageUrl: val } })} 
-                        />
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-foreground">Corner Placement</label>
+                        <Select 
+                          value={config.logo.position} 
+                          onValueChange={val => setConfig({ ...config, logo: { ...config.logo, position: val as any } })}
+                        >
+                          <SelectTrigger className="h-9 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="TOP_LEFT">Top Left</SelectItem>
+                            <SelectItem value="TOP_RIGHT">Top Right</SelectItem>
+                            <SelectItem value="CENTER">Center (Above Title)</SelectItem>
+                            <SelectItem value="BOTTOM_LEFT">Bottom Left</SelectItem>
+                            <SelectItem value="BOTTOM_RIGHT">Bottom Right</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                        <Box>
-                          <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>CORNER PLACEMENT</Text>
-                          <Select.Root 
-                            size="2" 
-                            value={config.logo.position} 
-                            onValueChange={val => setConfig({ ...config, logo: { ...config.logo, position: val as any } })}
-                          >
-                            <Select.Trigger style={{ width: '100%' }} />
-                            <Select.Content>
-                              <Select.Item value="TOP_LEFT">Top Left</Select.Item>
-                              <Select.Item value="TOP_RIGHT">Top Right</Select.Item>
-                              <Select.Item value="CENTER">Center (Above Title)</Select.Item>
-                              <Select.Item value="BOTTOM_LEFT">Bottom Left</Select.Item>
-                              <Select.Item value="BOTTOM_RIGHT">Bottom Right</Select.Item>
-                            </Select.Content>
-                          </Select.Root>
-                        </Box>
-
-                        <Box>
-                          <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>LOGO SCALE</Text>
-                          <SegmentedControl.Root 
-                            size="2" 
-                            value={config.logo.size} 
-                            onValueChange={val => setConfig({ ...config, logo: { ...config.logo, size: val as any } })}
-                          >
-                            <SegmentedControl.Item value="SMALL">Small</SegmentedControl.Item>
-                            <SegmentedControl.Item value="MEDIUM">Medium</SegmentedControl.Item>
-                            <SegmentedControl.Item value="LARGE">Large</SegmentedControl.Item>
-                          </SegmentedControl.Root>
-                        </Box>
-                      </Flex>
-                    )}
-                  </Card>
-                </Box>
-              </Tabs.Content>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-semibold text-foreground">Logo Scale</label>
+                        <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-md">
+                          {(['SMALL', 'MEDIUM', 'LARGE'] as const).map(s => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setConfig({ ...config, logo: { ...config.logo, size: s } })}
+                              className={cn(
+                                "py-1 text-xs font-semibold rounded-sm transition-all cursor-pointer capitalize",
+                                config.logo.size === s ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              {s.toLowerCase()}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              </TabsContent>
 
               {/* TAB 4: OBS Export */}
-              <Tabs.Content value="export">
-                <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <Heading size="3" style={{ color: 'var(--text-secondary)' }}>OBS BROWSER SOURCE URLS</Heading>
-                  <Text size="2" color="gray">
+              <TabsContent value="export" className="p-4 flex flex-col gap-4 m-0">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
+                    OBS Browser Source URLs
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     Each page in this screenset has its own dedicated 1920×1080 embed URL. Copy each URL and paste into an OBS Browser Source for each stream scene.
-                  </Text>
+                  </p>
+                </div>
 
+                <div className="flex flex-col gap-4">
                   {config.pages.map(page => (
                     <ObsExportCard
                       key={page.id}
@@ -630,57 +679,44 @@ function ScreenCustomizerContent() {
                       allowTransparency={true}
                     />
                   ))}
-                </Box>
-              </Tabs.Content>
-            </Tabs.Root>
+                </div>
+              </TabsContent>
+            </Tabs>
 
           </div>
 
           {/* RIGHT: Live Preview Canvas */}
-          <div style={{ flex: 1, backgroundColor: 'var(--bg-main)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <div className="flex-1 bg-muted/30 flex flex-col relative overflow-hidden">
             
             {/* Top Preview Header & Page Switcher */}
-            <Flex justify="between" align="center" px="5" py="3" style={{ backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-subtle)', zIndex: 10 }}>
-              <Flex align="center" gap="2" wrap="wrap">
-                <Text size="1" weight="bold" color="gray" mr="2" style={{ textTransform: 'uppercase' }}>PAGE:</Text>
+            <div className="flex justify-between items-center px-6 py-3.5 bg-card border-b border-border z-10 shrink-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[11px] font-bold text-muted-foreground uppercase mr-1">Page:</span>
                 {config.pages.map(page => (
                   <Button 
                     key={page.id}
-                    size="1"
-                    variant={previewPageId === page.id ? "solid" : "soft"}
-                    color={previewPageId === page.id ? "indigo" : "gray"}
+                    size="sm"
+                    variant={previewPageId === page.id ? "default" : "secondary"}
                     onClick={() => setPreviewPageId(page.id)}
-                    style={{ cursor: 'pointer' }}
+                    className="h-7 text-xs font-medium"
                   >
                     {page.name}
                   </Button>
                 ))}
-              </Flex>
+              </div>
 
-              <Text size="1" color="gray" weight="bold">
+              <span className="text-[11px] font-bold text-muted-foreground">
                 {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
-              </Text>
-            </Flex>
+              </span>
+            </div>
 
             {/* Centered Preview Canvas Container */}
-            <div style={{ flex: 1, padding: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <div className="flex-1 p-8 flex items-center justify-center overflow-hidden">
               <div 
-                className="preview-window-container" 
-                style={{ 
-                  width: '100%', 
-                  maxWidth: '850px', 
-                  aspectRatio: '16/9', 
-                  borderRadius: '16px', 
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.12)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}
+                className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-2xl flex items-center justify-center overflow-hidden relative"
               >
-                <div style={{ width: '850px', height: '478px', position: 'relative', overflow: 'hidden' }}>
-                  <div style={{ transform: 'scale(0.4427)', transformOrigin: 'top left', width: '1920px', height: '1080px' }}>
+                <div className="w-[850px] h-[478px] relative overflow-hidden">
+                  <div className="scale-[0.4427] origin-top-left w-[1920px] h-[1080px]">
                     <ScreenPreview config={config} activePageId={previewPageId} />
                   </div>
                 </div>
@@ -698,7 +734,7 @@ function ScreenCustomizerContent() {
 
 export default function ScreenCustomizer() {
   return (
-    <Suspense fallback={<Box p="6"><Text color="gray">Loading screenset editor...</Text></Box>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading screenset editor...</div>}>
       <ScreenCustomizerContent />
     </Suspense>
   );

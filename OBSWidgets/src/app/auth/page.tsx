@@ -5,7 +5,11 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { Box, Flex, Card, Heading, Text, TextField, Button } from '@radix-ui/themes';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Radio } from 'lucide-react';
 
 export default function AuthPage() {
   const [email, setEmail] = useState('');
@@ -45,80 +49,88 @@ export default function AuthPage() {
   };
 
   return (
-    <Flex direction="column" style={{ minHeight: '100vh', backgroundColor: 'var(--bg-main)' }}>
-      {/* Minimal Brand Header */}
-      <Box px="6" py="4">
-        <Link href="/" style={{ textDecoration: 'none' }}>
-          <Flex align="center" gap="2">
-            <Box style={{ width: '28px', height: '28px', backgroundColor: 'var(--text-primary)', color: 'var(--bg-panel)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold' }}>H</Box>
-            <Text size="5" weight="bold" style={{ color: 'var(--text-primary)' }}>getphily.io</Text>
-          </Flex>
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      {/* Brand Header */}
+      <header className="px-6 py-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 no-underline group">
+          <div className="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:bg-indigo-500 transition-colors">
+            <Radio className="w-4 h-4" />
+          </div>
+          <span className="font-bold text-lg tracking-tight text-foreground">
+            getphily.io
+          </span>
         </Link>
-      </Box>
+      </header>
 
-      <Flex align="center" justify="center" p="4" style={{ flex: 1 }}>
-        <Card size="4" style={{ width: '100%', maxWidth: '440px' }}>
-          
-          <Flex direction="column" align="center" mb="5">
-            <Heading size="6" mb="2">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md border-border bg-card shadow-lg">
+          <CardHeader className="text-center pb-4 pt-6">
+            <CardTitle className="text-xl font-bold tracking-tight text-foreground">
               {isLogin ? 'Log in to your account' : 'Create a new account'}
-            </Heading>
-            <Text size="2" color="gray">
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground mt-1">
               {isLogin ? 'Welcome back! Please enter your details.' : 'Start managing your custom OBS widgets.'}
-            </Text>
-          </Flex>
-          
-          {error && (
-            <Box mb="4" p="3" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 'var(--radius-3)' }}>
-              <Text size="2" style={{ color: '#ef4444' }}>{error}</Text>
-            </Box>
-          )}
+            </CardDescription>
+          </CardHeader>
 
-          <form onSubmit={handleSubmit}>
-            <Flex direction="column" gap="4">
-              <Box>
-                <Text as="label" size="2" weight="medium" mb="2" style={{ display: 'block' }}>Email address</Text>
-                <TextField.Root 
-                  type="email" 
-                  size="3"
+          <CardContent className="px-6 pb-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-600 dark:text-red-400 text-xs">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="email" className="text-xs font-semibold text-foreground">
+                  Email address
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  required 
+                  required
+                  className="h-10 text-sm"
                 />
-              </Box>
-              
-              <Box>
-                <Text as="label" size="2" weight="medium" mb="2" style={{ display: 'block' }}>Password</Text>
-                <TextField.Root 
-                  type="password" 
-                  size="3"
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="password" className="text-xs font-semibold text-foreground">
+                  Password
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  required 
+                  required
+                  className="h-10 text-sm"
                 />
-              </Box>
+              </div>
 
-              <Button type="submit" size="3" mt="2" disabled={loading} style={{ width: '100%' }}>
+              <Button type="submit" disabled={loading} className="w-full h-10 mt-2 font-semibold">
                 {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
               </Button>
-            </Flex>
-          </form>
+            </form>
 
-          <Flex justify="center" mt="5">
-            <Text size="2" color="gray">
-              {isLogin ? "Don't have an account? " : "Already have an account? "}
-              <button 
-                onClick={() => setIsLogin(!isLogin)}
-                style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', fontWeight: 600, cursor: 'pointer', padding: 0 }}
-              >
-                {isLogin ? 'Sign up' : 'Log in'}
-              </button>
-            </Text>
-          </Flex>
+            <div className="text-center mt-6">
+              <p className="text-xs text-muted-foreground">
+                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="font-semibold text-primary hover:underline cursor-pointer bg-transparent border-0 p-0 ml-1"
+                >
+                  {isLogin ? 'Sign up' : 'Log in'}
+                </button>
+              </p>
+            </div>
+          </CardContent>
         </Card>
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   );
 }

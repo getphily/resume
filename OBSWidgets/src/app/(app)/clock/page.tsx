@@ -5,12 +5,24 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
-import * as Popover from '@radix-ui/react-popover';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 import { ObsExportCard } from '@/components/ObsExportCard';
-import { Card, TextField, SegmentedControl, Switch, Text, Button, IconButton, Flex, Box, Select, Slider, Heading, Tooltip, Badge, Grid } from '@radix-ui/themes';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { CLOCK_PRESETS } from '@/lib/presets';
-import { TrashIcon, ClockIcon, CalendarIcon, ArrowLeftIcon, PlusIcon } from '@radix-ui/react-icons';
+import { ArrowLeft, Plus, Trash2, Clock, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const GOOGLE_FONTS = [
   'Roboto Mono', 'Inter', 'Outfit', 'Bebas Neue', 'VT323',
@@ -171,10 +183,10 @@ function ClockCustomizerContent() {
     e.stopPropagation();
     toast(
       (t) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Delete this clock widget?</p>
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>This action cannot be undone.</p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">Delete this clock widget?</p>
+          <p className="m-0 text-xs text-muted-foreground">This action cannot be undone.</p>
+          <div className="flex gap-2 mt-2">
             <button 
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -183,13 +195,13 @@ function ClockCustomizerContent() {
                 if (activeConfigId === id) setActiveConfigId(null);
                 toast.success('Widget deleted');
               }} 
-              style={{ padding: '6px 12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Delete
             </button>
             <button 
               onClick={() => toast.dismiss(t.id)} 
-              style={{ padding: '6px 12px', background: 'var(--bg-panel)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -200,279 +212,340 @@ function ClockCustomizerContent() {
     );
   };
 
-  if (!session) return <main style={{ padding: '40px' }}><p>Please <Link href="/auth">Sign In</Link></p></main>;
+  if (!session) {
+    return (
+      <main className="p-10">
+        <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
+      </main>
+    );
+  }
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+    <div className="flex w-full h-full overflow-hidden bg-background text-foreground">
       
       {/* ── CATALOG VIEW ── */}
       {!activeConfigId ? (
-        <Box p="6" style={{ maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
-          <Flex justify="between" align="end" mb="5">
-            <Box>
-              <Text size="2" color="gray" mb="1" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.08em' }}>WIDGETS</Text>
-              <Heading size="7">Clock Widgets</Heading>
-              <Text size="2" color="gray" mt="1">Digital clock overlay with customizable fonts, timezones, and glowing broadcast styles.</Text>
-            </Box>
+        <div className="p-6 max-w-5xl mx-auto w-full">
+          <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
+            <div>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Widgets</span>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Clock Widgets</h1>
+              <p className="text-sm text-muted-foreground mt-1">Digital clock overlay with customizable fonts, timezones, and glowing broadcast styles.</p>
+            </div>
             {configsList.length < 3 && (
-              <Button size="3" onClick={handleCreateNew} style={{ cursor: 'pointer' }}>
-                <PlusIcon /> Create Clock
+              <Button onClick={handleCreateNew} className="gap-2">
+                <Plus className="w-4 h-4" />
+                <span>Create Clock</span>
               </Button>
             )}
-          </Flex>
+          </div>
 
-          <Flex justify="between" align="center" mb="4" p="3" style={{ backgroundColor: 'var(--bg-panel)', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-            <Text size="2" weight="medium" color="gray">Storage Capacity</Text>
-            <Text size="2" weight="bold" color={configsList.length >= 3 ? "red" : "indigo"}>
+          <div className="flex justify-between items-center mb-6 p-3.5 bg-card rounded-lg border border-border shadow-xs">
+            <span className="text-xs font-semibold text-muted-foreground">Storage Capacity</span>
+            <span className={cn("text-xs font-bold", configsList.length >= 3 ? "text-red-500" : "text-primary")}>
               {configsList.length} / 3 Clocks Used
-            </Text>
-          </Flex>
+            </span>
+          </div>
 
           {loadingList ? (
-            <Text color="gray">Loading your clocks...</Text>
+            <p className="text-sm text-muted-foreground">Loading your clocks...</p>
           ) : configsList.length === 0 ? (
-            <Card size="4" style={{ textAlign: 'center', padding: '60px 20px', border: '1px dashed var(--border-subtle)', backgroundColor: 'var(--bg-panel)' }}>
-              <Text size="3" color="gray" mb="4" style={{ display: 'block' }}>You don&apos;t have any clock widgets created yet.</Text>
-              <Button onClick={handleCreateNew} size="3" variant="solid">Create Your First Clock</Button>
+            <Card className="text-center py-16 px-6 border-dashed border-border bg-card">
+              <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any clock widgets created yet.</p>
+              <Button onClick={handleCreateNew}>Create Your First Clock</Button>
             </Card>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {configsList.map(c => (
-                <Card key={c.id} onClick={() => loadEditor(c.id, c.config)} style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 0.2s ease', backgroundColor: 'var(--bg-panel)' }} className="hover-card">
-                  <Box p="3">
-                    <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
-                      <ClockPreview config={c.config} time={time} scale={0.55} />
-                    </div>
-                    <Flex justify="between" align="center">
-                      <Text size="3" weight="bold">{c.config.name || 'Unnamed Clock'}</Text>
-                      <IconButton size="2" color="red" variant="ghost" onClick={(e) => deleteConfig(c.id, e)} title="Delete widget">
-                        <TrashIcon />
-                      </IconButton>
-                    </Flex>
-                  </Box>
+                <Card 
+                  key={c.id} 
+                  onClick={() => loadEditor(c.id, c.config)} 
+                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
+                >
+                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5">
+                    <ClockPreview config={c.config} time={time} scale={0.55} />
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      {c.config.name || 'Unnamed Clock'}
+                    </span>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      onClick={(e) => deleteConfig(c.id, e)} 
+                      title="Delete widget"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </div>
           )}
-        </Box>
+        </div>
       ) : (
         /* ── SPLIT WORKSPACE EDITOR VIEW ── */
-        <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
+        <div className="flex w-full h-full overflow-hidden">
           
           {/* LEFT: Controls Inspector (420px) */}
-          <div style={{ 
-            width: '420px', 
-            minWidth: '380px',
-            backgroundColor: 'var(--bg-panel)',
-            borderRight: '1px solid var(--border-subtle)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflowY: 'auto'
-          }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-              <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-                <ArrowLeftIcon /> Back to Clocks
+          <div className="w-[420px] min-w-[380px] bg-card border-r border-border flex flex-col overflow-y-auto shrink-0 z-10">
+            <div className="p-5 border-b border-border flex flex-col gap-3">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleBackToList} 
+                className="w-fit text-xs text-muted-foreground hover:text-foreground -ml-2 gap-1.5 h-8"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> Back to Clocks
               </Button>
-              <TextField.Root 
-                size="3" 
+              <Input 
                 placeholder="Clock Name" 
                 value={name} 
                 onChange={e => setName(e.target.value)} 
-                style={{ fontWeight: 'bold', fontSize: '1.2rem' }}
+                className="font-bold text-base h-10"
               />
             </div>
 
-            <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="p-4 flex flex-col gap-4">
               
-              {/* Card 1: Time & Display Properties */}
-              <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <Heading size="3" style={{ color: 'var(--text-secondary)' }}>TIME SETTINGS</Heading>
+              {/* Card 1: Time Settings */}
+              <Card className="border-border bg-card p-4 flex flex-col gap-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Time Settings
+                </span>
                 
-                <Flex direction="column" gap="3">
-                  <Box>
-                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>FORMAT</Text>
-                    <SegmentedControl.Root size="2" value={timeFormat} onValueChange={(val: '12HR' | '24HR') => setTimeFormat(val)}>
-                      <SegmentedControl.Item value="12HR">12-Hour (AM/PM)</SegmentedControl.Item>
-                      <SegmentedControl.Item value="24HR">24-Hour (Military)</SegmentedControl.Item>
-                    </SegmentedControl.Root>
-                  </Box>
+                <div className="flex flex-col gap-3.5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-foreground">Format</label>
+                    <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-md">
+                      <button
+                        type="button"
+                        onClick={() => setTimeFormat('12HR')}
+                        className={cn(
+                          "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                          timeFormat === '12HR' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        12-Hour (AM/PM)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTimeFormat('24HR')}
+                        className={cn(
+                          "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                          timeFormat === '24HR' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        24-Hour (Military)
+                      </button>
+                    </div>
+                  </div>
 
-                  <Box>
-                    <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>TIMEZONE</Text>
-                    <Select.Root size="2" value={timezone} onValueChange={setTimezone}>
-                      <Select.Trigger style={{ width: '100%' }} />
-                      <Select.Content>
-                        <Select.Item value="LOCAL">Local Computer Time</Select.Item>
-                        <Select.Item value="UTC">UTC (Universal)</Select.Item>
-                        <Select.Item value="America/New_York">Eastern (EST/EDT)</Select.Item>
-                        <Select.Item value="America/Chicago">Central (CST/CDT)</Select.Item>
-                        <Select.Item value="America/Denver">Mountain (MST/MDT)</Select.Item>
-                        <Select.Item value="America/Los_Angeles">Pacific (PST/PDT)</Select.Item>
-                        <Select.Item value="Europe/London">London (GMT/BST)</Select.Item>
-                        <Select.Item value="Asia/Tokyo">Tokyo (JST)</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
-                  </Box>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-foreground">Timezone</label>
+                    <Select value={timezone} onValueChange={setTimezone}>
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="LOCAL">Local Computer Time</SelectItem>
+                        <SelectItem value="UTC">UTC (Universal)</SelectItem>
+                        <SelectItem value="America/New_York">Eastern (EST/EDT)</SelectItem>
+                        <SelectItem value="America/Chicago">Central (CST/CDT)</SelectItem>
+                        <SelectItem value="America/Denver">Mountain (MST/MDT)</SelectItem>
+                        <SelectItem value="America/Los_Angeles">Pacific (PST/PDT)</SelectItem>
+                        <SelectItem value="Europe/London">London (GMT/BST)</SelectItem>
+                        <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                  <Flex justify="between" align="center" pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                    <Text size="2" weight="medium">Show Seconds</Text>
-                    <Switch size="2" checked={showSeconds} onCheckedChange={setShowSeconds} />
-                  </Flex>
+                  <div className="flex justify-between items-center pt-2 border-t border-border">
+                    <span className="text-xs font-medium text-foreground">Show Seconds</span>
+                    <Switch checked={showSeconds} onCheckedChange={setShowSeconds} />
+                  </div>
 
-                  <Flex justify="between" align="center">
-                    <Text size="2" weight="medium">Show Date</Text>
-                    <Switch size="2" checked={showDate} onCheckedChange={setShowDate} />
-                  </Flex>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-foreground">Show Date</span>
+                    <Switch checked={showDate} onCheckedChange={setShowDate} />
+                  </div>
 
-                  <Flex justify="between" align="center">
-                    <Text size="2" weight="medium">Blink Colon (:)</Text>
-                    <Switch size="2" checked={blinkingColon} onCheckedChange={setBlinkingColon} />
-                  </Flex>
-                </Flex>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-medium text-foreground">Blink Colon (:)</span>
+                    <Switch checked={blinkingColon} onCheckedChange={setBlinkingColon} />
+                  </div>
+                </div>
               </Card>
 
-              {/* Card: Curated Clock Themes */}
-              <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <Flex justify="between" align="center">
-                  <Heading size="3" style={{ color: 'var(--text-secondary)' }}>CURATED CLOCK THEMES</Heading>
-                  <Badge color="indigo" size="1" variant="surface">1-Click Apply</Badge>
-                </Flex>
-                <Text size="2" color="gray">
+              {/* Card 2: Curated Themes */}
+              <Card className="border-border bg-card p-4 flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Curated Clock Themes
+                  </span>
+                  <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+                    1-Click Apply
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
                   Quick broadcast and stream looks tuned for legibility:
-                </Text>
-                <Grid columns="2" gap="2">
+                </p>
+                <div className="grid grid-cols-2 gap-2">
                   {CLOCK_PRESETS.map(preset => (
                     <Button
                       key={preset.name}
-                      variant="surface"
-                      size="2"
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setTextColor(preset.textColor);
                         setBgColor(preset.bgColor);
                         setGlow(preset.glow);
                         toast.success(`Applied ${preset.name} theme!`);
                       }}
-                      style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer', height: 'auto', padding: '8px 10px' }}
+                      className="justify-start gap-2 h-auto py-2 px-2.5 text-xs font-medium"
                     >
-                      <Flex gap="1" align="center">
-                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.textColor }} />
-                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: preset.bgColor, border: '1px solid var(--border-subtle)' }} />
-                      </Flex>
-                      <Text size="2" weight="medium">{preset.name}</Text>
+                      <div className="flex gap-1 items-center shrink-0">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: preset.textColor }} />
+                        <div className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: preset.bgColor }} />
+                      </div>
+                      <span className="truncate">{preset.name}</span>
                     </Button>
                   ))}
-                </Grid>
+                </div>
               </Card>
 
-              {/* Card 2: Typography & Styling */}
-              <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <Heading size="3" style={{ color: 'var(--text-secondary)' }}>TYPOGRAPHY & STYLES</Heading>
+              {/* Card 3: Typography & Styles */}
+              <Card className="border-border bg-card p-4 flex flex-col gap-4">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Typography & Styles
+                </span>
                 
-                <Box>
-                  <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>FONT FAMILY</Text>
-                  <Select.Root size="2" value={fontFamily} onValueChange={setFontFamily}>
-                    <Select.Trigger style={{ width: '100%' }} />
-                    <Select.Content>
-                      {GOOGLE_FONTS.map(f => (
-                        <Select.Item key={f} value={f} style={{ fontFamily: getFontFamily(f) }}>
-                          {f}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                </Box>
+                <div className="flex flex-col gap-3.5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-foreground">Font Family</label>
+                    <Select value={fontFamily} onValueChange={setFontFamily}>
+                      <SelectTrigger className="h-9 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GOOGLE_FONTS.map(f => (
+                          <SelectItem key={f} value={f} style={{ fontFamily: getFontFamily(f) }} className="text-xs">
+                            {f}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <Box>
-                  <Flex justify="between" align="center" mb="2">
-                    <Text as="label" size="2" weight="bold" color="gray">SIZE SCALE</Text>
-                    <Text size="1" color="gray">{sizeScale}x</Text>
-                  </Flex>
-                  <Slider min={0.5} max={2.0} step={0.1} value={[sizeScale]} onValueChange={([val]) => setSizeScale(val)} />
-                </Box>
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-semibold text-foreground">Size Scale</span>
+                      <span className="text-xs font-mono text-muted-foreground">{sizeScale}x</span>
+                    </div>
+                    <Slider min={0.5} max={2.0} step={0.1} value={[sizeScale]} onValueChange={([val]) => setSizeScale(val)} />
+                  </div>
 
-                <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                  <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>DIGIT COLOR</Text>
-                  <ColorInputWithPalette 
-                    value={textColor} 
-                    onChange={setTextColor} 
-                    opacity={opacity / 100}
-                    onOpacityChange={val => setOpacity(Math.round(val * 100))}
-                  />
-                </Box>
+                  <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-foreground">Digit Color</label>
+                    <ColorInputWithPalette 
+                      value={textColor} 
+                      onChange={setTextColor} 
+                      opacity={opacity / 100}
+                      onOpacityChange={val => setOpacity(Math.round(val * 100))}
+                    />
+                  </div>
 
-                <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                  <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>BACKGROUND</Text>
-                  <SegmentedControl.Root size="2" value={bgMode} onValueChange={setBgMode as any} mb="3">
-                    <SegmentedControl.Item value="SOLID">Solid Color</SegmentedControl.Item>
-                    <SegmentedControl.Item value="TRANSPARENT">Transparent (OBS)</SegmentedControl.Item>
-                  </SegmentedControl.Root>
-                  {bgMode === 'SOLID' && (
-                    <ColorInputWithPalette value={bgColor} onChange={setBgColor} />
-                  )}
-                </Box>
+                  <div className="pt-2 border-t border-border flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-foreground">Background</label>
+                    <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-md mb-2">
+                      <button
+                        type="button"
+                        onClick={() => setBgMode('SOLID')}
+                        className={cn(
+                          "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                          bgMode === 'SOLID' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Solid Color
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setBgMode('TRANSPARENT')}
+                        className={cn(
+                          "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                          bgMode === 'TRANSPARENT' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        Transparent (OBS)
+                      </button>
+                    </div>
+                    {bgMode === 'SOLID' && (
+                      <ColorInputWithPalette value={bgColor} onChange={setBgColor} />
+                    )}
+                  </div>
 
-                <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-                  <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>SPECIAL EFFECTS</Text>
-                  <Flex direction="column" gap="3">
-                    <Box>
-                      <Text size="1" weight="medium" color="gray" mb="1" style={{ display: 'block' }}>Glow Aura</Text>
-                      <SegmentedControl.Root size="1" value={glow} onValueChange={setGlow as any}>
-                        <SegmentedControl.Item value="OFF">Off</SegmentedControl.Item>
-                        <SegmentedControl.Item value="SUBTLE">Subtle</SegmentedControl.Item>
-                        <SegmentedControl.Item value="NEON">Neon</SegmentedControl.Item>
-                      </SegmentedControl.Root>
-                    </Box>
-                    <Flex justify="between" align="center">
-                      <Text size="2" weight="medium">Text Drop Shadow</Text>
-                      <Switch size="2" checked={dropShadow} onCheckedChange={setDropShadow} />
-                    </Flex>
-                    <Flex justify="between" align="center">
-                      <Text size="2" weight="medium">Black Outline</Text>
-                      <Switch size="2" checked={outline} onCheckedChange={setOutline} />
-                    </Flex>
-                  </Flex>
-                </Box>
+                  <div className="pt-2 border-t border-border flex flex-col gap-3">
+                    <span className="text-xs font-semibold text-foreground">Special Effects</span>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[11px] text-muted-foreground">Glow Aura</span>
+                      <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-md">
+                        {(['OFF', 'SUBTLE', 'NEON'] as const).map((g) => (
+                          <button
+                            key={g}
+                            type="button"
+                            onClick={() => setGlow(g)}
+                            className={cn(
+                              "py-1 text-xs font-semibold rounded-sm transition-all cursor-pointer capitalize",
+                              glow === g ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                            )}
+                          >
+                            {g.toLowerCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium text-foreground">Text Drop Shadow</span>
+                      <Switch checked={dropShadow} onCheckedChange={setDropShadow} />
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-medium text-foreground">Black Outline</span>
+                      <Switch checked={outline} onCheckedChange={setOutline} />
+                    </div>
+                  </div>
+                </div>
               </Card>
 
-              {/* Card 3: OBS Export */}
+              {/* Card 4: OBS Export */}
               <ObsExportCard
                 url={`${typeof window !== 'undefined' ? window.location.origin : ''}/widgets/embed/clock?id=${activeConfigId}`}
                 dimensions="1920 × 1080"
                 allowTransparency={true}
               />
 
-            </Box>
+            </div>
           </div>
 
           {/* RIGHT: Live Canvas Preview Pane */}
-          <div style={{ flex: 1, backgroundColor: 'var(--bg-main)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <div className="flex-1 bg-muted/30 flex flex-col relative overflow-hidden">
             {/* Header info */}
-            <Flex justify="between" align="center" px="5" py="3" style={{ backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-subtle)' }}>
-              <Flex align="center" gap="3">
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981' }} />
-                <Text size="2" weight="bold" style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div className="flex justify-between items-center px-6 py-3.5 bg-card border-b border-border shrink-0">
+              <div className="flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-wider text-foreground">
                   Live Preview: {name}
-                </Text>
-              </Flex>
-              <Text size="1" color="gray" weight="bold">
+                </span>
+              </div>
+              <span className="text-[11px] font-bold text-muted-foreground">
                 {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
-              </Text>
-            </Flex>
+              </span>
+            </div>
 
             {/* Centered Preview Canvas */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px', overflow: 'hidden' }}>
+            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
               <div 
-                className="preview-window-container" 
-                style={{ 
-                  width: '100%', 
-                  maxWidth: '750px', 
-                  aspectRatio: '16/9', 
-                  borderRadius: '12px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
-                }}
+                className="preview-window-container w-full max-w-2xl aspect-video rounded-xl flex items-center justify-center shadow-2xl"
               >
                 <ClockPreview config={activeConfigObj} time={time} scale={1.3} />
               </div>
@@ -488,7 +561,7 @@ function ClockCustomizerContent() {
 
 export default function ClockCustomizer() {
   return (
-    <Suspense fallback={<Box p="6"><Text color="gray">Loading clock editor...</Text></Box>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading clock editor...</div>}>
       <ClockCustomizerContent />
     </Suspense>
   );

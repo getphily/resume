@@ -3,21 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Grid, Card, Heading, Text, Button, Flex, Box, IconButton, Badge, Checkbox, Tooltip } from '@radix-ui/themes';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  CopyIcon, 
-  CheckIcon, 
-  ChevronDownIcon, 
-  ChevronUpIcon, 
-  DragHandleDots2Icon, 
-  TrashIcon, 
-  Pencil1Icon,
-  PlusIcon,
-  ClockIcon,
-  StopwatchIcon,
-  ViewHorizontalIcon,
-  DesktopIcon
-} from '@radix-ui/react-icons';
+  Tooltip, 
+  TooltipContent, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+import { 
+  Copy, 
+  Check, 
+  ChevronDown, 
+  ChevronUp, 
+  GripVertical, 
+  Trash2, 
+  Pencil, 
+  Clock, 
+  Timer, 
+  Tv, 
+  Monitor 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
@@ -34,37 +41,25 @@ function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
 
   return (
     <div 
-      className="preview-window-container" 
-      style={{ 
-        width: '96px', 
-        height: '54px', 
-        flexShrink: 0, 
-        borderRadius: '6px', 
-        overflow: 'hidden', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        border: '1px solid var(--border-subtle)',
-        backgroundColor: '#0a0a0c'
-      }}
+      className="preview-window-container w-24 h-14 shrink-0 rounded-md overflow-hidden flex items-center justify-center border border-border bg-[#0a0a0c]"
     >
       {type === 'clock' && (
-        <div style={{ transform: 'scale(0.24)', transformOrigin: 'center center' }}>
+        <div className="scale-[0.24] origin-center">
           <ClockPreview config={item.config} time={time} scale={1} />
         </div>
       )}
       {type === 'timer' && (
-        <div style={{ transform: 'scale(0.25)', transformOrigin: 'center center', width: '200px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="scale-[0.25] origin-center w-48 h-48 flex items-center justify-center">
           <TimerPreview config={item.config} scale={0.5} />
         </div>
       )}
       {(type === 'crawl' || type === 'chyron') && (
-        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'flex-end' }}>
+        <div className="w-full h-full flex items-end">
           <ChyronPreview config={item.config} scale={0.06} />
         </div>
       )}
       {type === 'screen' && (
-        <div style={{ transform: 'scale(0.05)', transformOrigin: 'center center', width: '1920px', height: '1080px' }}>
+        <div className="scale-[0.05] origin-center w-[1920px] h-[1080px]">
           <ScreenPreview config={item.config} />
         </div>
       )}
@@ -96,101 +91,114 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
   const primaryUrl = getPrimaryEmbedUrl();
   const isCopied = copySuccess === item.id;
 
-  const badgeColor = 
-    item.widget_type === 'screen' ? 'blue' : 
-    item.widget_type === 'timer' ? 'orange' : 
-    (item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'red' : 'indigo';
+  const badgeVariant = 
+    item.widget_type === 'screen' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' : 
+    item.widget_type === 'timer' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 
+    (item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' : 
+    'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20';
 
   return (
     <Card 
       ref={setNodeRef} 
-      style={{ 
-        ...style, 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '16px', 
-        backgroundColor: 'var(--bg-panel)',
-        border: '1px solid var(--border-subtle)',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-      }} 
-      size="3"
+      style={style} 
+      className="border-border bg-card shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col gap-4"
     >
-      <Flex justify="between" align="center" gap="3" wrap="wrap">
+      <div className="flex justify-between items-center gap-3 flex-wrap">
         
         {/* Left: Drag + Select + Thumbnail + Title */}
-        <Flex align="center" gap="3" style={{ flex: '1 1 350px', minWidth: 0 }}>
-          <div {...attributes} {...listeners} style={{ cursor: 'grab', display: 'flex', alignItems: 'center' }} title="Drag to reorder">
-            <DragHandleDots2Icon width={20} height={20} style={{ color: 'var(--text-muted)' }} />
+        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
+          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1" title="Drag to reorder">
+            <GripVertical className="w-4 h-4" />
           </div>
           
-          <Checkbox checked={isSelected} onCheckedChange={() => onToggleSelect(item.id)} />
+          <Checkbox 
+            checked={isSelected} 
+            onCheckedChange={() => onToggleSelect(item.id)} 
+            aria-label={`Select ${item.config.name || 'widget'}`}
+          />
           
           <WidgetMiniThumbnail item={item} time={time} />
 
-          <Flex direction="column" gap="1" style={{ minWidth: 0, flex: 1 }}>
-            <Flex align="center" gap="2">
-              <Badge size="1" color={badgeColor} variant="surface">
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0 h-4 border ${badgeVariant}`}>
                 {(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()}
               </Badge>
               {item.widget_type === 'screen' && (
-                <Text size="1" color="gray">
+                <span className="text-xs text-muted-foreground">
                   {item.config.pages?.length || 1} Pages
-                </Text>
+                </span>
               )}
-            </Flex>
-            <Heading size="4" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>
+            </div>
+            <h3 className="font-semibold text-sm truncate text-foreground">
               {item.config.name || 'Unnamed Widget'}
-            </Heading>
-          </Flex>
-        </Flex>
+            </h3>
+          </div>
+        </div>
 
         {/* Right: Quick Actions */}
-        <Flex align="center" gap="2" style={{ flexShrink: 0 }}>
-          <Tooltip content="Copy OBS Browser Source URL">
-            <Button 
-              size="2" 
-              variant={isCopied ? "solid" : "soft"} 
-              color={isCopied ? "green" : "indigo"}
-              onClick={() => copyUrl(item.id, primaryUrl)}
-              style={{ cursor: 'pointer' }}
-            >
-              {isCopied ? <CheckIcon width={16} height={16} /> : <CopyIcon width={16} height={16} />}
-              {isCopied ? 'Copied' : 'Copy URL'}
-            </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="sm" 
+                variant={isCopied ? "default" : "secondary"}
+                onClick={() => copyUrl(item.id, primaryUrl)}
+                className={`h-8 gap-1.5 text-xs font-medium ${isCopied ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+              >
+                {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{isCopied ? 'Copied' : 'Copy URL'}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Copy OBS Browser Source URL</p>
+            </TooltipContent>
           </Tooltip>
 
-          <Button asChild variant="soft" color="gray" size="2">
+          <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-medium">
             <Link href={`/${(item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type}?id=${item.id}`}>
-              <Pencil1Icon width={15} height={15} /> Edit
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit</span>
             </Link>
           </Button>
 
-          <Tooltip content="Delete widget">
-            <IconButton size="2" color="red" variant="ghost" onClick={() => onDelete(item.id)}>
-              <TrashIcon width={16} height={16} />
-            </IconButton>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                onClick={() => onDelete(item.id)}
+                className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                aria-label="Delete widget"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete widget</p>
+            </TooltipContent>
           </Tooltip>
 
-          <IconButton 
-            size="2" 
+          <Button 
+            size="icon" 
             variant="ghost" 
-            color="gray" 
             onClick={() => setExpanded(!expanded)}
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
             aria-label="Toggle details"
           >
-            {expanded ? <ChevronUpIcon width={20} height={20} /> : <ChevronDownIcon width={20} height={20} />}
-          </IconButton>
-        </Flex>
-      </Flex>
+            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </Button>
+        </div>
+      </div>
 
       {/* Expanded Accordion: Full OBS Embed Details */}
       {expanded && (
-        <Box mt="2" pt="3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+        <div className="mt-1 pt-3 border-t border-border">
           {item.widget_type === 'screen' ? (
-            <Flex direction="column" gap="3">
-              <Text size="2" color="gray" mb="1">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs text-muted-foreground mb-1">
                 This screenset contains multiple overlays. Copy the exact page URL you need for your stream scene:
-              </Text>
+              </p>
               {item.config.pages?.map((page: any) => (
                 <ObsExportCard
                   key={page.id}
@@ -200,7 +208,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
                   allowTransparency={true}
                 />
               ))}
-            </Flex>
+            </div>
           ) : (
             <ObsExportCard
               title={`${(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()} EMBED URL`}
@@ -209,7 +217,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
               allowTransparency={true}
             />
           )}
-        </Box>
+        </div>
       )}
     </Card>
   );
@@ -271,7 +279,6 @@ export default function Home() {
       const newList = arrayMove(configsList, oldIndex, newIndex);
       setConfigsList(newList);
 
-      // Save new order asynchronously
       for (let i = 0; i < newList.length; i++) {
         const item = newList[i];
         if (item.config.sortOrder !== i) {
@@ -290,10 +297,10 @@ export default function Home() {
   const deleteSingle = (id: string) => {
     toast(
       (t) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Delete this widget?</p>
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>This action cannot be undone.</p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">Delete this widget?</p>
+          <p className="m-0 text-xs text-muted-foreground">This action cannot be undone.</p>
+          <div className="flex gap-2 mt-2">
             <button
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -302,31 +309,13 @@ export default function Home() {
                 setSelectedIds(selectedIds.filter(i => i !== id));
                 toast.success('Widget deleted');
               }}
-              style={{
-                padding: '6px 12px',
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Delete
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
-              style={{
-                padding: '6px 12px',
-                background: 'var(--bg-panel)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -340,14 +329,14 @@ export default function Home() {
   const deleteSelected = async () => {
     toast(
       (t) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">
             Delete {selectedIds.length} widget{selectedIds.length > 1 ? 's' : ''}?
           </p>
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <p className="m-0 text-xs text-muted-foreground">
             This action cannot be undone.
           </p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+          <div className="flex gap-2 mt-2">
             <button
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -358,31 +347,13 @@ export default function Home() {
                 setSelectedIds([]);
                 toast.success('Deleted successfully');
               }}
-              style={{
-                padding: '6px 12px',
-                background: '#ef4444',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Delete
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
-              style={{
-                padding: '6px 12px',
-                background: 'var(--bg-panel)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 600,
-              }}
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -401,147 +372,146 @@ export default function Home() {
   };
 
   return (
-    <Box p="6" style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+    <div className="p-6 max-w-7xl mx-auto w-full">
       
       {/* Header */}
-      <Flex justify="between" align="end" mb="6" wrap="wrap" gap="4">
-        <Box>
-          <Heading size="7" style={{ color: 'var(--text-primary)' }}>Broadcast Studio Dashboard</Heading>
-          <Text size="3" color="gray" mt="1">Create, preview, and manage your live stream OBS browser sources.</Text>
-        </Box>
-      </Flex>
+      <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Broadcast Studio Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Create, preview, and manage your live stream OBS browser sources.</p>
+        </div>
+      </div>
 
       {/* Quick Launch / Create New Widgets Section */}
-      <Box mb="8">
-        <Heading size="4" mb="4" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
+      <div className="mb-8">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
           Create New Widget
-        </Heading>
+        </h2>
         
-        <Grid columns={{ initial: '1', sm: '2', md: '4' }} gap="4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Clock Widget Card */}
-          <Card size="2" style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-subtle)' }}>
-            <div className="preview-window-container" style={{ aspectRatio: '16 / 9', marginBottom: '14px', borderRadius: '6px', overflow: 'hidden' }}>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.8rem', color: '#ff5900', fontWeight: 'bold' }}>
+          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+            <div className="preview-window-container aspect-video mb-3.5 rounded-md overflow-hidden flex items-center justify-center">
+              <div className="font-mono text-2xl text-amber-500 font-bold">
                 12:34
               </div>
             </div>
-            <Flex direction="column" gap="2" style={{ flexGrow: 1 }}>
-              <Flex align="center" gap="2">
-                <ClockIcon width={16} height={16} color="var(--accent-primary)" />
-                <Heading size="3">Clock Widget</Heading>
-              </Flex>
-              <Text size="2" color="gray" style={{ lineHeight: 1.4, flexGrow: 1 }}>
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Clock Widget</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
                 Digital stream clock with timezones, seconds, dates, and glowing neon FX.
-              </Text>
-              <Button asChild size="2" style={{ width: '100%', marginTop: 'auto' }}>
+              </p>
+              <Button asChild size="sm" className="w-full mt-auto">
                 <Link href="/clock">Manage Clocks</Link>
               </Button>
-            </Flex>
+            </div>
           </Card>
 
           {/* Timer Widget Card */}
-          <Card size="2" style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-subtle)' }}>
-            <div className="preview-window-container" style={{ aspectRatio: '16 / 9', marginBottom: '14px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ position: 'relative', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="70" height="70" style={{ position: 'absolute', top: 0, left: 0 }}>
-                  <circle cx="35" cy="35" r="30" fill="none" stroke="var(--border-subtle)" strokeWidth="4" />
-                  <circle cx="35" cy="35" r="30" fill="none" stroke="#3b82f6" strokeWidth="4" strokeDasharray="188" strokeDashoffset="45" strokeLinecap="round" transform="rotate(-90 35 35)" />
+          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+            <div className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <svg width="64" height="64" className="absolute top-0 left-0">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" className="text-border" strokeWidth="4" />
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="4" strokeDasharray="175" strokeDashoffset="42" strokeLinecap="round" transform="rotate(-90 32 32)" />
                 </svg>
-                <span style={{ fontSize: '1.1rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>4:47</span>
+                <span className="text-sm font-bold text-foreground">4:47</span>
               </div>
             </div>
-            <Flex direction="column" gap="2" style={{ flexGrow: 1 }}>
-              <Flex align="center" gap="2">
-                <StopwatchIcon width={16} height={16} color="var(--accent-primary)" />
-                <Heading size="3">Timer Widget</Heading>
-              </Flex>
-              <Text size="2" color="gray" style={{ lineHeight: 1.4, flexGrow: 1 }}>
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <Timer className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Timer Widget</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
                 Countdown timer and stopwatch with SVG progress ring and chime alarms.
-              </Text>
-              <Button asChild size="2" style={{ width: '100%', marginTop: 'auto' }}>
+              </p>
+              <Button asChild size="sm" className="w-full mt-auto">
                 <Link href="/timer">Manage Timers</Link>
               </Button>
-            </Flex>
+            </div>
           </Card>
 
           {/* Chyron Builder Card */}
-          <Card size="2" style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-subtle)' }}>
-            <div className="preview-window-container" style={{ aspectRatio: '16 / 9', marginBottom: '14px', borderRadius: '6px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'stretch', overflow: 'hidden' }}>
-              <div style={{ backgroundColor: '#1a1a2e', width: '100%', borderLeft: '4px solid #e63946', padding: '5px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box' }}>
-                <span style={{ color: '#fff', fontSize: '9px', fontWeight: 800, letterSpacing: '0.5px' }}>BREAKING NEWS</span>
-                <span style={{ color: '#fff', fontSize: '8px', fontFamily: 'var(--font-mono)', backgroundColor: '#e63946', padding: '1px 4px', borderRadius: '2px', fontWeight: 'bold' }}>LIVE</span>
+          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+            <div className="preview-window-container aspect-video mb-3.5 rounded-md flex flex-col justify-end items-stretch overflow-hidden">
+              <div className="bg-[#1a1a2e] w-full border-l-4 border-red-500 px-2 py-1 flex items-center justify-between">
+                <span className="text-white text-[9px] font-extrabold tracking-wide">BREAKING NEWS</span>
+                <span className="text-white text-[8px] font-mono bg-red-600 px-1 py-0.5 rounded font-bold">LIVE</span>
               </div>
-              <div style={{ backgroundColor: '#0f172a', width: '100%', borderTop: '2px solid #e63946', padding: '3px 8px', overflow: 'hidden', boxSizing: 'border-box' }}>
-                <span style={{ color: '#fff', fontSize: '8px', fontWeight: 600, whiteSpace: 'nowrap' }}>SCROLLING TICKER TEXT ★</span>
+              <div className="bg-[#0f172a] w-full border-t-2 border-red-500 px-2 py-0.5 overflow-hidden">
+                <span className="text-white text-[8px] font-semibold whitespace-nowrap">SCROLLING TICKER TEXT ★</span>
               </div>
             </div>
-            <Flex direction="column" gap="2" style={{ flexGrow: 1 }}>
-              <Flex align="center" gap="2">
-                <ViewHorizontalIcon width={16} height={16} color="var(--accent-primary)" />
-                <Heading size="3">Chyron Builder</Heading>
-              </Flex>
-              <Text size="2" color="gray" style={{ lineHeight: 1.4, flexGrow: 1 }}>
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <Tv className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Chyron Builder</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
                 Broadcast lower thirds with headlines, logo bug, clock, and scrolling crawl.
-              </Text>
-              <Button asChild size="2" style={{ width: '100%', marginTop: 'auto' }}>
+              </p>
+              <Button asChild size="sm" className="w-full mt-auto">
                 <Link href="/crawl">Open Builder</Link>
               </Button>
-            </Flex>
+            </div>
           </Card>
 
           {/* Screen Sets Card */}
-          <Card size="2" style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-subtle)' }}>
-            <div className="preview-window-container" style={{ aspectRatio: '16 / 9', marginBottom: '14px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', lineHeight: 1.1 }}>STARTING SOON</div>
-                <div style={{ fontSize: '0.6rem', color: 'var(--text-secondary)', marginTop: '2px' }}>Stream begins shortly...</div>
+          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+            <div className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-base font-extrabold text-blue-500 uppercase leading-tight">STARTING SOON</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5">Stream begins shortly...</div>
               </div>
             </div>
-            <Flex direction="column" gap="2" style={{ flexGrow: 1 }}>
-              <Flex align="center" gap="2">
-                <DesktopIcon width={16} height={16} color="var(--accent-primary)" />
-                <Heading size="3">Screen Sets</Heading>
-              </Flex>
-              <Text size="2" color="gray" style={{ lineHeight: 1.4, flexGrow: 1 }}>
+            <div className="flex flex-col gap-2 flex-1">
+              <div className="flex items-center gap-2">
+                <Monitor className="w-4 h-4 text-primary" />
+                <h3 className="font-semibold text-sm text-foreground">Screen Sets</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
                 Full-screen Starting Soon, BRB, and Goodbye overlays with countdowns.
-              </Text>
-              <Button asChild size="2" style={{ width: '100%', marginTop: 'auto' }}>
+              </p>
+              <Button asChild size="sm" className="w-full mt-auto">
                 <Link href="/screen">Manage Screens</Link>
               </Button>
-            </Flex>
+            </div>
           </Card>
 
-        </Grid>
-      </Box>
+        </div>
+      </div>
 
       {/* Saved Widgets Section */}
-      <Box mb="8">
-        <Flex justify="between" align="center" mb="4" wrap="wrap" gap="3">
-          <Flex align="center" gap="3">
-            <Heading size="4" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-secondary)' }}>
-              Your Saved Widgets ({configsList.length})
-            </Heading>
-          </Flex>
+      <div className="mb-8">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Your Saved Widgets ({configsList.length})
+          </h2>
 
           {selectedIds.length > 0 && (
-            <Button color="red" variant="solid" onClick={deleteSelected} style={{ cursor: 'pointer' }}>
-              <TrashIcon /> Delete Selected ({selectedIds.length})
+            <Button variant="destructive" size="sm" onClick={deleteSelected} className="gap-1.5">
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete Selected ({selectedIds.length})</span>
             </Button>
           )}
-        </Flex>
+        </div>
         
         {loading ? (
-          <Text color="gray">Loading your saved widgets...</Text>
+          <p className="text-sm text-muted-foreground">Loading your saved widgets...</p>
         ) : configsList.length === 0 ? (
-          <Card size="3" style={{ textAlign: 'center', padding: '50px 20px', border: '1px dashed var(--border-subtle)', backgroundColor: 'var(--bg-panel)' }}>
-            <Text size="3" color="gray" mb="2" style={{ display: 'block' }}>No saved widgets yet.</Text>
-            <Text size="2" color="gray">Click any of the widget types above to configure and save your first OBS overlay!</Text>
+          <Card className="text-center py-12 px-6 border-dashed border-border bg-card">
+            <p className="text-sm font-medium text-foreground mb-1">No saved widgets yet.</p>
+            <p className="text-xs text-muted-foreground">Click any of the widget types above to configure and save your first OBS overlay!</p>
           </Card>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={configsList.map(c => c.id)} strategy={verticalListSortingStrategy}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="flex flex-col gap-3.5">
                 {configsList.map((item) => (
                   <SortableWidgetCard 
                     key={item.id} 
@@ -558,8 +528,8 @@ export default function Home() {
             </SortableContext>
           </DndContext>
         )}
-      </Box>
+      </div>
 
-    </Box>
+    </div>
   );
 }

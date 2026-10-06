@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Theme } from '@radix-ui/themes';
 
 export type ThemeMode = 'dark' | 'light' | 'antd-light' | 'antd-dark';
 
@@ -68,15 +67,10 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   };
 
   const isDark = theme === 'dark' || theme === 'antd-dark';
-  const isAntd = theme === 'antd-light' || theme === 'antd-dark';
 
-  return (
-    <Theme 
-      appearance={isDark ? 'dark' : 'light'} 
-      accentColor={isAntd ? 'blue' : 'indigo'} 
-      radius="medium"
-    >
-      {children}
-    </Theme>
-  );
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+  }, [isDark]);
+
+  return <>{children}</>;
 }

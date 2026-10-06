@@ -3,14 +3,11 @@ import Sidebar from './Sidebar';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>
+    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       <Navbar />
-
-      {/* Main Workspace with Sidebar */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        
-        <main style={{ flex: 1, overflowY: 'auto', padding: '0', display: 'flex', flexDirection: 'column' }}>
+        <main className="flex-1 overflow-y-auto p-0 flex flex-col min-w-0">
           {children}
         </main>
       </div>

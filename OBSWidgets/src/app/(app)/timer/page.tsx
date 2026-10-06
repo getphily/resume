@@ -3,8 +3,21 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Button, IconButton, Flex, Box, Text, Tooltip, Switch, SegmentedControl, Popover, Slider, Card, TextField, Heading, Badge, Grid } from '@radix-ui/themes';
-import { TrashIcon, PlusIcon, ArrowLeftIcon, SpeakerLoudIcon, PlayIcon, PauseIcon, ResetIcon } from '@radix-ui/react-icons';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { Slider } from '@/components/ui/slider';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Trash2, 
+  Plus, 
+  ArrowLeft, 
+  Volume2, 
+  Play, 
+  Pause, 
+  RotateCcw 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import { TimerConfig, DEFAULT_TIMER_CONFIG } from '@/types/timer';
@@ -14,6 +27,7 @@ import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 import { ObsExportCard } from '@/components/ObsExportCard';
 import { playTimerAlarm } from '@/lib/sound';
 import { TIMER_PRESETS } from '@/lib/presets';
+import { cn } from '@/lib/utils';
 
 // ─── Settings Inspector Component ───────────────────────────────────────────
 
@@ -30,81 +44,104 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
   };
 
   return (
-    <Box p="4" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div className="p-4 flex flex-col gap-4">
       
       {/* 1. Timer Mode & Duration */}
-      <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <Heading size="3" style={{ color: 'var(--text-secondary)' }}>MODE & DURATION</Heading>
+      <Card className="border-border bg-card p-4 flex flex-col gap-4">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Mode & Duration
+        </span>
         
-        <Box>
-          <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>TIMER MODE</Text>
-          <SegmentedControl.Root size="2" value={config.mode} onValueChange={v => setConfig({ ...config, mode: v as any })}>
-            <SegmentedControl.Item value="TIMER">Countdown Timer</SegmentedControl.Item>
-            <SegmentedControl.Item value="STOPWATCH">Count-Up Stopwatch</SegmentedControl.Item>
-          </SegmentedControl.Root>
-        </Box>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-foreground">Timer Mode</label>
+          <div className="grid grid-cols-2 gap-1 p-1 bg-muted rounded-md">
+            <button
+              type="button"
+              onClick={() => setConfig({ ...config, mode: 'TIMER' })}
+              className={cn(
+                "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                config.mode === 'TIMER' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Countdown Timer
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfig({ ...config, mode: 'STOPWATCH' })}
+              className={cn(
+                "py-1.5 text-xs font-semibold rounded-sm transition-all cursor-pointer",
+                config.mode === 'STOPWATCH' ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Count-Up Stopwatch
+            </button>
+          </div>
+        </div>
 
         {config.mode === 'TIMER' && (
-          <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-            <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>QUICK PRESETS</Text>
-            <Flex gap="2" wrap="wrap" mb="3">
+          <div className="pt-2 border-t border-border flex flex-col gap-3">
+            <label className="text-xs font-semibold text-foreground">Quick Presets</label>
+            <div className="flex gap-1.5 flex-wrap">
               {[60, 180, 300, 600, 900].map(secs => (
                 <Button 
                   key={secs} 
-                  size="1" 
-                  variant={config.durationSeconds === secs ? "solid" : "soft"} 
-                  color={config.durationSeconds === secs ? "indigo" : "gray"}
+                  size="sm" 
+                  variant={config.durationSeconds === secs ? "default" : "secondary"} 
                   onClick={() => setConfig({ ...config, durationSeconds: secs })}
-                  style={{ cursor: 'pointer' }}
+                  className="h-7 px-2.5 text-xs font-semibold"
                 >
                   {secs / 60} min
                 </Button>
               ))}
-            </Flex>
+            </div>
 
-            <Flex gap="3" align="center">
-              <Box style={{ flex: 1 }}>
-                <Text size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>MINUTES</Text>
-                <TextField.Root 
+            <div className="flex gap-3 items-center">
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">Minutes</span>
+                <Input 
                   type="number" 
-                  size="2"
                   min={0}
                   value={totalMinutes} 
                   onChange={e => setMinutesAndSeconds(parseInt(e.target.value) || 0, totalRemainingSeconds)} 
+                  className="h-9 text-xs"
                 />
-              </Box>
-              <Text size="4" weight="bold" color="gray" style={{ paddingTop: '16px' }}>:</Text>
-              <Box style={{ flex: 1 }}>
-                <Text size="1" weight="bold" color="gray" mb="1" style={{ display: 'block' }}>SECONDS</Text>
-                <TextField.Root 
+              </div>
+              <span className="text-lg font-bold text-muted-foreground pt-4">:</span>
+              <div className="flex-1 flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase">Seconds</span>
+                <Input 
                   type="number" 
-                  size="2"
                   min={0}
                   max={59}
                   value={totalRemainingSeconds} 
                   onChange={e => setMinutesAndSeconds(totalMinutes, Math.min(59, Math.max(0, parseInt(e.target.value) || 0)))} 
+                  className="h-9 text-xs"
                 />
-              </Box>
-            </Flex>
-          </Box>
+              </div>
+            </div>
+          </div>
         )}
       </Card>
 
       {/* Curated Timer Themes */}
-      <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <Flex justify="between" align="center">
-          <Heading size="3" style={{ color: 'var(--text-secondary)' }}>CURATED TIMER THEMES</Heading>
-          <Badge color="indigo" size="1" variant="surface">1-Click Apply</Badge>
-        </Flex>
-        <Text size="2" color="gray">
+      <Card className="border-border bg-card p-4 flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Curated Timer Themes
+          </span>
+          <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+            1-Click Apply
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground">
           Instant color states for running, paused, and expired milestones:
-        </Text>
-        <Grid columns="2" gap="2">
+        </p>
+        <div className="grid grid-cols-2 gap-2">
           {TIMER_PRESETS.map(preset => (
             <Button
               key={preset.name}
-              variant="surface"
-              size="2"
+              variant="outline"
+              size="sm"
               onClick={() => {
                 update({
                   runningColor: preset.runningColor,
@@ -115,117 +152,134 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
                 });
                 toast.success(`Applied ${preset.name} theme!`);
               }}
-              style={{ justifyContent: 'flex-start', gap: '8px', cursor: 'pointer', height: 'auto', padding: '8px 10px' }}
+              className="justify-start gap-2 h-auto py-2 px-2.5 text-xs font-medium"
             >
-              <Flex gap="1" align="center">
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: preset.runningColor }} />
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: preset.pausedColor }} />
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: preset.expiredColor }} />
-              </Flex>
-              <Text size="2" weight="medium">{preset.name}</Text>
+              <div className="flex gap-1 items-center shrink-0">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.runningColor }} />
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.pausedColor }} />
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.expiredColor }} />
+              </div>
+              <span className="truncate">{preset.name}</span>
             </Button>
           ))}
-        </Grid>
+        </div>
       </Card>
 
       {/* 2. Color Palettes & Ring */}
-      <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <Heading size="3" style={{ color: 'var(--text-secondary)' }}>COLOR STATES & RING</Heading>
+      <Card className="border-border bg-card p-4 flex flex-col gap-4">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Color States & Ring
+        </span>
         
         {/* Running Color */}
-        <Box>
-          <Flex justify="between" align="center" mb="1">
-            <Text size="2" weight="medium">Active Countdown Color</Text>
-            <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: config.layout.runningColor, border: '1px solid var(--border-subtle)' }} />
-          </Flex>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium text-foreground">Active Countdown Color</span>
+            <div className="w-4 h-4 rounded-xs border border-border" style={{ backgroundColor: config.layout.runningColor }} />
+          </div>
           <ColorInputWithPalette value={config.layout.runningColor} onChange={e => update({ runningColor: e })} />
-        </Box>
+        </div>
 
         {/* Paused Color */}
-        <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <Flex justify="between" align="center" mb="1">
-            <Text size="2" weight="medium">Paused State Color</Text>
-            <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: config.layout.pausedColor, border: '1px solid var(--border-subtle)' }} />
-          </Flex>
+        <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium text-foreground">Paused State Color</span>
+            <div className="w-4 h-4 rounded-xs border border-border" style={{ backgroundColor: config.layout.pausedColor }} />
+          </div>
           <ColorInputWithPalette value={config.layout.pausedColor} onChange={e => update({ pausedColor: e })} />
-        </Box>
+        </div>
 
         {/* Expired Color */}
-        <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <Flex justify="between" align="center" mb="1">
-            <Text size="2" weight="medium">Expired (Time Up) Color</Text>
-            <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: config.layout.expiredColor, border: '1px solid var(--border-subtle)' }} />
-          </Flex>
+        <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium text-foreground">Expired (Time Up) Color</span>
+            <div className="w-4 h-4 rounded-xs border border-border" style={{ backgroundColor: config.layout.expiredColor }} />
+          </div>
           <ColorInputWithPalette value={config.layout.expiredColor} onChange={e => update({ expiredColor: e })} />
-        </Box>
+        </div>
 
         {/* Track Ring Color */}
-        <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <Flex justify="between" align="center" mb="1">
-            <Text size="2" weight="medium">Background Track Ring</Text>
-            <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: config.layout.trackColor, border: '1px solid var(--border-subtle)' }} />
-          </Flex>
+        <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium text-foreground">Background Track Ring</span>
+            <div className="w-4 h-4 rounded-xs border border-border" style={{ backgroundColor: config.layout.trackColor }} />
+          </div>
           <ColorInputWithPalette value={config.layout.trackColor} onChange={e => update({ trackColor: e })} />
-        </Box>
+        </div>
 
-        {/* Overall Background Color & Opacity */}
-        <Box pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
-          <Flex justify="between" align="center" mb="1">
-            <Text size="2" weight="medium">Canvas Background</Text>
-            <div style={{ width: '16px', height: '16px', borderRadius: '4px', backgroundColor: config.layout.bgColor, border: '1px solid var(--border-subtle)' }} />
-          </Flex>
+        {/* Canvas Background Color & Opacity */}
+        <div className="pt-2 border-t border-border flex flex-col gap-1.5">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-medium text-foreground">Canvas Background</span>
+            <div className="w-4 h-4 rounded-xs border border-border" style={{ backgroundColor: config.layout.bgColor }} />
+          </div>
           <ColorInputWithPalette 
             value={config.layout.bgColor} 
             onChange={e => update({ bgColor: e })} 
             opacity={config.layout.opacity ?? 1}
             onOpacityChange={val => update({ opacity: val })}
           />
-        </Box>
+        </div>
       </Card>
 
       {/* 3. Sound Alarm Settings */}
-      <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <Flex justify="between" align="center">
-          <Heading size="3" style={{ color: 'var(--text-secondary)' }}>ALARM SOUND</Heading>
-          <Switch size="2" checked={config.sound.enabled} onCheckedChange={c => updateSound({ enabled: c })} />
-        </Flex>
+      <Card className="border-border bg-card p-4 flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Alarm Sound
+          </span>
+          <Switch checked={config.sound.enabled} onCheckedChange={c => updateSound({ enabled: c })} />
+        </div>
         
         {config.sound.enabled && (
-          <Flex direction="column" gap="3">
-            <Box>
-              <Text size="1" weight="medium" color="gray" mb="2" style={{ display: 'block' }}>CHIME STYLE</Text>
-              <SegmentedControl.Root size="1" value={config.sound.type} onValueChange={v => updateSound({ type: v as any })}>
-                <SegmentedControl.Item value="BELL">Bell</SegmentedControl.Item>
-                <SegmentedControl.Item value="DIGITAL">Digital</SegmentedControl.Item>
-                <SegmentedControl.Item value="GONG">Gong</SegmentedControl.Item>
-                <SegmentedControl.Item value="CLASSIC">Classic</SegmentedControl.Item>
-              </SegmentedControl.Root>
-            </Box>
+          <div className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Chime Style</label>
+              <div className="grid grid-cols-4 gap-1 p-1 bg-muted rounded-md">
+                {(['BELL', 'DIGITAL', 'GONG', 'CLASSIC'] as const).map(t => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => updateSound({ type: t })}
+                    className={cn(
+                      "py-1 text-[11px] font-semibold rounded-sm transition-all cursor-pointer capitalize",
+                      config.sound.type === t ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {t.toLowerCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            <Box>
-              <Flex justify="between" align="center" mb="1">
-                <Text size="1" weight="medium" color="gray">VOLUME ({Math.round(config.sound.volume * 100)}%)</Text>
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-xs font-medium text-muted-foreground">
+                  Volume ({Math.round(config.sound.volume * 100)}%)
+                </span>
                 <Button 
-                  size="1" 
+                  size="sm" 
                   variant="ghost" 
                   onClick={() => {
                     playTimerAlarm(config.sound.type, config.sound.volume);
                     toast('Testing alarm tone...', { icon: '🔔', duration: 1500 });
                   }}
-                  style={{ cursor: 'pointer', gap: '4px' }}
+                  className="h-7 text-xs gap-1.5 text-primary hover:text-primary"
                 >
-                  <SpeakerLoudIcon /> Test Tone
+                  <Volume2 className="w-3.5 h-3.5" /> Test Tone
                 </Button>
-              </Flex>
-              <Slider size="1" min={0.1} max={1} step={0.05} value={[config.sound.volume]} onValueChange={([v]) => updateSound({ volume: v })} />
-            </Box>
-          </Flex>
+              </div>
+              <Slider min={0.1} max={1} step={0.05} value={[config.sound.volume]} onValueChange={([v]) => updateSound({ volume: v })} />
+            </div>
+          </div>
         )}
       </Card>
 
       {/* 4. Typography */}
-      <Card size="3" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <Heading size="3" style={{ color: 'var(--text-secondary)' }}>TIMER TYPOGRAPHY</Heading>
+      <Card className="border-border bg-card p-4 flex flex-col gap-4">
+        <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Timer Typography
+        </span>
         <TextFormattingToolbar
           fontFamily={config.layout.fontFamily}
           textColor={config.layout.textColor}
@@ -253,7 +307,7 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
         ]}
       />
 
-    </Box>
+    </div>
   );
 }
 
@@ -338,10 +392,10 @@ function TimerCustomizerContent() {
     e.stopPropagation();
     toast(
       (t) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600 }}>Delete this timer widget?</p>
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>This action cannot be undone.</p>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">Delete this timer widget?</p>
+          <p className="m-0 text-xs text-muted-foreground">This action cannot be undone.</p>
+          <div className="flex gap-2 mt-2">
             <button
               onClick={async () => {
                 toast.dismiss(t.id);
@@ -350,13 +404,13 @@ function TimerCustomizerContent() {
                 if (activeConfigId === id) setActiveConfigId(null);
                 toast.success('Timer deleted');
               }}
-              style={{ padding: '6px 12px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Delete
             </button>
             <button
               onClick={() => toast.dismiss(t.id)}
-              style={{ padding: '6px 12px', background: 'var(--bg-panel)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
             >
               Cancel
             </button>
@@ -373,83 +427,85 @@ function TimerCustomizerContent() {
   };
 
   if (loadingList) {
-    return <Box p="6"><Text color="gray">Loading timer widgets...</Text></Box>;
+    return <div className="p-6 text-sm text-muted-foreground">Loading timer widgets...</div>;
   }
 
   // --- List / Catalog View ---
   if (!activeConfigId) {
     return (
-      <Box p="6" style={{ maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
-        <Flex justify="between" align="end" mb="5">
-          <Box>
-            <Text size="2" color="gray" mb="1" style={{ display: 'block', textTransform: 'uppercase', letterSpacing: '0.08em' }}>WIDGETS</Text>
-            <Heading size="7">Timer Widgets</Heading>
-            <Text size="2" color="gray" mt="1">Sleek countdown timer and stopwatch with SVG progress ring, state colors, and alarms.</Text>
-          </Box>
-          <Button onClick={createConfig} size="3" style={{ cursor: 'pointer' }}>
-            <PlusIcon /> Create Timer
+      <div className="p-6 max-w-5xl mx-auto w-full">
+        <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
+          <div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Widgets</span>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Timer Widgets</h1>
+            <p className="text-sm text-muted-foreground mt-1">Sleek countdown timer and stopwatch with SVG progress ring, state colors, and alarms.</p>
+          </div>
+          <Button onClick={createConfig} className="gap-2">
+            <Plus className="w-4 h-4" />
+            <span>Create Timer</span>
           </Button>
-        </Flex>
+        </div>
 
         {configsList.length === 0 ? (
-          <Card size="4" style={{ textAlign: 'center', backgroundColor: 'var(--bg-panel)', padding: '60px 20px', border: '1px dashed var(--border-subtle)' }}>
-            <Text size="3" color="gray" mb="4" style={{ display: 'block' }}>You don&apos;t have any timers created yet.</Text>
-            <Button onClick={createConfig} size="3" variant="solid">Create Your First Timer</Button>
+          <Card className="text-center py-16 px-6 border-dashed border-border bg-card">
+            <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any timers created yet.</p>
+            <Button onClick={createConfig}>Create Your First Timer</Button>
           </Card>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {configsList.map(c => (
               <Card 
                 key={c.id} 
-                style={{ display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)', cursor: 'pointer' }}
+                className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
                 onClick={() => loadEditor(c.id, c.config)}
-                className="hover-card"
               >
-                <Box p="3">
-                  <div className="preview-window-container" style={{ width: '100%', aspectRatio: '16/9', borderRadius: '6px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
-                    <div style={{ transform: 'scale(0.55)', transformOrigin: 'center center', width: '320px', height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <TimerPreview config={c.config} />
-                    </div>
+                <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5">
+                  <div className="scale-[0.55] origin-center w-80 h-44 flex items-center justify-center">
+                    <TimerPreview config={c.config} />
                   </div>
-                  <Flex justify="between" align="center">
-                    <Text size="3" weight="bold">{c.config.name || 'Untitled Timer'}</Text>
-                    <IconButton color="red" variant="ghost" onClick={(e) => deleteConfig(c.id, e)} title="Delete timer">
-                      <TrashIcon />
-                    </IconButton>
-                  </Flex>
-                </Box>
+                </div>
+                <div className="flex justify-between items-center mt-auto">
+                  <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {c.config.name || 'Untitled Timer'}
+                  </span>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    onClick={(e) => deleteConfig(c.id, e)} 
+                    title="Delete timer"
+                    className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
         )}
-      </Box>
+      </div>
     );
   }
 
   // --- Unified Split-Screen Editor View ---
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+    <div className="flex w-full h-full overflow-hidden bg-background text-foreground">
       
       {/* LEFT: Properties Inspector (420px) */}
-      <div style={{ 
-        width: '420px', 
-        minWidth: '380px',
-        backgroundColor: 'var(--bg-panel)',
-        borderRight: '1px solid var(--border-subtle)',
-        display: 'flex',
-        flexDirection: 'column',
-        overflowY: 'auto'
-      }}>
-        <div style={{ padding: '20px', borderBottom: '1px solid var(--border-subtle)' }}>
-          <Button variant="ghost" size="2" onClick={handleBackToList} style={{ marginLeft: '-8px', marginBottom: '12px', color: 'var(--text-secondary)' }}>
-            <ArrowLeftIcon /> Back to Timers
+      <div className="w-[420px] min-w-[380px] bg-card border-r border-border flex flex-col overflow-y-auto shrink-0 z-10">
+        <div className="p-5 border-b border-border flex flex-col gap-3">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleBackToList} 
+            className="w-fit text-xs text-muted-foreground hover:text-foreground -ml-2 gap-1.5 h-8"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Timers
           </Button>
-          <TextField.Root 
-            size="3" 
+          <Input 
             placeholder="Timer Name" 
             value={config.name} 
             onChange={e => setConfig({ ...config, name: e.target.value })} 
-            style={{ fontWeight: 'bold', fontSize: '1.2rem' }}
+            className="font-bold text-base h-10"
           />
         </div>
 
@@ -457,20 +513,19 @@ function TimerCustomizerContent() {
       </div>
 
       {/* RIGHT: Live Preview Canvas */}
-      <div style={{ flex: 1, backgroundColor: 'var(--bg-main)', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <div className="flex-1 bg-muted/30 flex flex-col relative overflow-hidden">
         
         {/* Top Control Bar */}
-        <Flex justify="between" align="center" px="5" py="3" style={{ backgroundColor: 'var(--bg-panel)', borderBottom: '1px solid var(--border-subtle)', zIndex: 10 }}>
-          <Flex align="center" gap="4">
-            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              LIVE STREAM CONTROLS
+        <div className="flex justify-between items-center px-6 py-3.5 bg-card border-b border-border z-10 shrink-0">
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-bold text-muted-foreground tracking-wider uppercase">
+              Live Stream Controls
             </span>
             
-            <Flex gap="2">
+            <div className="flex gap-2">
               <Button 
-                variant={config.state === 'RUNNING' ? 'solid' : 'soft'} 
-                color="blue"
-                size="2"
+                variant={config.state === 'RUNNING' ? 'default' : 'secondary'} 
+                size="sm"
                 onClick={() => {
                   let endTime = Date.now() + (config.durationSeconds * 1000);
                   if (config.state === 'PAUSED' && config.pausedTimeLeft) {
@@ -479,58 +534,54 @@ function TimerCustomizerContent() {
                   setConfig(c => ({ ...c, state: 'RUNNING', endTime, pausedTimeLeft: null }));
                   toast.success('Timer running in OBS');
                 }}
+                className={cn(
+                  "gap-1.5 h-8 text-xs font-semibold",
+                  config.state === 'RUNNING' && "bg-blue-600 hover:bg-blue-700 text-white"
+                )}
               >
-                <PlayIcon /> Start
+                <Play className="w-3.5 h-3.5" /> Start
               </Button>
               <Button 
-                variant={config.state === 'PAUSED' ? 'solid' : 'soft'} 
-                color="orange"
-                size="2"
+                variant={config.state === 'PAUSED' ? 'default' : 'secondary'} 
+                size="sm"
                 disabled={config.state === 'STOPPED' || config.state === 'EXPIRED'}
                 onClick={() => {
                   const remaining = config.endTime ? Math.max(0, Math.ceil((config.endTime - Date.now()) / 1000)) : 0;
                   setConfig(c => ({ ...c, state: 'PAUSED', pausedTimeLeft: remaining }));
                   toast('Timer paused');
                 }}
+                className={cn(
+                  "gap-1.5 h-8 text-xs font-semibold",
+                  config.state === 'PAUSED' && "bg-amber-600 hover:bg-amber-700 text-white"
+                )}
               >
-                <PauseIcon /> Pause
+                <Pause className="w-3.5 h-3.5" /> Pause
               </Button>
               <Button 
-                variant="soft" 
-                color="gray"
-                size="2"
+                variant="secondary" 
+                size="sm"
                 onClick={() => {
                   setConfig(c => ({ ...c, state: 'STOPPED', endTime: null, pausedTimeLeft: null }));
                   toast('Timer reset');
                 }}
+                className="gap-1.5 h-8 text-xs font-semibold"
               >
-                <ResetIcon /> Reset
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
               </Button>
-            </Flex>
-          </Flex>
+            </div>
+          </div>
 
-          <Text size="1" color="gray" weight="bold">
+          <span className="text-[11px] font-bold text-muted-foreground">
             {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
-          </Text>
-        </Flex>
+          </span>
+        </div>
 
         {/* Centered Canvas Container with Checkerboard Pattern */}
-        <div style={{ flex: 1, padding: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <div className="flex-1 p-8 flex items-center justify-center overflow-hidden">
           <div 
-            className="preview-window-container" 
-            style={{ 
-              width: '100%', 
-              maxWidth: '750px', 
-              aspectRatio: '16/9', 
-              borderRadius: '16px', 
-              boxShadow: '0 20px 50px rgba(0,0,0,0.12)', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              padding: '20px'
-            }}
+            className="preview-window-container w-full max-w-2xl aspect-video rounded-xl shadow-2xl flex items-center justify-center p-5"
           >
-             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <div className="w-full h-full flex items-center justify-center">
                <TimerPreview config={config} />
              </div>
           </div>
@@ -543,7 +594,7 @@ function TimerCustomizerContent() {
 
 export default function TimerCustomizer() {
   return (
-    <Suspense fallback={<Box p="6"><Text color="gray">Loading timer editor...</Text></Box>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading timer editor...</div>}>
       <TimerCustomizerContent />
     </Suspense>
   );
