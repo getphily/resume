@@ -74,6 +74,69 @@ app.use((req, res, next) => {
   next();
 });
 
+// Function to auto-sync OBSWidgets/out into Hostinger's public_html/code directory
+function syncToHostingerSubdomain() {
+  const possiblePaths = [
+    '/home/u239940464/domains/getphily.io/public_html/code',
+    path.resolve(__dirname, 'public_html/code'),
+    path.resolve(__dirname, '../public_html/code'),
+    path.resolve(__dirname, '../../public_html/code'),
+    path.resolve(__dirname, '../code'),
+  ];
+
+  let syncedTo = null;
+  const attempts = [];
+
+  for (const targetDir of possiblePaths) {
+    attempts.push(targetDir);
+    try {
+      if (fs.existsSync(targetDir)) {
+        const sourceDir = path.join(__dirname, 'OBSWidgets/out');
+        if (fs.existsSync(sourceDir)) {
+          fs.cpSync(sourceDir, targetDir, { recursive: true });
+          
+          // Remove default Hostinger placeholder files if present
+          const defaultFiles = ['default.php', 'index.php'];
+          for (const df of defaultFiles) {
+            const p = path.join(targetDir, df);
+            if (fs.existsSync(p)) {
+              try { fs.unlinkSync(p); } catch {}
+            }
+          }
+          syncedTo = targetDir;
+          break;
+        }
+      }
+    } catch (err) {
+      console.warn(`[Hostinger Sync] Error for ${targetDir}:`, err.message);
+    }
+  }
+
+  return { syncedTo, attempts };
+}
+
+// Run on server initialization
+try {
+  syncToHostingerSubdomain();
+} catch (e) {
+  console.warn('Initial sync notice:', e.message);
+}
+
+// Endpoint to trigger/verify code stand synchronization
+app.get('/api/sync-code-stand', (req, res) => {
+  try {
+    const result = syncToHostingerSubdomain();
+    res.json({
+      success: !!result.syncedTo,
+      syncedTo: result.syncedTo,
+      checkedPaths: result.attempts,
+      currentDir: __dirname,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message, currentDir: __dirname });
+  }
+});
+
 // Serve static assets from dist folder (production build)
 app.use(express.static(path.join(__dirname, 'dist')));
 
