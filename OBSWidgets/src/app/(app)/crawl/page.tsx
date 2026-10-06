@@ -1174,8 +1174,8 @@ function ChyronBuilderContent() {
         </div>
 
         {/* Storage Capacity Banner */}
-        <div className="flex justify-between items-center mb-6 p-3.5 bg-card rounded-lg border border-border shadow-xs">
-          <span className="text-xs font-semibold text-muted-foreground">Storage Capacity</span>
+        <div className="flex justify-between items-center mb-6 p-4 bg-card rounded-xl border border-border shadow-xs">
+          <span className="text-xs font-semibold text-muted-foreground">Storage Allocation</span>
           <span className={cn("text-xs font-bold", configsList.length >= 3 ? "text-red-500" : "text-primary")}>
             {configsList.length} / 3 Chyrons Used
           </span>
@@ -1185,7 +1185,7 @@ function ChyronBuilderContent() {
         {loadingList ? (
           <p className="text-sm text-muted-foreground">Loading chyrons...</p>
         ) : configsList.length === 0 ? (
-          <Card className="text-center py-16 px-6 border-dashed border-border bg-card">
+          <Card className="text-center py-16 px-6 border-dashed border-border bg-card rounded-2xl">
             <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any chyrons created yet.</p>
             <Button onClick={handleCreateNew}>Create Your First Chyron</Button>
           </Card>
@@ -1195,12 +1195,12 @@ function ChyronBuilderContent() {
               <Card 
                 key={c.id} 
                 onClick={() => loadEditor(c.id, c.config)} 
-                className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
+                className="cursor-pointer border-border bg-card rounded-2xl shadow-xs hover:shadow-md hover:border-primary/40 transition-all flex flex-col p-5 group"
               >
                 <ChyronCardPreview config={c.config} />
 
                 <div className="flex justify-between items-center mt-3 mb-2">
-                  <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                  <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors truncate">
                     {c.config.name || 'Unnamed Chyron'}
                   </span>
                   <Button 

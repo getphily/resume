@@ -280,7 +280,7 @@ function ScreenCustomizerContent() {
         <div className="p-6 md:p-8 max-w-7xl mx-auto w-full flex flex-col">
           <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
             <div>
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Widgets</span>
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Broadcast Overlays</span>
               <h1 className="text-2xl font-bold tracking-tight text-foreground">Screen Sets</h1>
               <p className="text-sm text-muted-foreground mt-1">Full-screen 1920×1080 overlay presets for Starting Soon, Be Right Back, and Goodbye pages.</p>
             </div>
@@ -291,8 +291,8 @@ function ScreenCustomizerContent() {
             )}
           </div>
 
-          <div className="flex justify-between items-center mb-6 p-3.5 bg-card rounded-lg border border-border shadow-xs">
-            <span className="text-xs font-semibold text-muted-foreground">Storage Capacity</span>
+          <div className="flex justify-between items-center mb-6 p-4 bg-card rounded-xl border border-border shadow-xs">
+            <span className="text-xs font-semibold text-muted-foreground">Storage Allocation</span>
             <span className={cn("text-xs font-bold", configsList.length >= 5 ? "text-red-500" : "text-primary")}>
               {configsList.length} / 5 Screensets Used
             </span>
@@ -301,7 +301,7 @@ function ScreenCustomizerContent() {
           {loadingList ? (
             <p className="text-sm text-muted-foreground">Loading your screensets...</p>
           ) : configsList.length === 0 ? (
-            <Card className="text-center py-16 px-6 border-dashed border-border bg-card">
+            <Card className="text-center py-16 px-6 border-dashed border-border bg-card rounded-2xl">
               <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any screensets created yet.</p>
               <Button onClick={handleCreateNew}>Create Your First Screenset</Button>
             </Card>
@@ -315,12 +315,12 @@ function ScreenCustomizerContent() {
                   <Card 
                     key={c.id} 
                     onClick={() => loadEditor(c.id, c.config)} 
-                    className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
+                    className="cursor-pointer border-border bg-card rounded-2xl shadow-xs hover:shadow-md hover:border-primary/40 transition-all flex flex-col p-5 group"
                   >
                     <ScreenCardPreview config={c.config} activePageId={firstPageId} />
 
                     <div className="flex justify-between items-center mt-3 mb-2">
-                      <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                      <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors truncate">
                         {c.config.name || 'Unnamed Screenset'}
                       </span>
                       <Button 

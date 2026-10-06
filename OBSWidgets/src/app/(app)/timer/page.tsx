@@ -450,15 +450,15 @@ function TimerCustomizerContent() {
           )}
         </div>
 
-        <div className="flex justify-between items-center mb-6 p-3.5 bg-card rounded-lg border border-border shadow-xs">
-          <span className="text-xs font-semibold text-muted-foreground">Storage Capacity</span>
+        <div className="flex justify-between items-center mb-6 p-4 bg-card rounded-xl border border-border shadow-xs">
+          <span className="text-xs font-semibold text-muted-foreground">Storage Allocation</span>
           <span className={cn("text-xs font-bold", configsList.length >= 3 ? "text-red-500" : "text-primary")}>
             {configsList.length} / 3 Timers Used
           </span>
         </div>
 
         {configsList.length === 0 ? (
-          <Card className="text-center py-16 px-6 border-dashed border-border bg-card">
+          <Card className="text-center py-16 px-6 border-dashed border-border bg-card rounded-2xl">
             <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any timers created yet.</p>
             <Button onClick={createConfig}>Create Your First Timer</Button>
           </Card>
@@ -471,17 +471,17 @@ function TimerCustomizerContent() {
               return (
                 <Card 
                   key={c.id} 
-                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
+                  className="cursor-pointer border-border bg-card rounded-2xl shadow-xs hover:shadow-md hover:border-primary/40 transition-all flex flex-col p-5 group"
                   onClick={() => loadEditor(c.id, c.config)}
                 >
-                  <div aria-hidden="true" className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
+                  <div aria-hidden="true" className="preview-window-container w-full aspect-video rounded-xl overflow-hidden flex items-center justify-center mb-4 border border-border">
                     <div className="scale-[0.55] origin-center w-80 h-44 flex items-center justify-center">
                       <TimerPreview config={c.config} />
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                    <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors truncate">
                       {c.config.name || 'Untitled Timer'}
                     </span>
                     <Button 
