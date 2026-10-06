@@ -81,12 +81,12 @@ export function TextFormattingToolbar({
         className="flex items-center gap-1.5 p-1 bg-card border border-border rounded-lg shadow-2xs flex-wrap"
       >
         {/* Font Family Selector */}
-        <div className="w-32">
-          <Select 
+        <div className="w-40">
+          <Select aria-label="Font Family" 
             value={fontFamily || 'Inter'} 
             onValueChange={f => onChange({ fontFamily: f })}
           >
-            <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+            <SelectTrigger className="h-11 text-sm border-0 bg-transparent hover:bg-muted font-medium">
               <SelectValue placeholder="Font" />
             </SelectTrigger>
             <SelectContent>
@@ -109,12 +109,12 @@ export function TextFormattingToolbar({
         {/* Font Size Selector if available */}
         {fontSize !== undefined && (
           typeof fontSize === 'string' ? (
-            <div className="w-28">
-              <Select 
-                value={fontSize} 
+            <div className="w-32">
+              <Select  
+                aria-label="Font Size" value={fontSize} 
                 onValueChange={s => onChange({ fontSize: s })}
               >
-                <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectTrigger className="h-11 text-sm border-0 bg-transparent hover:bg-muted font-medium">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -127,11 +127,11 @@ export function TextFormattingToolbar({
             </div>
           ) : (
             <div className="w-24">
-              <Select 
-                value={fontSize >= 1.2 ? '1.2' : fontSize <= 0.82 ? '0.82' : '1.0'} 
+              <Select  
+                aria-label="Font Size" value={fontSize >= 1.2 ? '1.2' : fontSize <= 0.82 ? '0.82' : '1.0'} 
                 onValueChange={v => onChange({ fontSize: parseFloat(v) })}
               >
-                <SelectTrigger className="h-8 text-xs border-0 bg-transparent hover:bg-muted font-medium">
+                <SelectTrigger className="h-11 text-sm border-0 bg-transparent hover:bg-muted font-medium">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -157,7 +157,7 @@ export function TextFormattingToolbar({
                 size="icon" 
                 onClick={() => onChange({ bold: !bold })}
                 aria-label="Toggle Bold"
-                className={`h-7 w-7 ${bold ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                className={`h-11 w-11 ${bold ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
               >
                 <Bold className="w-3.5 h-3.5" />
               </Button>
@@ -175,7 +175,7 @@ export function TextFormattingToolbar({
                 size="icon" 
                 onClick={() => onChange({ italic: !italic })}
                 aria-label="Toggle Italic"
-                className={`h-7 w-7 ${italic ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                className={`h-11 w-11 ${italic ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
               >
                 <Italic className="w-3.5 h-3.5" />
               </Button>
@@ -193,7 +193,7 @@ export function TextFormattingToolbar({
                 size="icon" 
                 onClick={() => onChange({ textTransform: textTransform === 'uppercase' ? 'none' : 'uppercase' })}
                 aria-label="Toggle Uppercase"
-                className={`h-7 w-7 ${textTransform === 'uppercase' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                className={`h-11 w-11 ${textTransform === 'uppercase' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
               >
                 <CaseUpper className="w-3.5 h-3.5" />
               </Button>
@@ -216,7 +216,7 @@ export function TextFormattingToolbar({
                     variant="ghost" 
                     size="icon" 
                     aria-label="Text Color"
-                    className="h-7 w-7 flex flex-col items-center justify-center p-0 gap-0.5"
+                    className="h-11 w-11 flex flex-col items-center justify-center p-0 gap-0.5"
                   >
                     <span className="text-xs font-bold leading-none">A</span>
                     <div 
@@ -229,16 +229,16 @@ export function TextFormattingToolbar({
               <TooltipContent><p>Text Color</p></TooltipContent>
             </Tooltip>
             <PopoverContent sideOffset={5} className="w-64 p-4">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">
+              <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">
                 Text Color
               </span>
               <ColorInputWithPalette value={textColor} onChange={c => onChange({ textColor: c })} />
               {opacity !== undefined && (
                 <div className="mt-3 flex flex-col gap-1.5">
-                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase">
                     Opacity
                   </span>
-                  <Slider min={0} max={1} step={0.05} value={[opacity]} onValueChange={v => onChange({ opacity: v[0] })} />
+                  <Slider aria-label="Opacity" min={0} max={1} step={0.05} value={[opacity]} onValueChange={v => onChange({ opacity: v[0] })} />
                 </div>
               )}
             </PopoverContent>
@@ -255,7 +255,7 @@ export function TextFormattingToolbar({
                     variant="ghost" 
                     size="icon" 
                     aria-label="Background Color"
-                    className="h-7 w-7 flex flex-col items-center justify-center p-0 gap-0.5"
+                    className="h-11 w-11 flex flex-col items-center justify-center p-0 gap-0.5"
                   >
                     <Paintbrush className="w-3 h-3 text-muted-foreground" />
                     <div 
@@ -268,16 +268,16 @@ export function TextFormattingToolbar({
               <TooltipContent><p>Background Color</p></TooltipContent>
             </Tooltip>
             <PopoverContent sideOffset={5} className="w-64 p-4">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">
+              <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">
                 Background Color
               </span>
               <ColorInputWithPalette value={bgColor} onChange={c => onChange({ bgColor: c })} />
               {bgOpacity !== undefined && (
                 <div className="mt-3 flex flex-col gap-1.5">
-                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                  <span className="text-sm font-bold tracking-wider text-muted-foreground uppercase">
                     Opacity
                   </span>
-                  <Slider min={0} max={1} step={0.05} value={[bgOpacity]} onValueChange={v => onChange({ bgOpacity: v[0] })} />
+                  <Slider aria-label="Opacity" min={0} max={1} step={0.05} value={[bgOpacity]} onValueChange={v => onChange({ bgOpacity: v[0] })} />
                 </div>
               )}
             </PopoverContent>

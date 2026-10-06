@@ -96,7 +96,7 @@ export const DEFAULT_CHYRON_CONFIG: ChyronConfig = {
     height: 200,
     bgColor: '#1a1a2e',
     bgMode: 'TRANSPARENT',
-    accentColor: '#e63946',
+    accentColor: '#c92a2a',
   },
 
   title: {
@@ -118,7 +118,7 @@ export const DEFAULT_CHYRON_CONFIG: ChyronConfig = {
     position: 'RIGHT',
     spanRows: false,
     showLiveBadge: true,
-    bgColor: '#e63946',
+    bgColor: '#c92a2a',
     textColor: '#ffffff',
     fontFamily: 'Inter',
   },

@@ -99,8 +99,8 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
 
             <div className="flex gap-3 items-center">
               <div className="flex-1 flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Minutes</span>
-                <Input 
+                <span className="text-sm font-bold text-muted-foreground uppercase">Minutes</span>
+                <Input aria-label="Timer URL" 
                   type="number" 
                   min={0}
                   value={totalMinutes} 
@@ -110,8 +110,8 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
               </div>
               <span className="text-lg font-bold text-muted-foreground pt-4">:</span>
               <div className="flex-1 flex flex-col gap-1">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase">Seconds</span>
-                <Input 
+                <span className="text-sm font-bold text-muted-foreground uppercase">Seconds</span>
+                <Input aria-label="Timer URL" 
                   type="number" 
                   min={0}
                   max={59}
@@ -131,7 +131,7 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Curated Timer Themes
           </span>
-          <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+          <Badge variant="secondary" className="text-sm font-semibold text-primary bg-primary/10">
             1-Click Apply
           </Badge>
         </div>
@@ -230,7 +230,7 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Alarm Sound
           </span>
-          <Switch checked={config.sound.enabled} onCheckedChange={c => updateSound({ enabled: c })} />
+          <Switch aria-label="Enable Sound" checked={config.sound.enabled} onCheckedChange={c => updateSound({ enabled: c })} />
         </div>
         
         {config.sound.enabled && (
@@ -244,7 +244,7 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
                     type="button"
                     onClick={() => updateSound({ type: t })}
                     className={cn(
-                      "py-1 text-[11px] font-semibold rounded-sm transition-all cursor-pointer capitalize",
+                      "py-1 text-sm font-semibold rounded-sm transition-all cursor-pointer capitalize",
                       config.sound.type === t ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -271,7 +271,7 @@ function GlobalSettings({ config, setConfig }: { config: TimerConfig, setConfig:
                   <Volume2 className="w-3.5 h-3.5" /> Test Tone
                 </Button>
               </div>
-              <Slider min={0.1} max={1} step={0.05} value={[config.sound.volume]} onValueChange={([v]) => updateSound({ volume: v })} />
+              <Slider aria-label="Volume" min={0.1} max={1} step={0.05} value={[config.sound.volume]} onValueChange={([v]) => updateSound({ volume: v })} />
             </div>
           </div>
         )}
@@ -474,7 +474,7 @@ function TimerCustomizerContent() {
                   className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
                   onClick={() => loadEditor(c.id, c.config)}
                 >
-                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
+                  <div aria-hidden="true" className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
                     <div className="scale-[0.55] origin-center w-80 h-44 flex items-center justify-center">
                       <TimerPreview config={c.config} />
                     </div>
@@ -508,7 +508,7 @@ function TimerCustomizerContent() {
 
                   <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-2">
-                      <Input
+                      <Input aria-label="Timer URL"
                         readOnly
                         value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/timer?id=${c.id}` : ''}
                         onClick={e => (e.target as HTMLInputElement).select()}
@@ -577,7 +577,7 @@ function TimerCustomizerContent() {
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Timers
           </Button>
-          <Input 
+          <Input aria-label="Timer URL" 
             placeholder="Timer Name" 
             value={config.name} 
             onChange={e => setConfig({ ...config, name: e.target.value })} 
@@ -647,7 +647,7 @@ function TimerCustomizerContent() {
             </div>
           </div>
 
-          <span className="text-[11px] font-bold text-muted-foreground">
+          <span className="text-sm font-bold text-muted-foreground">
             {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
           </span>
         </div>
@@ -655,14 +655,14 @@ function TimerCustomizerContent() {
         {/* Centered Canvas Container with Checkerboard Pattern */}
         <div className="flex-1 p-8 flex flex-col items-center justify-center gap-4 overflow-hidden">
           <div 
-            className="preview-window-container w-full max-w-2xl aspect-video rounded-xl shadow-lg border border-border flex items-center justify-center p-5"
+            aria-hidden="true" className="preview-window-container w-full max-w-2xl aspect-video rounded-xl shadow-lg border border-border flex items-center justify-center p-5"
           >
              <div className="w-full h-full flex items-center justify-center">
                <TimerPreview config={config} />
              </div>
           </div>
           <div className="flex gap-2 w-full max-w-2xl">
-            <Input
+            <Input aria-label="Timer URL"
               readOnly
               value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/timer?id=${activeConfigId}` : ''}
               onClick={e => (e.target as HTMLInputElement).select()}

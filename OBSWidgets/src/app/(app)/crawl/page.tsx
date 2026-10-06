@@ -243,7 +243,7 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
             <TooltipContent><p>Text Color</p></TooltipContent>
           </Tooltip>
           <PopoverContent sideOffset={5} className="w-64 p-4">
-            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
+            <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
             <ColorInputWithPalette value={l.textColor} onChange={val => update({ textColor: val })} />
           </PopoverContent>
         </Popover>
@@ -261,7 +261,7 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
             <TooltipContent><p>Background Color</p></TooltipContent>
           </Tooltip>
           <PopoverContent sideOffset={5} className="w-64 p-4">
-            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
+            <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
             <ColorInputWithPalette value={l.bgColor} onChange={val => update({ bgColor: val })} />
           </PopoverContent>
         </Popover>
@@ -280,7 +280,7 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
       <div className="flex justify-between items-center">
         <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Clock / Date</h3>
         <div className="flex items-center gap-2">
-          <Switch checked={c.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
+          <Switch aria-label="Enable Row" checked={c.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
           <span className="text-xs font-bold text-muted-foreground uppercase">Enable Clock</span>
         </div>
       </div>
@@ -349,7 +349,7 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
             <TooltipContent><p>Text Color</p></TooltipContent>
           </Tooltip>
           <PopoverContent sideOffset={5} className="w-64 p-4">
-            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
+            <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
             <ColorInputWithPalette value={c.textColor} onChange={val => update({ textColor: val })} />
           </PopoverContent>
         </Popover>
@@ -367,7 +367,7 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
             <TooltipContent><p>Background Color</p></TooltipContent>
           </Tooltip>
           <PopoverContent sideOffset={5} className="w-64 p-4">
-            <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
+            <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
             <ColorInputWithPalette value={c.bgColor} onChange={val => update({ bgColor: val })} />
           </PopoverContent>
         </Popover>
@@ -448,7 +448,7 @@ function CrawlBlocksManager({
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Crawl Blocks</h3>
-          <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+          <Badge variant="secondary" className="text-sm font-semibold text-primary bg-primary/10">
             {cr.blocks.length} {cr.blocks.length === 1 ? 'Block' : 'Blocks'}
           </Badge>
         </div>
@@ -481,7 +481,7 @@ function CrawlBlocksManager({
                           expandedId === block.id ? "bg-muted/60" : "hover:bg-muted/30"
                         )}
                       >
-                        <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab p-1">
+                        <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-muted-foreground cursor-grab p-1">
                           <GripVertical className="w-3.5 h-3.5" />
                         </div>
 
@@ -504,7 +504,7 @@ function CrawlBlocksManager({
                           onClick={e => { e.stopPropagation(); updateBlock(block.id, { enabled: !block.enabled }); }}
                           className="bg-transparent border-0 cursor-pointer p-1 text-muted-foreground hover:text-foreground shrink-0"
                         >
-                          {block.enabled ? <Eye className="w-3.5 h-3.5 text-emerald-500" /> : <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />}
+                          {block.enabled ? <Eye className="w-3.5 h-3.5 text-success" /> : <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />}
                         </button>
 
                         <span className="flex-1 font-semibold text-xs text-foreground truncate">
@@ -512,7 +512,7 @@ function CrawlBlocksManager({
                         </span>
 
                         <span className={cn(
-                          "text-[10px] text-muted-foreground transition-transform",
+                          "text-sm text-muted-foreground transition-transform",
                           expandedId === block.id && "rotate-180"
                         )}>
                           ▼
@@ -523,7 +523,7 @@ function CrawlBlocksManager({
                       {expandedId === block.id && (
                         <div className="p-4 bg-muted/20 border-t border-border flex flex-col gap-3">
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-muted-foreground uppercase">Block Label</label>
+                            <label className="text-sm font-semibold text-muted-foreground uppercase">Block Label</label>
                             <Input 
                               value={block.label || ''} 
                               onChange={e => updateBlock(block.id, { label: e.target.value })} 
@@ -533,17 +533,17 @@ function CrawlBlocksManager({
                           </div>
 
                           <div className="flex flex-col gap-1.5">
-                            <label className="text-[11px] font-semibold text-muted-foreground uppercase">Crawl Text</label>
+                            <label className="text-sm font-semibold text-muted-foreground uppercase">Crawl Text</label>
                             <Input 
                               value={block.text || ''} 
                               onChange={e => updateBlock(block.id, { text: e.target.value })} 
-                              placeholder="Type scrolling ticker text here..."
-                              className="h-8 text-xs font-mono"
+                              aria-label="Ticker text" placeholder="Type scrolling ticker text here..."
+                              className="font-mono"
                             />
                           </div>
 
                           <div className="flex justify-between items-center pt-2 border-t border-border mt-1">
-                            <span className="text-[11px] text-muted-foreground">Block #{i + 1}</span>
+                            <span className="text-sm text-muted-foreground">Block #{i + 1}</span>
                             <Button 
                               size="sm" 
                               variant="ghost" 
@@ -602,7 +602,7 @@ function CrawlProperties({
       <Card className="border-border bg-card p-5 flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Crawl Settings</h3>
-          <Badge variant={cr.enabled ? "default" : "secondary"} className="text-[10px]">
+          <Badge variant={cr.enabled ? "default" : "secondary"} className="text-sm">
             {cr.enabled ? "Active" : "Disabled"}
           </Badge>
         </div>
@@ -687,7 +687,7 @@ function CrawlProperties({
               <TooltipContent><p>Text Color</p></TooltipContent>
             </Tooltip>
             <PopoverContent sideOffset={5} className="w-64 p-4">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
+              <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">Text Color</span>
               <ColorInputWithPalette value={cr.textColor} onChange={val => updateCrawl({ textColor: val })} />
             </PopoverContent>
           </Popover>
@@ -705,7 +705,7 @@ function CrawlProperties({
               <TooltipContent><p>Background Color</p></TooltipContent>
             </Tooltip>
             <PopoverContent sideOffset={5} className="w-64 p-4">
-              <span className="block text-[10px] font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
+              <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">Background Color</span>
               <ColorInputWithPalette value={cr.bgColor} onChange={val => updateCrawl({ bgColor: val })} />
             </PopoverContent>
           </Popover>
@@ -736,7 +736,7 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Curated Broadcast Themes
           </span>
-          <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+          <Badge variant="secondary" className="text-sm font-semibold text-primary bg-primary/10">
             1-Click Apply
           </Badge>
         </div>
@@ -837,7 +837,7 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-foreground">Accent Color</label>
           <ColorInputWithPalette value={ly.accentColor} onChange={val => update({ accentColor: val })} />
-          <p className="text-[11px] text-muted-foreground mt-1">Used for accent stripes and borders between layers</p>
+          <p className="text-sm text-muted-foreground mt-1">Used for accent stripes and borders between layers</p>
         </div>
       </Card>
     </div>
@@ -867,7 +867,7 @@ function ChyronCardPreview({ config }: { config: ChyronConfig }) {
   return (
     <div 
       ref={containerRef}
-      className="preview-window-container w-full aspect-[16/5] rounded-md overflow-hidden flex items-end justify-center relative border border-border"
+      aria-hidden="true" className="preview-window-container w-full aspect-[16/5] rounded-md overflow-hidden flex items-end justify-center relative border border-border"
     >
       <div style={{ width: 1920 * scale, height: '100%', display: 'flex', alignItems: 'flex-end' }}>
         <ChyronPreview config={config} scale={scale} />
@@ -1080,9 +1080,9 @@ function ChyronBuilderContent() {
 
   if (!session) {
     return (
-      <main className="p-10">
+      <div className="p-10">
         <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
-      </main>
+      </div>
     );
   }
 
@@ -1179,7 +1179,7 @@ function ChyronBuilderContent() {
                       readOnly
                       value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
                       onClick={e => (e.target as HTMLInputElement).select()}
-                      className="h-8 text-xs font-mono flex-1 bg-muted/40"
+                      aria-label="URL" className="font-mono flex-1 bg-muted/40"
                     />
                     <Button
                       size="sm"
@@ -1251,7 +1251,7 @@ function ChyronBuilderContent() {
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="flex flex-col">
               {/* LAYERS header */}
-              <div className="px-4 pt-4 pb-2 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+              <div className="px-4 pt-4 pb-2 text-sm font-bold text-muted-foreground tracking-wider uppercase">
                 Layers
               </div>
 
@@ -1291,12 +1291,12 @@ function ChyronBuilderContent() {
                                       : snapshot.isDragging
                                       ? "bg-muted border-transparent"
                                       : "hover:bg-muted/40 border-transparent text-foreground",
-                                    !isEnabled && "opacity-40"
+                                    !isEnabled && "bg-muted/50 text-muted-foreground"
                                   )}
                                 >
                                   {/* Drag Handle */}
                                   <div
-                                    {...provided.dragHandleProps}
+                                    {...provided.dragHandleProps} aria-label="Drag to reorder"
                                     className="text-muted-foreground hover:text-foreground cursor-grab p-0.5"
                                   >
                                     <GripVertical className="w-3.5 h-3.5" />
@@ -1309,7 +1309,7 @@ function ChyronBuilderContent() {
                                     className="bg-transparent border-0 cursor-pointer p-0.5 text-muted-foreground hover:text-foreground shrink-0"
                                     aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
                                   >
-                                    {isEnabled ? <Eye className="w-3.5 h-3.5 text-emerald-500" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                    {isEnabled ? <Eye className="w-3.5 h-3.5 text-success" /> : <EyeOff className="w-3.5 h-3.5" />}
                                   </button>
 
                                   {/* Label */}
@@ -1322,11 +1322,11 @@ function ChyronBuilderContent() {
                                       className="flex items-center gap-1 cursor-pointer" 
                                       onClick={e => { e.stopPropagation(); setIsCrawlExpanded(!isCrawlExpanded); }}
                                     >
-                                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 font-bold">
+                                      <Badge variant="secondary" className="text-sm px-1.5 py-0 h-4 font-bold">
                                         {config.crawl.blocks.length}
                                       </Badge>
                                       <span className={cn(
-                                        "text-[8px] text-muted-foreground transition-transform inline-block p-0.5",
+                                        "text-sm text-muted-foreground transition-transform inline-block p-0.5",
                                         isCrawlExpanded ? "rotate-0" : "-rotate-90"
                                       )}>
                                         ▼
@@ -1367,7 +1367,7 @@ function ChyronBuilderContent() {
                                             className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-foreground shrink-0"
                                             title={block.enabled ? "Hide block" : "Show block"}
                                           >
-                                            {block.enabled ? <Eye className="w-3 h-3 text-emerald-500" /> : <EyeOff className="w-3 h-3" />}
+                                            {block.enabled ? <Eye className="w-3 h-3 text-success" /> : <EyeOff className="w-3 h-3" />}
                                           </button>
 
                                           <span className="flex-1 truncate">
@@ -1384,7 +1384,7 @@ function ChyronBuilderContent() {
                                         e.stopPropagation();
                                         addBlockFromSidebar();
                                       }}
-                                      className="flex items-center gap-1 px-2 py-1.5 mt-1 border border-dashed border-border rounded-md text-[11px] font-semibold text-primary hover:bg-primary/5 cursor-pointer text-left transition-colors"
+                                      className="flex items-center gap-1 px-2 py-1.5 mt-1 border border-dashed border-border rounded-md text-sm font-semibold text-primary hover:bg-primary/5 cursor-pointer text-left transition-colors"
                                     >
                                       <span>+</span> Add Block
                                     </button>
@@ -1403,7 +1403,7 @@ function ChyronBuilderContent() {
               <div className="h-px bg-border my-2" />
 
               <div className="p-2 flex flex-col gap-1">
-                <span className="px-3 pt-2 pb-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+                <span className="px-3 pt-2 pb-1 text-sm font-bold text-muted-foreground tracking-wider uppercase">
                   Global
                 </span>
                 <Button
@@ -1444,7 +1444,7 @@ function ChyronBuilderContent() {
       </aside>
 
       {/* ── MAIN CONTENT ──────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col overflow-y-auto bg-background">
+      <div className="flex-1 flex flex-col overflow-y-auto bg-background">
         {/* Live Preview Header */}
         <div className="sticky top-0 z-20 shrink-0 py-5 px-8 flex flex-col justify-center items-center border-b border-border bg-card shadow-xs">
           <div className="flex w-full max-w-4xl justify-between items-center mb-2.5">
@@ -1453,7 +1453,7 @@ function ChyronBuilderContent() {
             </span>
             <span className={cn(
               "text-xs font-bold flex items-center gap-1.5",
-              saving ? "text-amber-500" : "text-emerald-500"
+              saving ? "text-warning" : "text-success"
             )}>
               <span className={cn("w-2 h-2 rounded-full", saving ? "bg-amber-500 animate-pulse" : "bg-emerald-500")} />
               {saving ? 'SAVING...' : 'LIVE SYNCED'}
@@ -1467,7 +1467,7 @@ function ChyronBuilderContent() {
               readOnly
               value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
               onClick={e => (e.target as HTMLInputElement).select()}
-              className="h-9 text-xs font-mono flex-1 bg-background"
+              aria-label="URL" className="font-mono flex-1 bg-background"
             />
             <Button
               size="sm"
@@ -1524,7 +1524,7 @@ function ChyronBuilderContent() {
             />
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

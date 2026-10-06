@@ -40,7 +40,7 @@ function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
 
   return (
     <div 
-      className="preview-window-container w-24 h-14 shrink-0 rounded-md overflow-hidden flex items-center justify-center border border-border bg-[#0a0a0c]"
+      aria-hidden="true" className="preview-window-container w-24 h-14 shrink-0 rounded-md overflow-hidden flex items-center justify-center border border-border bg-[#0a0a0c]"
     >
       {type === 'clock' && (
         <div className="scale-[0.24] origin-center">
@@ -120,7 +120,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
 
           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0 h-4 border ${badgeVariant}`}>
+              <Badge variant="outline" className={`text-sm uppercase font-bold tracking-wider px-2 py-0 h-4 border ${badgeVariant}`}>
                 {(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()}
               </Badge>
               {item.widget_type === 'screen' && (
@@ -195,7 +195,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
         <div className="mt-1 pt-3 border-t border-border">
           {item.widget_type === 'screen' ? (
             <div className="flex flex-col gap-3">
-              <p className="text-xs text-muted-foreground mb-1">
+              <p className="text-sm text-muted-foreground mb-1">
                 This screenset contains multiple overlays. Copy the exact page URL you need for your stream scene:
               </p>
               {item.config.pages?.map((page: any) => (
@@ -383,7 +383,7 @@ export default function Home() {
 
       {/* Quick Launch / Create New Widgets Section */}
       <div className="mb-8">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-4">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
           Create New Widget
         </h2>
         
@@ -391,7 +391,7 @@ export default function Home() {
           
           {/* Clock Widget Card */}
           <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div className="preview-window-container aspect-video mb-3.5 rounded-md overflow-hidden flex items-center justify-center">
+            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md overflow-hidden flex items-center justify-center">
               <div className="font-mono text-2xl text-amber-500 font-bold">
                 12:34
               </div>
@@ -401,7 +401,7 @@ export default function Home() {
                 <Clock className="w-4 h-4 text-primary" />
                 <h3 className="font-semibold text-sm text-foreground">Clock Widget</h3>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                 Digital stream clock with timezones, seconds, dates, and glowing neon FX.
               </p>
               <Button asChild size="sm" className="w-full mt-auto">
@@ -412,7 +412,7 @@ export default function Home() {
 
           {/* Timer Widget Card */}
           <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
+            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <svg width="64" height="64" className="absolute top-0 left-0">
                   <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" className="text-border" strokeWidth="4" />
@@ -426,7 +426,7 @@ export default function Home() {
                 <Timer className="w-4 h-4 text-primary" />
                 <h3 className="font-semibold text-sm text-foreground">Timer Widget</h3>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                 Countdown timer and stopwatch with SVG progress ring and chime alarms.
               </p>
               <Button asChild size="sm" className="w-full mt-auto">
@@ -437,7 +437,7 @@ export default function Home() {
 
           {/* Chyron Builder Card */}
           <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div className="preview-window-container aspect-video mb-3.5 rounded-md flex flex-col justify-end items-stretch overflow-hidden">
+            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex flex-col justify-end items-stretch overflow-hidden">
               <div className="bg-[#1a1a2e] w-full border-l-4 border-red-500 px-2 py-1 flex items-center justify-between">
                 <span className="text-white text-[9px] font-extrabold tracking-wide">BREAKING NEWS</span>
                 <span className="text-white text-[8px] font-mono bg-red-600 px-1 py-0.5 rounded font-bold">LIVE</span>
@@ -451,7 +451,7 @@ export default function Home() {
                 <Tv className="w-4 h-4 text-primary" />
                 <h3 className="font-semibold text-sm text-foreground">Chyron Builder</h3>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                 Broadcast lower thirds with headlines, logo bug, clock, and scrolling crawl.
               </p>
               <Button asChild size="sm" className="w-full mt-auto">
@@ -462,10 +462,10 @@ export default function Home() {
 
           {/* Screen Sets Card */}
           <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
+            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
               <div className="text-center">
                 <div className="text-base font-extrabold text-blue-500 uppercase leading-tight">STARTING SOON</div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">Stream begins shortly...</div>
+                <div className="text-sm text-muted-foreground mt-0.5">Stream begins shortly...</div>
               </div>
             </div>
             <div className="flex flex-col gap-2 flex-1">
@@ -473,7 +473,7 @@ export default function Home() {
                 <Monitor className="w-4 h-4 text-primary" />
                 <h3 className="font-semibold text-sm text-foreground">Screen Sets</h3>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
                 Full-screen Starting Soon, BRB, and Goodbye overlays with countdowns.
               </p>
               <Button asChild size="sm" className="w-full mt-auto">
@@ -488,7 +488,7 @@ export default function Home() {
       {/* Saved Widgets Section */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
             Your Saved Widgets ({configsList.length})
           </h2>
 
@@ -505,7 +505,7 @@ export default function Home() {
         ) : configsList.length === 0 ? (
           <Card className="text-center py-12 px-6 border-dashed border-border bg-card">
             <p className="text-sm font-medium text-foreground mb-1">No saved widgets yet.</p>
-            <p className="text-xs text-muted-foreground">Click any of the widget types above to configure and save your first OBS overlay!</p>
+            <p className="text-sm text-muted-foreground">Click any of the widget types above to configure and save your first OBS overlay!</p>
           </Card>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

@@ -49,7 +49,7 @@ function ScreenCardPreview({ config, activePageId }: { config: ScreenConfig; act
   return (
     <div 
       ref={containerRef}
-      className="preview-window-container w-full aspect-video rounded-md overflow-hidden relative border border-border"
+      aria-hidden="true" className="preview-window-container w-full aspect-video rounded-md overflow-hidden relative border border-border"
     >
       <div 
         style={{ 
@@ -89,7 +89,7 @@ function ScreenEditorPreview({ config, activePageId }: { config: ScreenConfig; a
   return (
     <div 
       ref={containerRef}
-      className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-lg border border-border overflow-hidden relative"
+      aria-hidden="true" className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-lg border border-border overflow-hidden relative"
     >
       <div 
         style={{ 
@@ -266,9 +266,9 @@ function ScreenCustomizerContent() {
 
   if (!session) {
     return (
-      <main className="p-10">
+      <div className="p-10">
         <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
-      </main>
+      </div>
     );
   }
 
@@ -462,7 +462,7 @@ function ScreenCustomizerContent() {
                     >
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold bg-muted px-2 py-0.5 rounded text-muted-foreground">
+                          <span className="text-sm font-bold bg-muted px-2 py-0.5 rounded text-muted-foreground">
                             #{idx + 1}
                           </span>
                           <span className="text-sm font-semibold text-foreground">{page.name}</span>
@@ -490,25 +490,25 @@ function ScreenCustomizerContent() {
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase">Page Name (Internal)</label>
-                        <Input value={page.name} onChange={e => updatePage(page.id, { name: e.target.value })} className="h-8 text-xs" />
+                        <label className="text-sm font-semibold text-muted-foreground uppercase">Page Name (Internal)</label>
+                        <Input aria-label="Page Name" value={page.name} onChange={e => updatePage(page.id, { name: e.target.value })}  />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase">Main Title</label>
-                        <Input value={page.title} onChange={e => updatePage(page.id, { title: e.target.value })} className="h-8 text-xs" />
+                        <label className="text-sm font-semibold text-muted-foreground uppercase">Main Title</label>
+                        <Input aria-label="Main Title" value={page.title} onChange={e => updatePage(page.id, { title: e.target.value })}  />
                       </div>
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-[11px] font-semibold text-muted-foreground uppercase">Subtitle (Optional)</label>
-                        <Input value={page.subtitle} onChange={e => updatePage(page.id, { subtitle: e.target.value })} placeholder="e.g. Stream will begin shortly..." className="h-8 text-xs" />
+                        <label className="text-sm font-semibold text-muted-foreground uppercase">Subtitle (Optional)</label>
+                        <Input aria-label="Subtitle" value={page.subtitle} onChange={e => updatePage(page.id, { subtitle: e.target.value })} placeholder="e.g. Stream will begin shortly..."  />
                       </div>
 
                       {/* Page Timer Setting */}
                       <div className="p-3 bg-muted/40 rounded-md border border-border flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                           <span className="text-xs font-medium text-foreground">Include Countdown Timer</span>
-                          <Switch 
+                          <Switch aria-label="Include Timer" 
                             checked={currentTimer.enabled} 
                             onCheckedChange={checked => updatePage(page.id, { timer: { ...currentTimer, enabled: checked } })} 
                           />
@@ -567,7 +567,7 @@ function ScreenCustomizerContent() {
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Curated Broadcast Themes
                     </span>
-                    <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+                    <Badge variant="secondary" className="text-sm font-semibold text-primary bg-primary/10">
                       1-Click Apply
                     </Badge>
                   </div>
@@ -635,7 +635,7 @@ function ScreenCustomizerContent() {
                   
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-medium text-foreground">Text Drop Shadow</span>
-                    <Switch checked={config.layout.dropShadow} onCheckedChange={checked => updateLayout({ dropShadow: checked })} />
+                    <Switch aria-label="Include Timer" checked={config.layout.dropShadow} onCheckedChange={checked => updateLayout({ dropShadow: checked })} />
                   </div>
 
                   <div className="pt-2 border-t border-border flex flex-col gap-1.5">
@@ -740,7 +740,7 @@ function ScreenCustomizerContent() {
                     <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       Logo Display
                     </span>
-                    <Switch 
+                    <Switch aria-label="Include Timer" 
                       checked={config.logo.enabled} 
                       onCheckedChange={checked => setConfig({ ...config, logo: { ...config.logo, enabled: checked } })} 
                     />
@@ -829,7 +829,7 @@ function ScreenCustomizerContent() {
             {/* Top Preview Header & Page Switcher */}
             <div className="flex justify-between items-center px-6 py-3.5 bg-card border-b border-border z-10 shrink-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase mr-1">Page:</span>
+                <span className="text-sm font-bold text-muted-foreground uppercase mr-1">Page:</span>
                 {config.pages.map(page => (
                   <Button 
                     key={page.id}
@@ -843,7 +843,7 @@ function ScreenCustomizerContent() {
                 ))}
               </div>
 
-              <span className="text-[11px] font-bold text-muted-foreground">
+              <span className="text-sm font-bold text-muted-foreground">
                 {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
               </span>
             </div>

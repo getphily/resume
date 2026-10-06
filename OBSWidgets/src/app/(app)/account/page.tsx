@@ -245,7 +245,7 @@ export default function AccountPage() {
                   Select a curated design specification for your workspace. Theme applies live on selection.
                 </p>
               </div>
-              <span className="text-[11px] font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md w-fit">
+              <span className="text-sm font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md w-fit">
                 Instant Live Preview
               </span>
             </div>
@@ -323,7 +323,7 @@ export default function AccountPage() {
 
                       {/* Active Checkmark Pill in Mockup */}
                       {isSelected && (
-                        <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
+                        <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-sm font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
                           <Check className="w-3 h-3" /> Selected
                         </div>
                       )}
@@ -331,11 +331,11 @@ export default function AccountPage() {
 
                     {/* Theme Details Footer */}
                     <div className="p-4 flex flex-col gap-2 flex-1">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
                         <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
                           {opt.name}
                         </span>
-                        <Badge variant={isSelected ? "default" : "secondary"} className="text-[10px] px-2 py-0 font-semibold">
+                        <Badge variant={isSelected ? "default" : "secondary"} className="text-sm px-2 py-1 font-semibold text-center">
                           {opt.badge}
                         </Badge>
                       </div>
@@ -345,7 +345,7 @@ export default function AccountPage() {
                       </p>
 
                       <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
                           Key Colors:
                         </span>
                         <div className="flex gap-1.5 items-center">
@@ -412,7 +412,7 @@ export default function AccountPage() {
                   disabled={saving} 
                   className="text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80 cursor-pointer"
                 />
-                <span className="text-[11px] text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   Recommended: Square JPG or PNG, at least 256×256px.
                 </span>
               </div>
@@ -429,7 +429,7 @@ export default function AccountPage() {
                 placeholder="DJ Name / Username" 
                 className="h-10 text-sm max-w-md bg-background"
               />
-              <span className="text-[11px] text-muted-foreground">
+              <span className="text-sm text-muted-foreground">
                 Displayed in broadcast headers and widget credit overlays.
               </span>
             </div>

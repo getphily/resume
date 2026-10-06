@@ -10,7 +10,7 @@ export const BROADCAST_PRESETS: BroadcastPalettePreset[] = [
   { 
     name: 'Breaking News', 
     bgColor: '#0f172a', 
-    accentColor: '#e63946', 
+    accentColor: '#c92a2a', 
     textColor: '#ffffff', 
     glow: 'OFF' 
   },

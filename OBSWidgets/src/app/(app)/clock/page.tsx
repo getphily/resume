@@ -175,9 +175,9 @@ function ClockCustomizerContent() {
 
   if (!session) {
     return (
-      <main className="p-10">
+      <div className="p-10">
         <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
-      </main>
+      </div>
     );
   }
 
@@ -223,7 +223,7 @@ function ClockCustomizerContent() {
                   onClick={() => loadEditor(c.id, c.config)} 
                   className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
                 >
-                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
+                  <div aria-hidden="true" className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
                     <ClockPreview config={c.config} time={time} scale={0.55} />
                   </div>
 
@@ -255,7 +255,7 @@ function ClockCustomizerContent() {
 
                   <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-2">
-                      <Input
+                      <Input aria-label="Clock URL"
                         readOnly
                         value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/clock?id=${c.id}` : ''}
                         onClick={e => (e.target as HTMLInputElement).select()}
@@ -320,7 +320,7 @@ function ClockCustomizerContent() {
               >
                 <ArrowLeft className="w-3.5 h-3.5" /> Back to Clocks
               </Button>
-              <Input 
+              <Input aria-label="Clock URL" 
                 placeholder="Clock Name" 
                 value={name} 
                 onChange={e => setName(e.target.value)} 
@@ -384,17 +384,17 @@ function ClockCustomizerContent() {
 
                   <div className="flex justify-between items-center pt-2 border-t border-border">
                     <span className="text-xs font-medium text-foreground">Show Seconds</span>
-                    <Switch checked={showSeconds} onCheckedChange={setShowSeconds} />
+                    <Switch aria-label="Show Seconds" checked={showSeconds} onCheckedChange={setShowSeconds} />
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-medium text-foreground">Show Date</span>
-                    <Switch checked={showDate} onCheckedChange={setShowDate} />
+                    <Switch aria-label="Show Date" checked={showDate} onCheckedChange={setShowDate} />
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-xs font-medium text-foreground">Blink Colon (:)</span>
-                    <Switch checked={blinkingColon} onCheckedChange={setBlinkingColon} />
+                    <Switch aria-label="Blinking Colon" checked={blinkingColon} onCheckedChange={setBlinkingColon} />
                   </div>
                 </div>
               </Card>
@@ -405,7 +405,7 @@ function ClockCustomizerContent() {
                   <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     Curated Clock Themes
                   </span>
-                  <Badge variant="secondary" className="text-[10px] font-semibold text-primary bg-primary/10">
+                  <Badge variant="secondary" className="text-sm font-semibold text-primary bg-primary/10">
                     1-Click Apply
                   </Badge>
                 </div>
@@ -464,7 +464,7 @@ function ClockCustomizerContent() {
                       <span className="text-xs font-semibold text-foreground">Size Scale</span>
                       <span className="text-xs font-mono text-muted-foreground">{sizeScale}x</span>
                     </div>
-                    <Slider min={0.5} max={2.0} step={0.1} value={[sizeScale]} onValueChange={([val]) => setSizeScale(val)} />
+                    <Slider aria-label="Size Scale" min={0.5} max={2.0} step={0.1} value={[sizeScale]} onValueChange={([val]) => setSizeScale(val)} />
                   </div>
 
                   <div className="pt-2 border-t border-border flex flex-col gap-1.5">
@@ -509,7 +509,7 @@ function ClockCustomizerContent() {
                   <div className="pt-2 border-t border-border flex flex-col gap-3">
                     <span className="text-xs font-semibold text-foreground">Special Effects</span>
                     <div className="flex flex-col gap-1.5">
-                      <span className="text-[11px] text-muted-foreground">Glow Aura</span>
+                      <span className="text-sm text-muted-foreground">Glow Aura</span>
                       <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-md">
                         {(['OFF', 'SUBTLE', 'NEON'] as const).map((g) => (
                           <button
@@ -528,11 +528,11 @@ function ClockCustomizerContent() {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-foreground">Text Drop Shadow</span>
-                      <Switch checked={dropShadow} onCheckedChange={setDropShadow} />
+                      <Switch aria-label="Drop Shadow" checked={dropShadow} onCheckedChange={setDropShadow} />
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-medium text-foreground">Black Outline</span>
-                      <Switch checked={outline} onCheckedChange={setOutline} />
+                      <Switch aria-label="Outline" checked={outline} onCheckedChange={setOutline} />
                     </div>
                   </div>
                 </div>
@@ -558,7 +558,7 @@ function ClockCustomizerContent() {
                   Live Preview: {name}
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-muted-foreground">
+              <span className="text-sm font-bold text-muted-foreground">
                 {saving ? 'AUTOSAVING...' : 'LIVE SYNCED'}
               </span>
             </div>
@@ -566,12 +566,12 @@ function ClockCustomizerContent() {
             {/* Centered Preview Canvas */}
             <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 overflow-hidden">
               <div 
-                className="preview-window-container w-full max-w-2xl aspect-video rounded-xl flex items-center justify-center shadow-lg border border-border"
+                aria-hidden="true" className="preview-window-container w-full max-w-2xl aspect-video rounded-xl flex items-center justify-center shadow-lg border border-border"
               >
                 <ClockPreview config={activeConfigObj} time={time} scale={1.3} />
               </div>
               <div className="flex gap-2 w-full max-w-2xl">
-                <Input
+                <Input aria-label="Clock URL"
                   readOnly
                   value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/clock?id=${activeConfigId}` : ''}
                   onClick={e => (e.target as HTMLInputElement).select()}

@@ -8,7 +8,7 @@ export type ThemeMode = 'dark' | 'light' | 'antd-light' | 'antd-dark';
 export const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'antd-light', 'antd-dark'];
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>('dark');
+  const [theme, setTheme] = useState<ThemeMode>('light');
 
   useEffect(() => {
     // 1. Initial local theme check
@@ -59,7 +59,7 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     if (data && data.theme) {
       const resolved = VALID_THEMES.includes(data.theme as ThemeMode)
         ? (data.theme as ThemeMode)
-        : (data.theme === 'light' ? 'light' : 'dark');
+        : (data.theme === 'dark' ? 'dark' : 'light');
       setTheme(resolved);
       document.documentElement.setAttribute('data-theme', resolved);
       localStorage.setItem('theme', resolved);

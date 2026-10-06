@@ -68,21 +68,21 @@ export default function AuthPage() {
             <CardTitle className="text-xl font-bold tracking-tight text-foreground">
               {isLogin ? 'Log in to your account' : 'Create a new account'}
             </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground mt-1">
+            <CardDescription className="text-sm text-muted-foreground mt-1">
               {isLogin ? 'Welcome back! Please enter your details.' : 'Start managing your custom OBS widgets.'}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="px-6 pb-6">
             {error && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-600 dark:text-red-400 text-xs">
+              <div role="alert" className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-md text-red-600 dark:text-red-400 text-sm">
                 {error}
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="email" className="text-xs font-semibold text-foreground">
+                <Label htmlFor="email" className="text-sm font-semibold text-foreground">
                   Email address
                 </Label>
                 <Input
@@ -92,12 +92,12 @@ export default function AuthPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="h-10 text-sm"
+                  className=""
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="password" className="text-xs font-semibold text-foreground">
+                <Label htmlFor="password" className="text-sm font-semibold text-foreground">
                   Password
                 </Label>
                 <Input
@@ -107,17 +107,17 @@ export default function AuthPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="h-10 text-sm"
+                  className=""
                 />
               </div>
 
-              <Button type="submit" disabled={loading} className="w-full h-10 mt-2 font-semibold">
+              <Button type="submit" disabled={loading} className="w-full mt-2 font-semibold">
                 {loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
 
             <div className="text-center mt-6">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 {isLogin ? "Don't have an account? " : "Already have an account? "}
                 <button
                   type="button"
