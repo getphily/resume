@@ -21,7 +21,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { CLOCK_PRESETS } from '@/lib/presets';
-import { ArrowLeft, Plus, Trash2, Clock, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Clock, Sparkles, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const GOOGLE_FONTS = [
@@ -216,32 +216,92 @@ function ClockCustomizerContent() {
               <Button onClick={handleCreateNew}>Create Your First Clock</Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {configsList.map(c => (
                 <Card 
                   key={c.id} 
                   onClick={() => loadEditor(c.id, c.config)} 
-                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
+                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
                 >
-                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5">
+                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
                     <ClockPreview config={c.config} time={time} scale={0.55} />
                   </div>
-                  <div className="flex justify-between items-center mt-auto">
-                    <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                       {c.config.name || 'Unnamed Clock'}
                     </span>
                     <Button 
                       size="icon" 
                       variant="ghost" 
                       onClick={(e) => deleteConfig(c.id, e)} 
-                      title="Delete widget"
-                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
+                      title="Delete clock"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
+
+                  <div className="text-xs text-muted-foreground mb-4 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="truncate">{c.config.timeFormat === '24HR' ? '24-Hour (Military)' : '12-Hour (AM/PM)'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary/60 shrink-0" />
+                      <span className="truncate">{c.config.timezone || 'Local Computer Time'}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/clock?id=${c.id}` : ''}
+                        onClick={e => (e.target as HTMLInputElement).select()}
+                        className="h-8 text-xs font-mono flex-1 bg-muted/40"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={e => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/clock?id=${c.id}`);
+                          toast.success('URL copied to clipboard!');
+                        }}
+                        className="h-8 text-xs font-semibold px-3 shrink-0"
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => loadEditor(c.id, c.config)}
+                      className="w-full text-xs font-semibold h-8 mt-1 group-hover:border-primary/40 transition-colors"
+                    >
+                      Open in Studio →
+                    </Button>
+                  </div>
                 </Card>
               ))}
+
+              {configsList.length < 3 && (
+                <Card 
+                  onClick={handleCreateNew} 
+                  className="cursor-pointer border-dashed border-2 border-border hover:border-primary/50 bg-transparent flex flex-col items-center justify-center min-h-[300px] p-6 transition-all hover:bg-muted/30 group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Plus className="w-6 h-6" />
+                  </div>
+                  <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                    Create New Clock
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-1 text-center">
+                    Add another digital clock widget (up to 3)
+                  </span>
+                </Card>
+              )}
             </div>
           )}
         </div>
@@ -504,11 +564,29 @@ function ClockCustomizerContent() {
             </div>
 
             {/* Centered Preview Canvas */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 gap-4 overflow-hidden">
               <div 
-                className="preview-window-container w-full max-w-2xl aspect-video rounded-xl flex items-center justify-center shadow-2xl"
+                className="preview-window-container w-full max-w-2xl aspect-video rounded-xl flex items-center justify-center shadow-lg border border-border"
               >
                 <ClockPreview config={activeConfigObj} time={time} scale={1.3} />
+              </div>
+              <div className="flex gap-2 w-full max-w-2xl">
+                <Input
+                  readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/clock?id=${activeConfigId}` : ''}
+                  onClick={e => (e.target as HTMLInputElement).select()}
+                  className="h-9 text-xs font-mono flex-1 bg-background"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/clock?id=${activeConfigId}`);
+                    toast.success('Widget URL copied to clipboard!');
+                  }}
+                  className="h-9 px-4 text-xs font-bold gap-1.5 shrink-0"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy Widget URL
+                </Button>
               </div>
             </div>
           </div>

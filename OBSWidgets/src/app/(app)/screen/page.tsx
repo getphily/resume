@@ -25,8 +25,88 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Trash2, ArrowLeft, Plus, Play, RotateCcw } from 'lucide-react';
+import { Trash2, ArrowLeft, Plus, Play, RotateCcw, Copy, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+function ScreenCardPreview({ config, activePageId }: { config: ScreenConfig; activePageId?: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.2);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const update = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        if (w > 0) setScale(w / 1920);
+      }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div 
+      ref={containerRef}
+      className="preview-window-container w-full aspect-video rounded-md overflow-hidden relative border border-border"
+    >
+      <div 
+        style={{ 
+          width: 1920, 
+          height: 1080, 
+          transform: `scale(${scale})`, 
+          transformOrigin: 'top left',
+          position: 'absolute',
+          top: 0,
+          left: 0
+        }}
+      >
+        <ScreenPreview config={config} activePageId={activePageId} />
+      </div>
+    </div>
+  );
+}
+
+function ScreenEditorPreview({ config, activePageId }: { config: ScreenConfig; activePageId?: string }) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.45);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const update = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        if (w > 0) setScale(w / 1920);
+      }
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div 
+      ref={containerRef}
+      className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-lg border border-border overflow-hidden relative"
+    >
+      <div 
+        style={{ 
+          width: 1920, 
+          height: 1080, 
+          transform: `scale(${scale})`, 
+          transformOrigin: 'top left',
+          position: 'absolute',
+          top: 0,
+          left: 0
+        }}
+      >
+        <ScreenPreview config={config} activePageId={activePageId} />
+      </div>
+    </div>
+  );
+}
 
 function ScreenCustomizerContent() {
   const searchParams = useSearchParams();
@@ -197,7 +277,7 @@ function ScreenCustomizerContent() {
       
       {/* ── 1. CATALOG VIEW ── */}
       {!activeConfigId ? (
-        <div className="p-6 max-w-5xl mx-auto w-full">
+        <div className="p-6 md:p-8 max-w-7xl mx-auto w-full flex flex-col">
           <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
             <div>
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Widgets</span>
@@ -226,37 +306,95 @@ function ScreenCustomizerContent() {
               <Button onClick={handleCreateNew}>Create Your First Screenset</Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {configsList.map(c => (
-                <Card 
-                  key={c.id} 
-                  onClick={() => loadEditor(c.id, c.config)} 
-                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
-                >
-                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5">
-                    <div className="scale-[0.16] origin-center w-[1920px] h-[1080px]">
-                      <ScreenPreview config={c.config} />
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center mt-auto">
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {configsList.map(c => {
+                const firstPageId = c.config.pages?.[0]?.id || 'starting-soon';
+                const embedUrl = typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/screen?id=${c.id}&page=${firstPageId}` : '';
+
+                return (
+                  <Card 
+                    key={c.id} 
+                    onClick={() => loadEditor(c.id, c.config)} 
+                    className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
+                  >
+                    <ScreenCardPreview config={c.config} activePageId={firstPageId} />
+
+                    <div className="flex justify-between items-center mt-3 mb-2">
+                      <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
                         {c.config.name || 'Unnamed Screenset'}
                       </span>
-                      <span className="text-xs text-muted-foreground">{c.config.pages?.length || 0} Pages</span>
+                      <Button 
+                        size="icon" 
+                        variant="ghost" 
+                        onClick={(e) => deleteConfig(c.id, e)} 
+                        title="Delete screenset"
+                        className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 shrink-0"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={(e) => deleteConfig(c.id, e)} 
-                      title="Delete screenset"
-                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+
+                    <div className="text-xs text-muted-foreground mb-4 flex flex-col gap-1.5">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="truncate">{c.config.pages?.length || 0} Pages (Active: {c.config.pages?.[0]?.name || 'Page 1'})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-primary/60 shrink-0" />
+                        <span className="truncate">{c.config.layout?.bgImageUrl ? 'Custom Background Image' : 'Solid Color Fill'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
+                      <div className="flex gap-2">
+                        <Input
+                          readOnly
+                          value={embedUrl}
+                          onClick={e => (e.target as HTMLInputElement).select()}
+                          className="h-8 text-xs font-mono flex-1 bg-muted/40"
+                        />
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={e => {
+                            e.stopPropagation();
+                            navigator.clipboard.writeText(embedUrl);
+                            toast.success('URL copied to clipboard!');
+                          }}
+                          className="h-8 text-xs font-semibold px-3 shrink-0"
+                        >
+                          Copy
+                        </Button>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => loadEditor(c.id, c.config)}
+                        className="w-full text-xs font-semibold h-8 mt-1 group-hover:border-primary/40 transition-colors"
+                      >
+                        Open in Studio →
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
+
+              {configsList.length < 5 && (
+                <Card 
+                  onClick={handleCreateNew} 
+                  className="cursor-pointer border-dashed border-2 border-border hover:border-primary/50 bg-transparent flex flex-col items-center justify-center min-h-[300px] p-6 transition-all hover:bg-muted/30 group"
+                >
+                  <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                    <Plus className="w-6 h-6" />
                   </div>
+                  <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                    Create New Screenset
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-1 text-center">
+                    Add another screen set overlay (up to 5)
+                  </span>
                 </Card>
-              ))}
+              )}
             </div>
           )}
         </div>
@@ -711,15 +849,27 @@ function ScreenCustomizerContent() {
             </div>
 
             {/* Centered Preview Canvas Container */}
-            <div className="flex-1 p-8 flex items-center justify-center overflow-hidden">
-              <div 
-                className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-2xl flex items-center justify-center overflow-hidden relative"
-              >
-                <div className="w-[850px] h-[478px] relative overflow-hidden">
-                  <div className="scale-[0.4427] origin-top-left w-[1920px] h-[1080px]">
-                    <ScreenPreview config={config} activePageId={previewPageId} />
-                  </div>
-                </div>
+            <div className="flex-1 p-8 flex flex-col items-center justify-center gap-4 overflow-hidden">
+              <ScreenEditorPreview config={config} activePageId={previewPageId} />
+              
+              <div className="flex gap-2 w-full max-w-4xl">
+                <Input
+                  readOnly
+                  value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/screen?id=${activeConfigId}&page=${previewPageId}` : ''}
+                  onClick={e => (e.target as HTMLInputElement).select()}
+                  className="h-9 text-xs font-mono flex-1 bg-background"
+                />
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const url = `${window.location.origin}/widgets/embed/screen?id=${activeConfigId}&page=${previewPageId}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success('Current page URL copied to clipboard!');
+                  }}
+                  className="h-9 px-4 text-xs font-bold gap-1.5 shrink-0"
+                >
+                  <Copy className="w-3.5 h-3.5" /> Copy Page URL
+                </Button>
               </div>
             </div>
 

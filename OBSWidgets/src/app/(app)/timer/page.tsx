@@ -16,7 +16,9 @@ import {
   Volume2, 
   Play, 
   Pause, 
-  RotateCcw 
+  RotateCcw,
+  Copy,
+  Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -433,17 +435,26 @@ function TimerCustomizerContent() {
   // --- List / Catalog View ---
   if (!activeConfigId) {
     return (
-      <div className="p-6 max-w-5xl mx-auto w-full">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto w-full flex flex-col">
         <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
           <div>
             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">Widgets</span>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">Timer Widgets</h1>
             <p className="text-sm text-muted-foreground mt-1">Sleek countdown timer and stopwatch with SVG progress ring, state colors, and alarms.</p>
           </div>
-          <Button onClick={createConfig} className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span>Create Timer</span>
-          </Button>
+          {configsList.length < 3 && (
+            <Button onClick={createConfig} className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span>Create Timer</span>
+            </Button>
+          )}
+        </div>
+
+        <div className="flex justify-between items-center mb-6 p-3.5 bg-card rounded-lg border border-border shadow-xs">
+          <span className="text-xs font-semibold text-muted-foreground">Storage Capacity</span>
+          <span className={cn("text-xs font-bold", configsList.length >= 3 ? "text-red-500" : "text-primary")}>
+            {configsList.length} / 3 Timers Used
+          </span>
         </div>
 
         {configsList.length === 0 ? (
@@ -452,34 +463,99 @@ function TimerCustomizerContent() {
             <Button onClick={createConfig}>Create Your First Timer</Button>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {configsList.map(c => (
-              <Card 
-                key={c.id} 
-                className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-4 group"
-                onClick={() => loadEditor(c.id, c.config)}
-              >
-                <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5">
-                  <div className="scale-[0.55] origin-center w-80 h-44 flex items-center justify-center">
-                    <TimerPreview config={c.config} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {configsList.map(c => {
+              const countdown = c.config.countdown || {};
+              const durationStr = `${countdown.hours ? `${countdown.hours}h ` : ''}${countdown.minutes || 0}m ${countdown.seconds ? `${countdown.seconds}s` : ''}`.trim();
+
+              return (
+                <Card 
+                  key={c.id} 
+                  className="cursor-pointer border-border bg-card hover:shadow-md transition-all flex flex-col p-5 group"
+                  onClick={() => loadEditor(c.id, c.config)}
+                >
+                  <div className="preview-window-container w-full aspect-video rounded-md overflow-hidden flex items-center justify-center mb-3.5 border border-border">
+                    <div className="scale-[0.55] origin-center w-80 h-44 flex items-center justify-center">
+                      <TimerPreview config={c.config} />
+                    </div>
                   </div>
+
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-base font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                      {c.config.name || 'Untitled Timer'}
+                    </span>
+                    <Button 
+                      size="icon" 
+                      variant="ghost" 
+                      onClick={(e) => deleteConfig(c.id, e)} 
+                      title="Delete timer"
+                      className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+
+                  <div className="text-xs text-muted-foreground mb-4 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="truncate">Default Duration: {durationStr || '5m'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                      <span className="truncate">{c.config.sound?.enabled ? 'Sound Alarm Active' : 'Silent Alarm'}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/timer?id=${c.id}` : ''}
+                        onClick={e => (e.target as HTMLInputElement).select()}
+                        className="h-8 text-xs font-mono flex-1 bg-muted/40"
+                      />
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={e => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/timer?id=${c.id}`);
+                          toast.success('URL copied to clipboard!');
+                        }}
+                        className="h-8 text-xs font-semibold px-3 shrink-0"
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => loadEditor(c.id, c.config)}
+                      className="w-full text-xs font-semibold h-8 mt-1 group-hover:border-primary/40 transition-colors"
+                    >
+                      Open in Studio →
+                    </Button>
+                  </div>
+                </Card>
+              );
+            })}
+
+            {configsList.length < 3 && (
+              <Card 
+                onClick={createConfig} 
+                className="cursor-pointer border-dashed border-2 border-border hover:border-primary/50 bg-transparent flex flex-col items-center justify-center min-h-[300px] p-6 transition-all hover:bg-muted/30 group"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Plus className="w-6 h-6" />
                 </div>
-                <div className="flex justify-between items-center mt-auto">
-                  <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {c.config.name || 'Untitled Timer'}
-                  </span>
-                  <Button 
-                    size="icon" 
-                    variant="ghost" 
-                    onClick={(e) => deleteConfig(c.id, e)} 
-                    title="Delete timer"
-                    className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                  Create New Timer
+                </span>
+                <span className="text-xs text-muted-foreground mt-1 text-center">
+                  Add another timer widget (up to 3)
+                </span>
               </Card>
-            ))}
+            )}
           </div>
         )}
       </div>
@@ -577,13 +653,31 @@ function TimerCustomizerContent() {
         </div>
 
         {/* Centered Canvas Container with Checkerboard Pattern */}
-        <div className="flex-1 p-8 flex items-center justify-center overflow-hidden">
+        <div className="flex-1 p-8 flex flex-col items-center justify-center gap-4 overflow-hidden">
           <div 
-            className="preview-window-container w-full max-w-2xl aspect-video rounded-xl shadow-2xl flex items-center justify-center p-5"
+            className="preview-window-container w-full max-w-2xl aspect-video rounded-xl shadow-lg border border-border flex items-center justify-center p-5"
           >
              <div className="w-full h-full flex items-center justify-center">
                <TimerPreview config={config} />
              </div>
+          </div>
+          <div className="flex gap-2 w-full max-w-2xl">
+            <Input
+              readOnly
+              value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/timer?id=${activeConfigId}` : ''}
+              onClick={e => (e.target as HTMLInputElement).select()}
+              className="h-9 text-xs font-mono flex-1 bg-background"
+            />
+            <Button
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/timer?id=${activeConfigId}`);
+                toast.success('Widget URL copied to clipboard!');
+              }}
+              className="h-9 px-4 text-xs font-bold gap-1.5 shrink-0"
+            >
+              <Copy className="w-3.5 h-3.5" /> Copy Widget URL
+            </Button>
           </div>
         </div>
 
