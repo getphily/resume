@@ -6,10 +6,11 @@ import { supabase } from '@/lib/supabase';
 import { Flex, Box, Text, Button, IconButton, Tooltip, Badge } from '@radix-ui/themes';
 import { SunIcon, MoonIcon, PersonIcon, ExitIcon } from '@radix-ui/react-icons';
 import toast from 'react-hot-toast';
+import { ThemeMode, VALID_THEMES } from '@/app/ThemeProvider';
 
 export default function Navbar() {
   const [session, setSession] = useState<any>(null);
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('dark');
+  const [currentTheme, setCurrentTheme] = useState<ThemeMode>('dark');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -20,12 +21,12 @@ export default function Navbar() {
     });
 
     // Sync theme
-    const themeAttr = document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
-    if (themeAttr) setCurrentTheme(themeAttr);
+    const themeAttr = document.documentElement.getAttribute('data-theme') as ThemeMode;
+    if (themeAttr && VALID_THEMES.includes(themeAttr)) setCurrentTheme(themeAttr);
 
     const onThemeUpdated = () => {
-      const updated = document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
-      if (updated) setCurrentTheme(updated);
+      const updated = document.documentElement.getAttribute('data-theme') as ThemeMode;
+      if (updated && VALID_THEMES.includes(updated)) setCurrentTheme(updated);
     };
     window.addEventListener('theme-updated', onThemeUpdated);
 
@@ -36,7 +37,13 @@ export default function Navbar() {
   }, []);
 
   const toggleTheme = async () => {
-    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    let nextTheme: ThemeMode = 'dark';
+    if (currentTheme === 'dark') nextTheme = 'light';
+    else if (currentTheme === 'light') nextTheme = 'dark';
+    else if (currentTheme === 'antd-dark') nextTheme = 'antd-light';
+    else if (currentTheme === 'antd-light') nextTheme = 'antd-dark';
+    else nextTheme = 'dark';
+
     setCurrentTheme(nextTheme);
     document.documentElement.setAttribute('data-theme', nextTheme);
     localStorage.setItem('theme', nextTheme);
@@ -47,7 +54,11 @@ export default function Navbar() {
         .from('profiles')
         .upsert({ id: session.user.id, theme: nextTheme, updated_at: new Date().toISOString() });
     }
-    toast.success(`${nextTheme === 'dark' ? 'Dark' : 'Light'} mode enabled`, { id: 'theme-toast', duration: 1500 });
+    const label = 
+      nextTheme === 'antd-light' ? 'Ant Design Pro (Light)' :
+      nextTheme === 'antd-dark' ? 'Ant Design Pro (Dark)' :
+      nextTheme === 'dark' ? 'Dark mode' : 'Light mode';
+    toast.success(`${label} enabled`, { id: 'theme-toast', duration: 1500 });
   };
 
   return (
@@ -94,17 +105,28 @@ export default function Navbar() {
         
         <Flex align="center" gap="3">
           {/* Theme Switcher Quick Action */}
-          <Tooltip content={`Switch to ${currentTheme === 'dark' ? 'Light' : 'Dark'} mode`}>
-            <IconButton 
-              size="2" 
-              variant="ghost" 
-              onClick={toggleTheme}
-              style={{ color: 'var(--text-navbar)', cursor: 'pointer' }}
-              aria-label="Toggle Theme"
-            >
-              {currentTheme === 'dark' ? <SunIcon width={18} height={18} /> : <MoonIcon width={18} height={18} />}
-            </IconButton>
-          </Tooltip>
+          {(() => {
+            const isDark = currentTheme === 'dark' || currentTheme === 'antd-dark';
+            const tooltipContent = 
+              currentTheme === 'dark' ? 'Switch to Light mode' :
+              currentTheme === 'light' ? 'Switch to Dark mode' :
+              currentTheme === 'antd-dark' ? 'Switch to Ant Design Pro (Light)' :
+              'Switch to Ant Design Pro (Dark)';
+
+            return (
+              <Tooltip content={tooltipContent}>
+                <IconButton 
+                  size="2" 
+                  variant="ghost" 
+                  onClick={toggleTheme}
+                  style={{ color: 'var(--text-navbar)', cursor: 'pointer' }}
+                  aria-label="Toggle Theme"
+                >
+                  {isDark ? <SunIcon width={18} height={18} /> : <MoonIcon width={18} height={18} />}
+                </IconButton>
+              </Tooltip>
+            );
+          })()}
 
           <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 4px' }} />
 

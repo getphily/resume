@@ -4,18 +4,24 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Theme } from '@radix-ui/themes';
 
+export type ThemeMode = 'dark' | 'light' | 'antd-light' | 'antd-dark';
+
+export const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'antd-light', 'antd-dark'];
+
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<ThemeMode>('dark');
 
   useEffect(() => {
     // 1. Initial local theme check
-    const savedLocal = typeof window !== 'undefined' ? localStorage.getItem('theme') as 'light' | 'dark' : null;
-    if (savedLocal) {
+    const savedLocal = typeof window !== 'undefined' ? localStorage.getItem('theme') as ThemeMode : null;
+    if (savedLocal && VALID_THEMES.includes(savedLocal)) {
       setTheme(savedLocal);
       document.documentElement.setAttribute('data-theme', savedLocal);
     } else if (typeof window !== 'undefined') {
-      const currentAttr = document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
-      if (currentAttr) setTheme(currentAttr);
+      const currentAttr = document.documentElement.getAttribute('data-theme') as ThemeMode;
+      if (currentAttr && VALID_THEMES.includes(currentAttr)) {
+        setTheme(currentAttr);
+      }
     }
 
     // 2. Fetch profile theme if logged in
@@ -30,8 +36,8 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     });
 
     const handleThemeUpdated = () => {
-      const current = document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
-      if (current) {
+      const current = document.documentElement.getAttribute('data-theme') as ThemeMode;
+      if (current && VALID_THEMES.includes(current)) {
         setTheme(current);
         localStorage.setItem('theme', current);
       }
@@ -52,15 +58,24 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       .single();
     
     if (data && data.theme) {
-      const resolved = data.theme === 'light' ? 'light' : 'dark';
+      const resolved = VALID_THEMES.includes(data.theme as ThemeMode)
+        ? (data.theme as ThemeMode)
+        : (data.theme === 'light' ? 'light' : 'dark');
       setTheme(resolved);
       document.documentElement.setAttribute('data-theme', resolved);
       localStorage.setItem('theme', resolved);
     }
   };
 
+  const isDark = theme === 'dark' || theme === 'antd-dark';
+  const isAntd = theme === 'antd-light' || theme === 'antd-dark';
+
   return (
-    <Theme appearance={theme} accentColor="indigo" radius="medium">
+    <Theme 
+      appearance={isDark ? 'dark' : 'light'} 
+      accentColor={isAntd ? 'blue' : 'indigo'} 
+      radius="medium"
+    >
       {children}
     </Theme>
   );

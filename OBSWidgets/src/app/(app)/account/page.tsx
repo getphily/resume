@@ -5,7 +5,43 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
-import { Box, Flex, Heading, Text, Card, TextField, Button, Avatar, RadioCards } from '@radix-ui/themes';
+import { Box, Flex, Heading, Text, Card, TextField, Button, Avatar, RadioCards, Badge } from '@radix-ui/themes';
+import { ThemeMode, VALID_THEMES } from '@/app/ThemeProvider';
+
+const THEME_OPTIONS = [
+  {
+    id: 'dark' as ThemeMode,
+    name: 'Pioneer DJ Dark',
+    badge: 'Standard',
+    badgeColor: 'gray' as const,
+    description: 'Chassis black & slate panels with vibrant indigo/amber accents for dark streaming booths.',
+    palette: ['#0f172a', '#1e293b', '#6366f1'],
+  },
+  {
+    id: 'light' as ThemeMode,
+    name: 'Clean Light',
+    badge: 'Standard',
+    badgeColor: 'gray' as const,
+    description: 'Minimalist daytime aesthetic with crisp off-white canvas and pure white panels.',
+    palette: ['#f4f5f7', '#ffffff', '#4f46e5'],
+  },
+  {
+    id: 'antd-light' as ThemeMode,
+    name: 'Ant Design Pro (Light)',
+    badge: 'Ant Design Pro',
+    badgeColor: 'blue' as const,
+    description: 'Enterprise light layout with signature #f0f2f5 canvas, Daybreak Blue (#1677ff) accent, and dark navy header.',
+    palette: ['#001529', '#f0f2f5', '#1677ff'],
+  },
+  {
+    id: 'antd-dark' as ThemeMode,
+    name: 'Ant Design Pro (Dark)',
+    badge: 'realDark',
+    badgeColor: 'blue' as const,
+    description: 'Enterprise realDark specification with deep #000000 layout, #141414 panels, and Daybreak Blue (#1677ff) accent.',
+    palette: ['#000000', '#141414', '#1677ff'],
+  },
+];
 
 export default function AccountPage() {
   const router = useRouter();
@@ -16,7 +52,7 @@ export default function AccountPage() {
 
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState<ThemeMode>('dark');
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,7 +74,11 @@ export default function AccountPage() {
       if (data) {
         setUsername(data.username || '');
         setAvatarUrl(data.avatar_url || '');
-        setTheme(data.theme || 'dark');
+        if (data.theme && VALID_THEMES.includes(data.theme as ThemeMode)) {
+          setTheme(data.theme as ThemeMode);
+        } else {
+          setTheme('dark');
+        }
       }
       setLoading(false);
     }
@@ -63,8 +103,9 @@ export default function AccountPage() {
       toast.error("Error saving profile: " + error.message);
     } else {
       document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
       window.dispatchEvent(new Event('theme-updated'));
-      toast.success("Profile updated successfully!");
+      toast.success("Preferences saved successfully!");
     }
     setSaving(false);
   };
@@ -170,13 +211,69 @@ export default function AccountPage() {
 
           {activeTab === 'PREFS' && (
             <Flex direction="column" gap="5" style={{ height: '100%' }}>
-              <Heading size="4" color="gray">PREFERENCES</Heading>
+              <Box>
+                <Heading size="4" color="gray" mb="1">PREFERENCES</Heading>
+                <Text size="2" color="gray">Customize your workspace appearance and interface styling.</Text>
+              </Box>
               
               <Box>
-                <Text as="label" size="2" weight="bold" color="gray" mb="2" style={{ display: 'block' }}>WEBSITE THEME</Text>
-                <RadioCards.Root size="2" columns="2" value={theme} onValueChange={setTheme}>
-                  <RadioCards.Item value="dark"><Flex width="100%" justify="center"><Text weight="bold">DARK (DJ MODE)</Text></Flex></RadioCards.Item>
-                  <RadioCards.Item value="light"><Flex width="100%" justify="center"><Text weight="bold">LIGHT (CLEAN MODE)</Text></Flex></RadioCards.Item>
+                <Flex align="center" justify="between" mb="3">
+                  <Text as="label" size="2" weight="bold" color="gray">
+                    WEBSITE THEME
+                  </Text>
+                  <Text size="1" color="gray">
+                    Live preview on selection &bull; Save to persist across devices
+                  </Text>
+                </Flex>
+
+                <RadioCards.Root 
+                  size="2" 
+                  columns={{ initial: '1', sm: '2' }} 
+                  value={theme} 
+                  onValueChange={(val) => {
+                    const nextTheme = val as ThemeMode;
+                    setTheme(nextTheme);
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                    localStorage.setItem('theme', nextTheme);
+                    window.dispatchEvent(new Event('theme-updated'));
+                  }}
+                >
+                  {THEME_OPTIONS.map((opt) => (
+                    <RadioCards.Item 
+                      key={opt.id} 
+                      value={opt.id} 
+                      style={{ cursor: 'pointer', padding: '14px' }}
+                    >
+                      <Flex direction="column" gap="2" width="100%">
+                        <Flex align="center" justify="between" width="100%">
+                          <Text weight="bold" size="2">{opt.name}</Text>
+                          <Badge color={opt.badgeColor} variant="soft" size="1">
+                            {opt.badge}
+                          </Badge>
+                        </Flex>
+                        <Text size="1" color="gray" style={{ lineHeight: 1.45, minHeight: '38px' }}>
+                          {opt.description}
+                        </Text>
+                        <Flex align="center" justify="between" pt="2" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+                          <Text size="1" color="gray" weight="medium">Palette:</Text>
+                          <Flex gap="1" align="center">
+                            {opt.palette.map((c, i) => (
+                              <Box
+                                key={i}
+                                style={{
+                                  width: '16px',
+                                  height: '16px',
+                                  borderRadius: '4px',
+                                  backgroundColor: c,
+                                  border: '1px solid rgba(128,128,128,0.3)',
+                                }}
+                              />
+                            ))}
+                          </Flex>
+                        </Flex>
+                      </Flex>
+                    </RadioCards.Item>
+                  ))}
                 </RadioCards.Root>
               </Box>
 

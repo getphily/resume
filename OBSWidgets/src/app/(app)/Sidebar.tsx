@@ -55,7 +55,7 @@ export default function Sidebar() {
                       style={{
                         borderRadius: 'var(--radius-3)',
                         color: isActive ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                        backgroundColor: isActive ? 'var(--bg-main)' : 'transparent',
+                        backgroundColor: isActive ? 'var(--accent-subtle, var(--bg-main))' : 'transparent',
                         fontWeight: isActive ? 600 : 500,
                         borderLeft: isActive ? '3px solid var(--accent-primary)' : '3px solid transparent',
                         transition: 'all 0.15s ease'
