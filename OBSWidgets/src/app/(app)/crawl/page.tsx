@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import { createPortal } from "react-dom";
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
@@ -1409,55 +1410,65 @@ function ChyronBuilderContent() {
 
                                             return (
                                               <Draggable key={block.id} draggableId={`crawlBlock-${block.id}`} index={idx}>
-                                                {(provided, snapshot) => (
-                                                  <div
-                                                    ref={provided.innerRef}
-                                                    {...provided.draggableProps}
-                                                    style={provided.draggableProps.style}
-                                                  >
+                                                {(provided, snapshot) => {
+                                                  const child = (
                                                     <div
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setSelectedLayer(`crawlBlock:${block.id}`);
-                                                        setSelectedPanel('layer');
-                                                      }}
+                                                      ref={provided.innerRef}
+                                                      {...provided.draggableProps}
+                                                      style={provided.draggableProps.style}
                                                       className={cn(
-                                                        "flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer transition-colors border-l-2",
-                                                        isBlockActive
-                                                          ? "bg-primary/10 border-primary text-primary"
-                                                          : snapshot.isDragging
-                                                          ? "bg-muted border-transparent"
-                                                          : "hover:bg-muted/40 border-transparent text-foreground",
-                                                        !block.enabled && "bg-muted/50 text-muted-foreground"
+                                                        snapshot.isDragging && "z-50 shadow-lg rounded-md bg-card ring-1 ring-border"
                                                       )}
                                                     >
-                                                      {/* Drag Handle */}
                                                       <div
-                                                        {...provided.dragHandleProps}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        className="text-muted-foreground hover:text-foreground cursor-grab min-w-[24px] min-h-[24px] flex items-center justify-center -ml-1"
-                                                        aria-label="Drag to reorder"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setSelectedLayer(`crawlBlock:${block.id}`);
+                                                          setSelectedPanel('layer');
+                                                        }}
+                                                        className={cn(
+                                                          "flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer transition-colors border-l-2",
+                                                          isBlockActive
+                                                            ? "bg-primary/10 border-primary text-primary"
+                                                            : snapshot.isDragging
+                                                            ? "bg-muted/80 border-transparent text-foreground"
+                                                            : "hover:bg-muted/40 border-transparent text-foreground",
+                                                          !block.enabled && "bg-muted/50 text-muted-foreground"
+                                                        )}
                                                       >
-                                                        <GripVertical className="w-3.5 h-3.5" />
+                                                        {/* Drag Handle */}
+                                                        <div
+                                                          {...provided.dragHandleProps}
+                                                          onClick={(e) => e.stopPropagation()}
+                                                          className="text-muted-foreground hover:text-foreground cursor-grab min-w-[24px] min-h-[24px] flex items-center justify-center -ml-1"
+                                                          aria-label="Drag to reorder"
+                                                        >
+                                                          <GripVertical className="w-3.5 h-3.5" />
+                                                        </div>
+
+                                                        {/* Visibility toggle */}
+                                                        <button
+                                                          type="button"
+                                                          onClick={(e) => toggleBlockEnabled(block.id, e)}
+                                                          className="bg-transparent border-0 cursor-pointer min-w-[24px] min-h-[24px] flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0"
+                                                          title={block.enabled ? "Hide block" : "Show block"}
+                                                        >
+                                                          {block.enabled ? <Eye className="w-3.5 h-3.5 text-success" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                                        </button>
+
+                                                        {/* Label */}
+                                                        <span className="flex-1 text-xs font-semibold truncate">
+                                                          {block.label || 'Unnamed Block'}
+                                                        </span>
                                                       </div>
-
-                                                      {/* Visibility toggle */}
-                                                      <button
-                                                        type="button"
-                                                        onClick={(e) => toggleBlockEnabled(block.id, e)}
-                                                        className="bg-transparent border-0 cursor-pointer min-w-[24px] min-h-[24px] flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0"
-                                                        title={block.enabled ? "Hide block" : "Show block"}
-                                                      >
-                                                        {block.enabled ? <Eye className="w-3.5 h-3.5 text-success" /> : <EyeOff className="w-3.5 h-3.5" />}
-                                                      </button>
-
-                                                      {/* Label */}
-                                                      <span className="flex-1 text-xs font-semibold truncate">
-                                                        {block.label || 'Unnamed Block'}
-                                                      </span>
                                                     </div>
-                                                  </div>
-                                                )}
+                                                  );
+
+                                                  if (snapshot.isDragging && typeof document !== 'undefined') {
+                                                    return createPortal(child, document.body);
+                                                  }
+                                                  return child;
+                                                }}
                                               </Draggable>
                                             );
                                           })}
