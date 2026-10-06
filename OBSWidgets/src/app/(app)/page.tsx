@@ -1,387 +1,27 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
-import { 
-  Copy, 
-  Check, 
-  ChevronDown, 
-  ChevronUp, 
-  GripVertical, 
-  Trash2, 
-  Pencil, 
-  Clock, 
-  Timer, 
-  Tv, 
-  Monitor,
-  Radio,
-  Sliders,
-  Mic,
-  Users,
-  Sparkles,
-  ArrowRight
+  Radio, 
+  Sliders, 
+  Mic, 
+  Users, 
+  Sparkles, 
+  ArrowRight,
+  Tv,
+  Clock,
+  Layers,
+  ExternalLink
 } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { ClockPreview } from '@/components/ClockPreview';
-import { TimerPreview } from '@/components/TimerPreview';
-import ChyronPreview from '@/components/ChyronPreview';
-import { ScreenPreview } from '@/components/ScreenPreview';
-import { ObsExportCard } from '@/components/ObsExportCard';
 import { Hero1 } from '@/components/blocks/hero1';
 import { Feature43 } from '@/components/blocks/feature43';
 import { Footer2 } from '@/components/blocks/footer2';
 
-function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
-  const type = item.widget_type;
-
-  return (
-    <div 
-      aria-hidden="true" className="preview-window-container w-24 h-14 shrink-0 rounded-md overflow-hidden flex items-center justify-center border border-border bg-[#0a0a0c]"
-    >
-      {type === 'clock' && (
-        <div className="scale-[0.24] origin-center">
-          <ClockPreview config={item.config} time={time} scale={1} />
-        </div>
-      )}
-      {type === 'timer' && (
-        <div className="scale-[0.25] origin-center w-48 h-48 flex items-center justify-center">
-          <TimerPreview config={item.config} scale={0.5} />
-        </div>
-      )}
-      {(type === 'crawl' || type === 'chyron') && (
-        <div className="w-full h-full flex items-end">
-          <ChyronPreview config={item.config} scale={0.06} />
-        </div>
-      )}
-      {type === 'screen' && (
-        <div className="scale-[0.05] origin-center w-[1920px] h-[1080px]">
-          <ScreenPreview config={item.config} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSelect, onDelete, time }: any) {
-  const [expanded, setExpanded] = useState(false);
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: transform ? 1 : 0,
-    position: 'relative' as const,
-  };
-
-  const getPrimaryEmbedUrl = () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const prefix = typeof window !== 'undefined' && window.location.pathname.startsWith('/widgets') 
-      ? `${origin}/widgets/embed` 
-      : `${origin}/embed`;
-    if (item.widget_type === 'screen') {
-      const firstPageId = item.config.pages?.[0]?.id || 'starting-soon';
-      return `${prefix}/screen?id=${item.id}&page=${firstPageId}`;
-    }
-    const embedType = (item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type;
-    return `${prefix}/${embedType}?id=${item.id}`;
-  };
-
-  const primaryUrl = getPrimaryEmbedUrl();
-  const isCopied = copySuccess === item.id;
-
-  const badgeVariant = 
-    item.widget_type === 'screen' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' : 
-    item.widget_type === 'timer' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' : 
-    (item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' : 
-    'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20';
-
-  return (
-    <Card 
-      ref={setNodeRef} 
-      style={style} 
-      className="border-border bg-card shadow-sm hover:shadow-md transition-shadow p-4 flex flex-col gap-4"
-    >
-      <div className="flex justify-between items-center gap-3 flex-wrap">
-        
-        {/* Left: Drag + Select + Thumbnail + Title */}
-        <div className="flex items-center gap-3 flex-1 min-w-[280px]">
-          <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground p-1" title="Drag to reorder">
-            <GripVertical className="w-4 h-4" />
-          </div>
-          
-          <Checkbox 
-            checked={isSelected} 
-            onCheckedChange={() => onToggleSelect(item.id)} 
-            aria-label={`Select ${item.config.name || 'widget'}`}
-          />
-          
-          <WidgetMiniThumbnail item={item} time={time} />
-
-          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={`text-sm uppercase font-bold tracking-wider px-2 py-0 h-4 border ${badgeVariant}`}>
-                {(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()}
-              </Badge>
-              {item.widget_type === 'screen' && (
-                <span className="text-xs text-muted-foreground">
-                  {item.config.pages?.length || 1} Pages
-                </span>
-              )}
-            </div>
-            <h3 className="font-semibold text-sm truncate text-foreground">
-              {item.config.name || 'Unnamed Widget'}
-            </h3>
-          </div>
-        </div>
-
-        {/* Right: Quick Actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                size="sm" 
-                variant={isCopied ? "default" : "secondary"}
-                onClick={() => copyUrl(item.id, primaryUrl)}
-                className={`h-8 gap-1.5 text-xs font-medium ${isCopied ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
-              >
-                {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{isCopied ? 'Copied' : 'Copy URL'}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Copy OBS Browser Source URL</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-medium">
-            <Link href={`/${(item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type}?id=${item.id}`}>
-              <Pencil className="w-3.5 h-3.5" />
-              <span>Edit</span>
-            </Link>
-          </Button>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                size="icon" 
-                variant="ghost" 
-                onClick={() => onDelete(item.id)}
-                className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10"
-                aria-label="Delete widget"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Delete widget</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            onClick={() => setExpanded(!expanded)}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
-            aria-label="Toggle details"
-          >
-            {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </Button>
-        </div>
-      </div>
-
-      {/* Expanded Accordion: Full OBS Embed Details */}
-      {expanded && (
-        <div className="mt-1 pt-3 border-t border-border">
-          {item.widget_type === 'screen' ? (
-            <div className="flex flex-col gap-3">
-              <p className="text-sm text-muted-foreground mb-1">
-                This screenset contains multiple overlays. Copy the exact page URL you need for your stream scene:
-              </p>
-              {item.config.pages?.map((page: any) => (
-                <ObsExportCard
-                  key={page.id}
-                  title={`${page.name.toUpperCase()} PAGE EMBED`}
-                  url={`${typeof window !== 'undefined' ? window.location.origin : ''}/widgets/embed/screen?id=${item.id}&page=${page.id}`}
-                  dimensions="1920 × 1080"
-                  allowTransparency={true}
-                />
-              ))}
-            </div>
-          ) : (
-            <ObsExportCard
-              title={`${(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? 'CHYRON' : item.widget_type.toUpperCase()} EMBED URL`}
-              url={primaryUrl}
-              dimensions={(item.widget_type === 'crawl' || item.widget_type === 'chyron') ? '1920 × 200' : '1920 × 1080'}
-              allowTransparency={true}
-            />
-          )}
-        </div>
-      )}
-    </Card>
-  );
-}
-
 export default function Home() {
-  const [session, setSession] = useState<any>(null);
-  const [configsList, setConfigsList] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [copySuccess, setCopySuccess] = useState<string | null>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [time, setTime] = useState<Date | null>(null);
-  
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
-  );
-
-  useEffect(() => {
-    setTime(new Date());
-    const interval = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSession(session);
-        fetchConfigs(session.user.id);
-      } else {
-        setLoading(false);
-      }
-    });
-  }, []);
-
-  const fetchConfigs = async (userId: string) => {
-    setLoading(true);
-    const { data } = await supabase
-      .from('widget_configs')
-      .select('id, config, widget_type')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    
-    const sorted = (data || []).sort((a, b) => {
-      const orderA = a.config.sortOrder ?? 999;
-      const orderB = b.config.sortOrder ?? 999;
-      return orderA - orderB;
-    });
-
-    setConfigsList(sorted);
-    setLoading(false);
-  };
-
-  const handleDragEnd = async (event: any) => {
-    const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      const oldIndex = configsList.findIndex(i => i.id === active.id);
-      const newIndex = configsList.findIndex(i => i.id === over.id);
-      const newList = arrayMove(configsList, oldIndex, newIndex);
-      setConfigsList(newList);
-
-      for (let i = 0; i < newList.length; i++) {
-        const item = newList[i];
-        if (item.config.sortOrder !== i) {
-          item.config.sortOrder = i;
-          await supabase.from('widget_configs').update({ config: item.config }).eq('id', item.id);
-        }
-      }
-      toast.success('Widget order saved');
-    }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-  };
-
-  const deleteSingle = (id: string) => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-2 p-1">
-          <p className="m-0 text-sm font-semibold text-foreground">Delete this widget?</p>
-          <p className="m-0 text-xs text-muted-foreground">This action cannot be undone.</p>
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                await supabase.from('widget_configs').delete().eq('id', id);
-                setConfigsList(configsList.filter(c => c.id !== id));
-                setSelectedIds(selectedIds.filter(i => i !== id));
-                toast.success('Widget deleted');
-              }}
-              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ),
-      { duration: Infinity, position: 'top-center' }
-    );
-  };
-
-  const deleteSelected = async () => {
-    toast(
-      (t) => (
-        <div className="flex flex-col gap-2 p-1">
-          <p className="m-0 text-sm font-semibold text-foreground">
-            Delete {selectedIds.length} widget{selectedIds.length > 1 ? 's' : ''}?
-          </p>
-          <p className="m-0 text-xs text-muted-foreground">
-            This action cannot be undone.
-          </p>
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={async () => {
-                toast.dismiss(t.id);
-                for (const id of selectedIds) {
-                  await supabase.from('widget_configs').delete().eq('id', id);
-                }
-                setConfigsList(configsList.filter(c => !selectedIds.includes(c.id)));
-                setSelectedIds([]);
-                toast.success('Deleted successfully');
-              }}
-              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => toast.dismiss(t.id)}
-              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ),
-      { duration: Infinity, position: 'top-center' }
-    );
-  };
-
-  const copyUrl = (key: string, url: string) => {
-    navigator.clipboard.writeText(url);
-    setCopySuccess(key);
-    toast.success('OBS Browser Source URL copied to clipboard!', { position: 'top-center', duration: 2000 });
-    setTimeout(() => setCopySuccess(null), 2000);
-  };
-
   return (
     <div className="flex flex-col min-h-full w-full">
       {/* 1. Shadcnblocks Hero Section */}
@@ -389,59 +29,59 @@ export default function Home() {
         badgeText="code.getphily.io"
         badgeLabel="Handcrafted Creator & Developer Toolsets"
         heading="getphily's code stand"
-        description="Specialized web toolsets for live broadcasters, DJs, audio creators, and organizers. Built on modern web standards with zero-latency transparent OBS integration."
+        description="Specialized web toolsets for live broadcasters, DJs, audio creators, and labor organizers. Built on modern web standards with zero-latency transparent OBS integration."
         primaryButtonText="Explore Toolsets"
         primaryButtonUrl="#toolsets"
-        secondaryButtonText="Open OBS Studio"
-        secondaryButtonUrl="#broadcast-studio"
+        secondaryButtonText="Open Studio Dashboard"
+        secondaryButtonUrl="/dashboard"
       />
 
       {/* 2. Platform Toolsets Showcase Grid */}
-      <section id="toolsets" className="py-12 px-6 max-w-7xl mx-auto w-full border-b border-border">
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
+      <section id="toolsets" className="py-16 px-6 max-w-7xl mx-auto w-full border-b border-border">
+        <div className="mb-10 text-center max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 mb-3">
+            <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold px-3 py-1">
               <Sparkles className="w-3.5 h-3.5 mr-1" />
-              Four Specialized Suites
+              Four Handcrafted Suites
             </Badge>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Platform Toolsets
           </h2>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1 max-w-3xl leading-relaxed">
+          <p className="text-sm sm:text-base text-muted-foreground mt-2 leading-relaxed">
             Welcome to <strong>getphily&apos;s code stand</strong> at <code>code.getphily.io</code>. Select a toolset below to launch active production studios or preview upcoming creator utilities.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Toolset 1: OBS Stream Studio */}
-          <Card className="border-border bg-card shadow-xs hover:border-primary/50 transition-all flex flex-col p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                <Radio className="w-5 h-5" />
+          <Card className="border-border bg-card shadow-xs hover:border-primary/50 transition-all flex flex-col p-6 rounded-2xl">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Radio className="w-6 h-6" />
               </div>
-              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold">
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
                 Ready • Live
               </Badge>
             </div>
-            <h3 className="font-extrabold text-lg text-foreground mb-1">
+            <h3 className="font-extrabold text-xl text-foreground mb-2">
               OBS Stream Studio
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
-              Real-time broadcast graphics, animated lower thirds, news tickers, stream clocks, count-down timers, and multi-page scene sets.
+            <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
+              Real-time broadcast graphics, animated lower thirds, news tickers, stream clocks, countdown timers, and multi-page scene sets with transparent OBS browser embeds.
             </p>
-            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
-              <Button asChild size="sm" className="w-full font-bold text-xs gap-1.5 shadow-xs">
-                <a href="#broadcast-studio">
-                  <span>Manage Widgets</span>
+            <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
+              <Button asChild size="default" className="w-full font-bold text-xs uppercase tracking-wide gap-1.5 shadow-xs">
+                <Link href="/dashboard">
+                  <span>Open Studio Dashboard</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </Button>
-              <div className="grid grid-cols-2 gap-1.5 text-center">
-                <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-1">
+              <div className="grid grid-cols-2 gap-1.5 text-center mt-1">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs px-1">
                   <Link href="/crawl">Chyron</Link>
                 </Button>
-                <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-1">
+                <Button asChild variant="outline" size="sm" className="h-8 text-xs px-1">
                   <Link href="/clock">Clock</Link>
                 </Button>
               </div>
@@ -449,257 +89,93 @@ export default function Home() {
           </Card>
 
           {/* Toolset 2: Kalimotxo 3D Visualizer */}
-          <Card className="border-border bg-card shadow-xs hover:border-[#FF5900]/50 transition-all flex flex-col p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-[#FF5900]/10 text-[#FF5900] flex items-center justify-center shrink-0">
-                <Sliders className="w-5 h-5" />
+          <Card className="border-border bg-card shadow-xs hover:border-[#FF5900]/50 transition-all flex flex-col p-6 rounded-2xl">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-[#FF5900]/10 text-[#FF5900] flex items-center justify-center shrink-0">
+                <Sliders className="w-6 h-6" />
               </div>
-              <Badge className="bg-[#FF5900]/15 text-[#FF5900] border border-[#FF5900]/30 text-[10px] font-mono font-bold">
+              <Badge className="bg-[#FF5900]/15 text-[#FF5900] border border-[#FF5900]/30 text-xs font-mono font-bold">
                 FLX10 Stage • Live
               </Badge>
             </div>
-            <h3 className="font-extrabold text-lg text-foreground mb-1">
+            <h3 className="font-extrabold text-xl text-foreground mb-2">
               KALIMOTXO
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+            <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
               Tactile Pioneer DJ DDJ-FLX10 inspired audio-reactive 3D graphics studio. Web Audio loopback, 3-band stems isolation, and 16:9 OBS canvas.
             </p>
-            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
-              <Button asChild size="sm" className="w-full bg-[#FF5900] hover:bg-[#FF5900]/90 text-black font-extrabold text-xs uppercase tracking-wider gap-1.5 shadow-xs">
+            <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
+              <Button asChild size="default" className="w-full bg-[#FF5900] hover:bg-[#FF5900]/90 text-black font-extrabold text-xs uppercase tracking-wider gap-1.5 shadow-xs">
                 <Link href="/kalimotxo">
                   <span>Launch Kalimotxo</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </Button>
-              <div className="text-[11px] text-center text-muted-foreground font-mono">
+              <div className="text-xs text-center text-muted-foreground font-mono mt-1">
                 16:9 Three.js Audio Canvas
               </div>
             </div>
           </Card>
 
           {/* Toolset 3: Podcast Tools (Placeholder) */}
-          <Card className="border-border bg-card shadow-xs hover:border-amber-500/40 transition-all flex flex-col p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <Mic className="w-5 h-5" />
+          <Card className="border-border bg-card shadow-xs hover:border-amber-500/40 transition-all flex flex-col p-6 rounded-2xl">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Mic className="w-6 h-6" />
               </div>
-              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold">
                 In Development
               </Badge>
             </div>
-            <h3 className="font-extrabold text-lg text-foreground mb-1">
+            <h3 className="font-extrabold text-xl text-foreground mb-2">
               Podcast Tools
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+            <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
               Automated chapter markers for YouTube and Spotify, ID3v2 tag chunking, waveform teaser clips, and syndicated RSS show notes.
             </p>
-            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
-              <Button asChild variant="outline" size="sm" className="w-full font-semibold text-xs gap-1.5">
+            <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
+              <Button asChild variant="outline" size="default" className="w-full font-semibold text-xs gap-1.5">
                 <Link href="/podcast-tools">
-                  <span>Preview Toolset</span>
+                  <span>Preview Roadmap</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </Button>
-              <div className="text-[11px] text-center text-muted-foreground">
-                Roadmap preview available
+              <div className="text-xs text-center text-muted-foreground mt-1">
+                Publishing utilities preview
               </div>
             </div>
           </Card>
 
           {/* Toolset 4: Union Tools (Placeholder) */}
-          <Card className="border-border bg-card shadow-xs hover:border-blue-500/40 transition-all flex flex-col p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                <Users className="w-5 h-5" />
+          <Card className="border-border bg-card shadow-xs hover:border-blue-500/40 transition-all flex flex-col p-6 rounded-2xl">
+            <div className="flex items-start justify-between gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <Users className="w-6 h-6" />
               </div>
-              <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px] font-semibold">
+              <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold">
                 Solidarity Suite
               </Badge>
             </div>
-            <h3 className="font-extrabold text-lg text-foreground mb-1">
+            <h3 className="font-extrabold text-xl text-foreground mb-2">
               Union Tools
             </h3>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+            <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
               Open digital utilities for stewards and bargaining committees. Side-by-side CBA diffing, grievance deadline tracking, and wage step modeling.
             </p>
-            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
-              <Button asChild variant="outline" size="sm" className="w-full font-semibold text-xs gap-1.5">
+            <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
+              <Button asChild variant="outline" size="default" className="w-full font-semibold text-xs gap-1.5">
                 <Link href="/union-tools">
-                  <span>Preview Toolset</span>
+                  <span>Preview Roadmap</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </Button>
-              <div className="text-[11px] text-center text-muted-foreground">
+              <div className="text-xs text-center text-muted-foreground mt-1">
                 Open source & pro-labor
               </div>
             </div>
           </Card>
         </div>
       </section>
-
-      {/* 3. Main Studio Dashboard & Saved Widgets */}
-      <div id="broadcast-studio" className="p-6 max-w-7xl mx-auto w-full">
-        {/* Header */}
-        <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
-                OBS Stream Studio
-              </Badge>
-            </div>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Broadcast Studio Dashboard</h2>
-            <p className="text-sm text-muted-foreground mt-1">Create, preview, and manage your live stream OBS browser sources.</p>
-          </div>
-        </div>
-
-        {/* Quick Launch / Create New Widgets Section */}
-        <div className="mb-8">
-          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
-            Create New Widget
-          </h3>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* Clock Widget Card */}
-            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md overflow-hidden flex items-center justify-center">
-                <div className="font-mono text-2xl text-amber-500 font-bold">
-                  12:34
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-primary" />
-                  <h4 className="font-semibold text-sm text-foreground">Clock Widget</h4>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Digital stream clock with timezones, seconds, dates, and glowing neon FX.
-                </p>
-                <Button asChild size="sm" className="w-full mt-auto">
-                  <Link href="/clock">Manage Clocks</Link>
-                </Button>
-              </div>
-            </Card>
-
-            {/* Timer Widget Card */}
-            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
-                <div className="relative w-16 h-16 flex items-center justify-center">
-                  <svg width="64" height="64" className="absolute top-0 left-0">
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" className="text-border" strokeWidth="4" />
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="4" strokeDasharray="175" strokeDashoffset="42" strokeLinecap="round" transform="rotate(-90 32 32)" />
-                  </svg>
-                  <span className="text-sm font-bold text-foreground">4:47</span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <div className="flex items-center gap-2">
-                  <Timer className="w-4 h-4 text-primary" />
-                  <h4 className="font-semibold text-sm text-foreground">Timer Widget</h4>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Countdown timer and stopwatch with SVG progress ring and chime alarms.
-                </p>
-                <Button asChild size="sm" className="w-full mt-auto">
-                  <Link href="/timer">Manage Timers</Link>
-                </Button>
-              </div>
-            </Card>
-
-            {/* Chyron Builder Card */}
-            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex flex-col justify-end items-stretch overflow-hidden">
-                <div className="bg-[#1a1a2e] w-full border-l-4 border-red-500 px-2 py-1 flex items-center justify-between">
-                  <span className="text-white text-[9px] font-extrabold tracking-wide">BREAKING NEWS</span>
-                  <span className="text-white text-[8px] font-mono bg-red-600 px-1 py-0.5 rounded font-bold">LIVE</span>
-                </div>
-                <div className="bg-[#0f172a] w-full border-t-2 border-red-500 px-2 py-0.5 overflow-hidden">
-                  <span className="text-white text-[8px] font-semibold whitespace-nowrap">SCROLLING TICKER TEXT ★</span>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <div className="flex items-center gap-2">
-                  <Tv className="w-4 h-4 text-primary" />
-                  <h4 className="font-semibold text-sm text-foreground">Chyron Builder</h4>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Broadcast lower thirds with headlines, logo bug, clock, and scrolling crawl.
-                </p>
-                <Button asChild size="sm" className="w-full mt-auto">
-                  <Link href="/crawl">Open Builder</Link>
-                </Button>
-              </div>
-            </Card>
-
-            {/* Screen Sets Card */}
-            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-base font-extrabold text-blue-500 uppercase leading-tight">STARTING SOON</div>
-                  <div className="text-sm text-muted-foreground mt-0.5">Stream begins shortly...</div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <div className="flex items-center gap-2">
-                  <Monitor className="w-4 h-4 text-primary" />
-                  <h4 className="font-semibold text-sm text-foreground">Screen Sets</h4>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                  Full-screen Starting Soon, BRB, and Goodbye overlays with countdowns.
-                </p>
-                <Button asChild size="sm" className="w-full mt-auto">
-                  <Link href="/screen">Manage Screens</Link>
-                </Button>
-              </div>
-            </Card>
-
-          </div>
-        </div>
-
-        {/* Saved Widgets Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              Your Saved Widgets ({configsList.length})
-            </h3>
-
-            {selectedIds.length > 0 && (
-              <Button variant="destructive" size="sm" onClick={deleteSelected} className="gap-1.5">
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete Selected ({selectedIds.length})</span>
-              </Button>
-            )}
-          </div>
-          
-          {loading ? (
-            <p className="text-sm text-muted-foreground">Loading your saved widgets...</p>
-          ) : configsList.length === 0 ? (
-            <Card className="text-center py-12 px-6 border-dashed border-border bg-card">
-              <p className="text-sm font-medium text-foreground mb-1">No saved widgets yet.</p>
-              <p className="text-sm text-muted-foreground">Click any of the widget types above to configure and save your first OBS overlay!</p>
-            </Card>
-          ) : (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={configsList.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                <div className="flex flex-col gap-3.5">
-                  {configsList.map((item) => (
-                    <SortableWidgetCard 
-                      key={item.id} 
-                      item={item} 
-                      copyUrl={copyUrl} 
-                      copySuccess={copySuccess} 
-                      isSelected={selectedIds.includes(item.id)}
-                      onToggleSelect={toggleSelect}
-                      onDelete={deleteSingle}
-                      time={time}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          )}
-        </div>
-      </div>
 
       {/* 3. Shadcnblocks Feature Grid Section */}
       <Feature43 />

@@ -119,10 +119,10 @@ export default function Navbar() {
             All Toolsets
           </Link>
           <Link 
-            href="/#broadcast-studio" 
+            href="/dashboard" 
             className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
           >
-            OBS Studio
+            Dashboard
           </Link>
           <Link 
             href="/kalimotxo" 

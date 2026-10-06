@@ -19,7 +19,12 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { isOpen } = useMobileNav();
 
+  if (pathname === '/') {
+    return null;
+  }
+
   const platformLinks = [
+    { name: 'User Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Code Stand Hub', path: '/', icon: LayoutDashboard },
     { name: 'Kalimotxo Visuals', path: '/kalimotxo', icon: Sliders },
     { name: 'Podcast Tools', path: '/podcast-tools', icon: Mic },

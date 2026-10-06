@@ -58,7 +58,7 @@ export function Login2Block() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${origin}/`,
+          redirectTo: `${origin}/auth/callback`,
         },
       });
       if (error) throw error;
@@ -78,7 +78,7 @@ export function Login2Block() {
             <Radio className="w-4 h-4" />
           </div>
           <span className="font-extrabold text-lg tracking-tight text-foreground">
-            OBSWidgets Studio
+            getphily&apos;s code stand
           </span>
         </Link>
         <Link 
@@ -86,7 +86,7 @@ export function Login2Block() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to App</span>
+          <span>Back to Stand</span>
         </Link>
       </header>
 
