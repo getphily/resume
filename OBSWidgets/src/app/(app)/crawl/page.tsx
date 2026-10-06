@@ -585,13 +585,9 @@ function CrawlBlocksManager({
 function CrawlProperties({
   config,
   onChange,
-  expandedBlockId,
-  setExpandedBlockId,
 }: {
   config: ChyronConfig;
   onChange: (c: ChyronConfig) => void;
-  expandedBlockId?: string | null;
-  setExpandedBlockId?: (id: string | null) => void;
 }) {
   const cr = config.crawl;
   const updateCrawl = (patch: Partial<typeof cr>) => onChange({ ...config, crawl: { ...cr, ...patch } });
@@ -713,17 +709,75 @@ function CrawlProperties({
       </Card>
 
       {/* 2. Elegantly Nested Crawl Blocks Manager */}
-      <CrawlBlocksManager 
-        config={config} 
-        onChange={onChange}
-        expandedId={expandedBlockId}
-        setExpandedId={setExpandedBlockId}
-      />
+      
     </div>
   );
 }
 
 // ─── Properties: Global Layout ─────────────────────────────────────
+
+function CrawlBlockProperties({
+  config,
+  onChange,
+  blockId,
+}: {
+  config: ChyronConfig;
+  onChange: (c: ChyronConfig) => void;
+  blockId: string;
+}) {
+  const cr = config.crawl;
+  const block = cr.blocks.find(b => b.id === blockId);
+  if (!block) return null;
+
+  const updateBlock = (patch: Partial<CrawlBlock>) => {
+    const newBlocks = cr.blocks.map(b => b.id === blockId ? { ...b, ...patch } : b);
+    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
+  };
+
+  const deleteBlock = () => {
+    if (cr.blocks.length <= 1) {
+      toast.error('You need at least one crawl block');
+      return;
+    }
+    onChange({ ...config, crawl: { ...cr, blocks: cr.blocks.filter(b => b.id !== blockId) } });
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Card className="border-border bg-card p-5 flex flex-col gap-4 relative group">
+        <div className="flex justify-between items-center mb-2">
+          <Input 
+            aria-label="Block Label"
+            value={block.label} 
+            onChange={e => updateBlock({ label: e.target.value })}
+            className="h-8 font-bold text-base border-transparent hover:border-border focus-visible:border-border px-1.5 -ml-1.5 bg-transparent shadow-none"
+          />
+          <Button 
+            variant="ghost" 
+            size="icon-sm" 
+            onClick={deleteBlock}
+            className="text-muted-foreground hover:text-destructive shrink-0"
+            aria-label="Delete block"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+        
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-foreground">Content (Plain Text or Markdown)</label>
+          <textarea
+            aria-label="Block Content"
+            value={block.text}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateBlock({ text: e.target.value })}
+            placeholder="Type your crawl text here..."
+            className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+          />
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
   const ly = config.layout;
   const update = (patch: Partial<typeof ly>) => onChange({ ...config, layout: { ...ly, ...patch } });
@@ -1034,6 +1088,14 @@ function ChyronBuilderContent() {
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     
+    if (result.source.droppableId === 'crawl-blocks-list') {
+      const blocks = Array.from(config.crawl.blocks);
+      const [reorderedBlock] = blocks.splice(result.source.index, 1);
+      blocks.splice(result.destination.index, 0, reorderedBlock);
+      setConfig({ ...config, crawl: { ...config.crawl, blocks } });
+      return;
+    }
+
     if (result.source.droppableId === 'layers-list') {
       const items = Array.from(config.layerOrder);
       ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
@@ -1073,9 +1135,8 @@ function ChyronBuilderContent() {
         blocks: [...config.crawl.blocks, newBlock],
       },
     });
-    setSelectedLayer('crawl');
+    setSelectedLayer(`crawlBlock:${newBlock.id}`);
     setSelectedPanel('layer');
-    setExpandedBlockId(newBlock.id);
   };
 
   if (!session) {
@@ -1338,53 +1399,74 @@ function ChyronBuilderContent() {
                                 {/* NESTED CRAWL BLOCKS UNDERNEATH CRAWL TICKER IN LAYERS PANEL */}
                                 {layerId === 'crawl' && isCrawlExpanded && (
                                   <div className="flex flex-col pl-8 pr-3 pb-2 gap-1 relative">
-                                    {/* Vertical tree hierarchy line */}
                                     <div className="absolute left-6 top-0 bottom-3 w-px bg-border" />
+                                    
+                                    <Droppable droppableId="crawl-blocks-list">
+                                      {(provided) => (
+                                        <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-col gap-1 w-full">
+                                          {config.crawl.blocks.map((block, idx) => {
+                                            const isBlockActive = selectedPanel === 'layer' && selectedLayer === `crawlBlock:${block.id}`;
 
-                                    {config.crawl.blocks.map((block) => {
-                                      const isBlockActive = selectedPanel === 'layer' && selectedLayer === 'crawl' && expandedBlockId === block.id;
+                                            return (
+                                              <Draggable key={block.id} draggableId={`crawlBlock-${block.id}`} index={idx}>
+                                                {(provided, snapshot) => (
+                                                  <div
+                                                    ref={provided.innerRef}
+                                                    {...provided.draggableProps}
+                                                    style={provided.draggableProps.style}
+                                                  >
+                                                    <div
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedLayer(`crawlBlock:${block.id}`);
+                                                        setSelectedPanel('layer');
+                                                      }}
+                                                      className={cn(
+                                                        "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-xs transition-colors border-l-2 group/cblock",
+                                                        isBlockActive
+                                                          ? "bg-primary/10 border-primary text-primary font-bold"
+                                                          : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground font-medium",
+                                                        !block.enabled && "opacity-50"
+                                                      )}
+                                                    >
+                                                      <div
+                                                        {...provided.dragHandleProps}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="text-muted-foreground/30 hover:text-foreground/80 cursor-grab active:cursor-grabbing p-1 -ml-1 flex items-center justify-center rounded-md hover:bg-muted transition-colors opacity-0 group-hover/cblock:opacity-100 focus-within:opacity-100"
+                                                        aria-label="Drag to reorder"
+                                                      >
+                                                        <GripVertical className="w-3 h-3" />
+                                                      </div>
+                                                      <button
+                                                        type="button"
+                                                        onClick={(e) => toggleBlockEnabled(block.id, e)}
+                                                        className="bg-transparent border-0 cursor-pointer p-1.5 w-6 h-6 flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0 -ml-1"
+                                                        title={block.enabled ? "Hide block" : "Show block"}
+                                                      >
+                                                        {block.enabled ? <Eye className="w-3 h-3 text-success" /> : <EyeOff className="w-3 h-3" />}
+                                                      </button>
 
-                                      return (
-                                        <div
-                                          key={block.id}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedLayer('crawl');
-                                            setSelectedPanel('layer');
-                                            setExpandedBlockId(block.id);
-                                          }}
-                                          className={cn(
-                                            "flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer text-xs transition-colors border-l-2",
-                                            isBlockActive
-                                              ? "bg-primary/10 border-primary text-primary font-bold"
-                                              : "border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground font-medium",
-                                            !block.enabled && "opacity-50"
-                                          )}
-                                        >
-                                          <button
-                                            type="button"
-                                            onClick={(e) => toggleBlockEnabled(block.id, e)}
-                                            className="bg-transparent border-0 cursor-pointer p-0 text-muted-foreground hover:text-foreground shrink-0"
-                                            title={block.enabled ? "Hide block" : "Show block"}
-                                          >
-                                            {block.enabled ? <Eye className="w-3 h-3 text-success" /> : <EyeOff className="w-3 h-3" />}
-                                          </button>
-
-                                          <span className="flex-1 truncate">
-                                            {block.label || 'Unnamed Block'}
-                                          </span>
+                                                      <span className="flex-1 truncate">
+                                                        {block.label || 'Unnamed Block'}
+                                                      </span>
+                                                    </div>
+                                                  </div>
+                                                )}
+                                              </Draggable>
+                                            );
+                                          })}
+                                          {provided.placeholder}
                                         </div>
-                                      );
-                                    })}
+                                      )}
+                                    </Droppable>
 
-                                    {/* Quick Add Block in sidebar */}
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         addBlockFromSidebar();
                                       }}
-                                      className="flex items-center gap-1 px-2 py-1.5 mt-1 border border-dashed border-border rounded-md text-sm font-semibold text-primary hover:bg-primary/5 cursor-pointer text-left transition-colors"
+                                      className="flex items-center gap-1 px-2 py-1.5 mt-1 border border-dashed border-border rounded-md text-sm font-semibold text-primary hover:bg-primary/5 cursor-pointer text-left transition-colors ml-4"
                                     >
                                       <span>+</span> Add Block
                                     </button>
@@ -1504,12 +1586,17 @@ function ChyronBuilderContent() {
           {selectedPanel === 'layer' && selectedLayer === 'clock' && (
             <ClockProperties config={config} onChange={setConfig} />
           )}
-          {((selectedPanel === 'layer' && selectedLayer === 'crawl') || selectedPanel === 'crawlBlocks') && (
+          {(selectedPanel === 'layer' && selectedLayer === 'crawl') && (
             <CrawlProperties 
               config={config} 
               onChange={setConfig} 
-              expandedBlockId={expandedBlockId}
-              setExpandedBlockId={setExpandedBlockId}
+            />
+          )}
+          {(selectedPanel === 'layer' && selectedLayer?.startsWith('crawlBlock:')) && (
+            <CrawlBlockProperties 
+              config={config} 
+              onChange={setConfig} 
+              blockId={selectedLayer.replace('crawlBlock:', '')}
             />
           )}
           {selectedPanel === 'layout' && (
