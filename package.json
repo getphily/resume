@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "postinstall": "vite build && cd OBSWidgets && npm install && npm run build",
+    "postinstall": "vite build",
+    "build:widgets": "cd OBSWidgets && npm install && npm run build",
     "dev:server": "nodemon server.js",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
