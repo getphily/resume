@@ -443,23 +443,16 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
   );
 }
 
-// ─── Properties: Crawl + Block Manager ─────────────────────────────
-function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
+// ─── Properties: Crawl Blocks Manager ──────────────────────────────
+function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set());
   const cr = config.crawl;
-  const updateCrawl = (patch: Partial<typeof cr>) => onChange({ ...config, crawl: { ...cr, ...patch } });
-
-  const addBlock = () => {
-    const newBlock: CrawlBlock = {
-      id: `block-${Date.now()}`,
-      label: `Block ${cr.blocks.length + 1}`,
-      text: 'NEW CRAWL TEXT',
-      enabled: true,
-    };
-    updateCrawl({ blocks: [...cr.blocks, newBlock] });
-  };
 
   const updateBlock = (id: string, patch: Partial<CrawlBlock>) => {
-    updateCrawl({ blocks: cr.blocks.map(b => b.id === id ? { ...b, ...patch } : b) });
+    const newBlocks = cr.blocks.map(b => b.id === id ? { ...b, ...patch } : b);
+    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
   };
 
   const deleteBlock = (id: string) => {
@@ -467,22 +460,249 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
       toast.error('You need at least one crawl block');
       return;
     }
-    updateCrawl({ blocks: cr.blocks.filter(b => b.id !== id) });
+    onChange({ ...config, crawl: { ...cr, blocks: cr.blocks.filter(b => b.id !== id) } });
   };
 
-  const moveBlock = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= cr.blocks.length) return;
+  const addBlockAt = (index: number) => {
+    const newBlock: CrawlBlock = {
+      id: `block-${Date.now()}`,
+      label: `Block ${cr.blocks.length + 1}`,
+      text: 'NEW CRAWL TEXT',
+      enabled: true,
+    };
     const newBlocks = [...cr.blocks];
-    const [moved] = newBlocks.splice(fromIndex, 1);
-    newBlocks.splice(toIndex, 0, moved);
-    updateCrawl({ blocks: newBlocks });
+    newBlocks.splice(index, 0, newBlock);
+    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
+    setExpandedId(newBlock.id);
+  };
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const newBlocks = Array.from(cr.blocks);
+    const [reorderedItem] = newBlocks.splice(result.source.index, 1);
+    newBlocks.splice(result.destination.index, 0, reorderedItem);
+    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
+  };
+
+  const toggleSelection = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSet = new Set(selectedBlockIds);
+    if (newSet.has(id)) newSet.delete(id);
+    else newSet.add(id);
+    setSelectedBlockIds(newSet);
+  };
+
+  const bulkDeleteBlocks = () => {
+    let remainingBlocks = cr.blocks.filter(b => !selectedBlockIds.has(b.id));
+    if (remainingBlocks.length === 0) {
+      remainingBlocks = [{
+        id: `block-${Date.now()}`,
+        label: `Block 1`,
+        text: 'NEW CRAWL TEXT',
+        enabled: true,
+      }];
+    }
+    onChange({ ...config, crawl: { ...cr, blocks: remainingBlocks } });
+    setShowBulkDeleteConfirm(false);
+    setSelectedBlockIds(new Set());
+    setExpandedId(null);
   };
 
   return (
+    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Flex align="center" gap="2">
+          <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCKS</h3>
+          <Badge size="1" variant="surface" color="indigo">
+            {cr.blocks.length} {cr.blocks.length === 1 ? 'Block' : 'Blocks'}
+          </Badge>
+        </Flex>
+        <Button onClick={() => addBlockAt(0)} size="1" color="amber" variant="solid" style={{ fontWeight: 700 }}>
+          + ADD BLOCK
+        </Button>
+      </div>
+
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="crawl-blocks-accordion">
+          {(provided) => (
+            <div {...provided.droppableProps} ref={provided.innerRef} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {cr.blocks.map((block, i) => (
+                  <Draggable key={block.id} draggableId={block.id} index={i}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        style={{
+                          display: 'flex', flexDirection: 'column',
+                          backgroundColor: block.enabled ? 'var(--bg-panel)' : 'var(--bg-main)',
+                          borderRadius: '8px', border: '1px solid var(--border-subtle)',
+                          opacity: block.enabled ? 1 : 0.6,
+                          overflow: 'hidden',
+                          ...provided.draggableProps.style,
+                        }}
+                      >
+                        {/* Header (Accordion Toggle) */}
+                        <div
+                          onClick={() => setExpandedId(expandedId === block.id ? null : block.id)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '10px',
+                            padding: '12px 16px', cursor: 'pointer',
+                            backgroundColor: expandedId === block.id ? 'var(--accent-subtle, var(--bg-main))' : 'transparent',
+                          }}
+                        >
+                          <div {...provided.dragHandleProps} style={{ color: 'var(--text-muted)', cursor: 'grab', display: 'flex', alignItems: 'center' }}>
+                            <DragHandleDots2Icon />
+                          </div>
+
+                          <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedBlockIds.has(block.id)}
+                              onChange={(e) => {
+                                const newSet = new Set(selectedBlockIds);
+                                if (e.target.checked) newSet.add(block.id);
+                                else newSet.delete(block.id);
+                                setSelectedBlockIds(newSet);
+                              }}
+                              style={{ cursor: 'pointer', width: '16px', height: '16px' }}
+                            />
+                          </div>
+
+                          <button
+                            onClick={e => { e.stopPropagation(); updateBlock(block.id, { enabled: !block.enabled }); }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
+                          >
+                            <EyeIcon visible={block.enabled} />
+                          </button>
+
+                          <span style={{ flex: 1, fontWeight: 700, fontSize: '13px', color: 'var(--text-primary)' }}>
+                            {block.label || 'Unnamed Block'}
+                          </span>
+
+                          <span style={{ color: 'var(--text-muted)', transform: expandedId === block.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+                            ▼
+                          </span>
+                        </div>
+
+                        {/* Body */}
+                        {expandedId === block.id && (
+                          <div style={{ padding: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LABEL</label>
+                              <TextField.Root
+                                size="2"
+                                value={block.label}
+                                onChange={e => updateBlock(block.id, { label: e.target.value })}
+                              />
+                            </div>
+
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CRAWL TEXT</label>
+                              <textarea
+                                value={block.text}
+                                onChange={e => updateBlock(block.id, { text: e.target.value })}
+                                rows={3}
+                                className="form-input"
+                                style={{ 
+                                  resize: 'vertical', 
+                                  fontSize: '14px', 
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  backgroundColor: 'var(--bg-input)',
+                                  border: '1px solid var(--border-input)',
+                                  color: 'var(--text-primary)',
+                                  borderRadius: '6px'
+                                }}
+                              />
+                            </div>
+
+                            <Button
+                              onClick={() => deleteBlock(block.id)}
+                              size="1"
+                              color="red"
+                              variant="soft"
+                              style={{ width: '100%', marginTop: '5px' }}
+                            >
+                              DELETE BLOCK
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+              ))}
+
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-rigid)' }}>
+        {selectedBlockIds.size > 0 && (
+          !showBulkDeleteConfirm ? (
+            <Button
+              onClick={() => setShowBulkDeleteConfirm(true)}
+              size="2"
+              color="red"
+              variant="outline"
+              style={{ width: '100%' }}
+            >
+              DELETE SELECTED ({selectedBlockIds.size})
+            </Button>
+          ) : (
+            <Box p="3" style={{ backgroundColor: 'var(--red-3)', borderRadius: '8px', border: '1px solid var(--red-6)' }}>
+              <Text size="2" weight="bold" color="red" mb="2" as="p">
+                Are you sure you want to delete {selectedBlockIds.size} block{selectedBlockIds.size !== 1 ? 's' : ''}? This action cannot be undone.
+              </Text>
+              <Flex gap="2">
+                <Button
+                  onClick={bulkDeleteBlocks}
+                  size="2"
+                  color="red"
+                  variant="solid"
+                  style={{ flex: 1, cursor: 'pointer' }}
+                >
+                  YES, DELETE
+                </Button>
+                <Button
+                  onClick={() => setShowBulkDeleteConfirm(false)}
+                  size="2"
+                  color="red"
+                  variant="soft"
+                  style={{ flex: 1, cursor: 'pointer' }}
+                >
+                  CANCEL
+                </Button>
+              </Flex>
+            </Box>
+          )
+        )}
+        {selectedBlockIds.size === 0 && (
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
+            Select blocks to bulk delete
+          </p>
+        )}
+      </div>
+    </Card>
+  );
+}
+
+// ─── Properties: Crawl + Nested Block Manager ──────────────────────
+function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
+  const cr = config.crawl;
+  const updateCrawl = (patch: Partial<typeof cr>) => onChange({ ...config, crawl: { ...cr, ...patch } });
+
+  return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Crawl Settings */}
+      {/* 1. Crawl Settings */}
       <Card style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL SETTINGS</h3>
+        <Flex justify="between" align="center">
+          <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL SETTINGS</h3>
+          <Badge size="1" color={cr.enabled ? "green" : "gray"} variant="surface">
+            {cr.enabled ? "Active" : "Disabled"}
+          </Badge>
+        </Flex>
         
         <div style={{ 
           display: 'flex', 
@@ -589,238 +809,10 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
 
         </div>
       </Card>
+
+      {/* 2. Elegantly Nested Crawl Blocks Manager */}
+      <CrawlBlocksManager config={config} onChange={onChange} />
     </div>
-  );
-}
-
-// ─── Properties: Crawl Blocks Manager ──────────────────────────────
-function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
-  const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set());
-  const cr = config.crawl;
-
-  const updateBlock = (id: string, patch: Partial<CrawlBlock>) => {
-    const newBlocks = cr.blocks.map(b => b.id === id ? { ...b, ...patch } : b);
-    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
-  };
-
-  const deleteBlock = (id: string) => {
-    if (cr.blocks.length <= 1) {
-      toast.error('You need at least one crawl block');
-      return;
-    }
-    onChange({ ...config, crawl: { ...cr, blocks: cr.blocks.filter(b => b.id !== id) } });
-  };
-
-  const addBlockAt = (index: number) => {
-    const newBlock: CrawlBlock = {
-      id: `block-${Date.now()}`,
-      label: `Block ${cr.blocks.length + 1}`,
-      text: 'NEW CRAWL TEXT',
-      enabled: true,
-    };
-    const newBlocks = [...cr.blocks];
-    newBlocks.splice(index, 0, newBlock);
-    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
-    setExpandedId(newBlock.id);
-  };
-
-  const onDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const newBlocks = Array.from(cr.blocks);
-    const [reorderedItem] = newBlocks.splice(result.source.index, 1);
-    newBlocks.splice(result.destination.index, 0, reorderedItem);
-    onChange({ ...config, crawl: { ...cr, blocks: newBlocks } });
-  };
-
-  const toggleSelection = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newSet = new Set(selectedBlockIds);
-    if (newSet.has(id)) newSet.delete(id);
-    else newSet.add(id);
-    setSelectedBlockIds(newSet);
-  };
-
-  const bulkDeleteBlocks = () => {
-    let remainingBlocks = cr.blocks.filter(b => !selectedBlockIds.has(b.id));
-    if (remainingBlocks.length === 0) {
-      remainingBlocks = [{
-        id: `block-${Date.now()}`,
-        label: `Block 1`,
-        text: 'NEW CRAWL TEXT',
-        enabled: true,
-      }];
-    }
-    onChange({ ...config, crawl: { ...cr, blocks: remainingBlocks } });
-    setShowBulkDeleteConfirm(false);
-    setSelectedBlockIds(new Set());
-    setExpandedId(null);
-  };
-
-  return (
-    <Card style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h3 style={{ margin: 0, color: 'var(--text-secondary)' }}>CRAWL BLOCKS</h3>
-        <Button onClick={() => addBlockAt(0)} size="1" color="amber" variant="solid" style={{ fontWeight: 700 }}>
-          + ADD BLOCK
-        </Button>
-      </div>
-
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="crawl-blocks-accordion">
-          {(provided) => (
-            <div {...provided.droppableProps} ref={provided.innerRef} style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {cr.blocks.map((block, i) => (
-                  <Draggable key={block.id} draggableId={block.id} index={i}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        style={{
-                          display: 'flex', flexDirection: 'column',
-                          backgroundColor: block.enabled ? '#f8fafc' : '#f1f5f9',
-                          borderRadius: '8px', border: '1px solid var(--border-subtle)',
-                          opacity: block.enabled ? 1 : 0.6,
-                          overflow: 'hidden',
-                          ...provided.draggableProps.style,
-                        }}
-                      >
-                        {/* Header (Accordion Toggle) */}
-                        <div
-                          onClick={() => setExpandedId(expandedId === block.id ? null : block.id)}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: '10px',
-                            padding: '12px 16px', cursor: 'pointer',
-                            backgroundColor: expandedId === block.id ? 'var(--module-grey)' : 'transparent',
-                          }}
-                        >
-                          <div {...provided.dragHandleProps} style={{ color: 'var(--text-muted)', cursor: 'grab', display: 'flex', alignItems: 'center' }}>
-                            <DragHandleDots2Icon />
-                          </div>
-
-                          <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={selectedBlockIds.has(block.id)}
-                              onChange={(e) => {
-                                const newSet = new Set(selectedBlockIds);
-                                if (e.target.checked) newSet.add(block.id);
-                                else newSet.delete(block.id);
-                                setSelectedBlockIds(newSet);
-                              }}
-                              style={{ cursor: 'pointer', width: '16px', height: '16px' }}
-                            />
-                          </div>
-
-                          <button
-                            onClick={e => { e.stopPropagation(); updateBlock(block.id, { enabled: !block.enabled }); }}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', flexShrink: 0 }}
-                          >
-                            <EyeIcon visible={block.enabled} />
-                          </button>
-
-                          <span style={{ flex: 1, fontWeight: 700, fontSize: '13px', color: 'var(--text-primary)' }}>
-                            {block.label || 'Unnamed Block'}
-                          </span>
-
-                          <span style={{ color: 'var(--text-muted)', transform: expandedId === block.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                            ▼
-                          </span>
-                        </div>
-
-                        {/* Body */}
-                        {expandedId === block.id && (
-                          <div style={{ padding: '16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>LABEL</label>
-                              <TextField.Root
-                                size="2"
-                                value={block.label}
-                                onChange={e => updateBlock(block.id, { label: e.target.value })}
-                              />
-                            </div>
-
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>CRAWL TEXT</label>
-                              <textarea
-                                value={block.text}
-                                onChange={e => updateBlock(block.id, { text: e.target.value })}
-                                rows={3}
-                                className="form-input"
-                                style={{ resize: 'vertical', fontSize: '14px', width: '100%' }}
-                              />
-                            </div>
-
-                            <Button
-                              onClick={() => deleteBlock(block.id)}
-                              size="1"
-                              color="red"
-                              variant="soft"
-                              style={{ width: '100%', marginTop: '5px' }}
-                            >
-                              DELETE BLOCK
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </Draggable>
-              ))}
-
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-
-      <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-rigid)' }}>
-        {selectedBlockIds.size > 0 && (
-          !showBulkDeleteConfirm ? (
-            <Button
-              onClick={() => setShowBulkDeleteConfirm(true)}
-              size="2"
-              color="red"
-              variant="outline"
-              style={{ width: '100%' }}
-            >
-              DELETE SELECTED ({selectedBlockIds.size})
-            </Button>
-          ) : (
-            <Box p="3" style={{ backgroundColor: 'var(--red-3)', borderRadius: '8px', border: '1px solid var(--red-6)' }}>
-              <Text size="2" weight="bold" color="red" mb="2" as="p">
-                Are you sure you want to delete {selectedBlockIds.size} block{selectedBlockIds.size !== 1 ? 's' : ''}? This action cannot be undone.
-              </Text>
-              <Flex gap="2">
-                <Button
-                  onClick={bulkDeleteBlocks}
-                  size="2"
-                  color="red"
-                  variant="solid"
-                  style={{ flex: 1, cursor: 'pointer' }}
-                >
-                  YES, DELETE
-                </Button>
-                <Button
-                  onClick={() => setShowBulkDeleteConfirm(false)}
-                  size="2"
-                  color="red"
-                  variant="soft"
-                  style={{ flex: 1, cursor: 'pointer' }}
-                >
-                  CANCEL
-                </Button>
-              </Flex>
-            </Box>
-          )
-        )}
-        {selectedBlockIds.size === 0 && (
-          <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center' }}>
-            Select blocks to bulk delete
-          </p>
-        )}
-      </div>
-    </Card>
   );
 }
 
@@ -1220,6 +1212,12 @@ function ChyronBuilderContent() {
                                   }}>
                                     {LAYER_LABELS[layerId] || layerId}
                                   </span>
+
+                                  {layerId === 'crawl' && (
+                                    <Badge size="1" variant="surface" color="gray" style={{ fontSize: '10px', fontWeight: 600 }}>
+                                      {config.crawl.blocks.length} {config.crawl.blocks.length === 1 ? 'block' : 'blocks'}
+                                    </Badge>
+                                  )}
                                 </div>
                               )}
                             </Draggable>
@@ -1237,15 +1235,6 @@ function ChyronBuilderContent() {
                   <div style={{ padding: '8px 12px 4px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
                     GLOBAL
                   </div>
-                  <Button
-                    size="3"
-                    variant={selectedPanel === 'crawlBlocks' ? 'soft' : 'ghost'}
-                    color={selectedPanel === 'crawlBlocks' ? 'amber' : 'gray'}
-                    onClick={() => { setSelectedPanel('crawlBlocks'); setSelectedLayer(null); }}
-                    style={{ width: '100%', justifyContent: 'flex-start', padding: '16px' }}
-                  >
-                    <Text weight="bold" size="2">Crawl Blocks</Text>
-                  </Button>
                   <Button
                     size="3"
                     variant={selectedPanel === 'layout' ? 'soft' : 'ghost'}
@@ -1407,14 +1396,11 @@ function ChyronBuilderContent() {
               {selectedPanel === 'layer' && selectedLayer === 'clock' && (
                 <ClockProperties config={config} onChange={setConfig} />
               )}
-              {selectedPanel === 'layer' && selectedLayer === 'crawl' && (
+              {((selectedPanel === 'layer' && selectedLayer === 'crawl') || selectedPanel === 'crawlBlocks') && (
                 <CrawlProperties config={config} onChange={setConfig} />
               )}
               {selectedPanel === 'layout' && (
                 <LayoutProperties config={config} onChange={setConfig} />
-              )}
-              {selectedPanel === 'crawlBlocks' && (
-                <CrawlBlocksManager config={config} onChange={setConfig} />
               )}
               {selectedPanel === 'export' && activeConfigId && (
                 <ObsExportCard
