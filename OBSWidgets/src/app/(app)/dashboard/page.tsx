@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { TOOLSETS, getToolset } from '@/lib/toolsets';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -230,7 +231,12 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
   );
 }
 
-export default function DashboardPage() {
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const setId = searchParams.get('set');
+  const toolId = searchParams.get('tool');
+  const toolset = getToolset(setId);
+  const activeTool = toolset?.tools.find((t) => t.id === toolId);
   const [session, setSession] = useState<any>(null);
   const [configsList, setConfigsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -238,6 +244,12 @@ export default function DashboardPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [time, setTime] = useState<Date | null>(null);
   const router = useRouter();
+
+  const visibleTypes = toolset
+    ? (activeTool ? activeTool.widgetTypes : toolset.tools.flatMap((t) => t.widgetTypes ?? [])) ?? []
+    : null;
+  const visibleList = visibleTypes ? configsList.filter((c) => visibleTypes.includes(c.widget_type)) : configsList;
+  const showSaved = !toolset || toolset.id === 'broadcast';
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -401,16 +413,29 @@ export default function DashboardPage() {
           <div className="inline-flex items-center gap-2 mb-2">
             <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 mr-1" />
-              Creator Studio
+              {toolset ? 'Toolset Dashboard' : 'Creator Studio'}
             </Badge>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            User Dashboard
+            {activeTool ? activeTool.name : toolset ? toolset.name : 'User Dashboard'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your saved OBS broadcast overlays, customize studio configurations, and copy browser source URLs.
+            {activeTool
+              ? `${activeTool.desc}. Manage your saved ${activeTool.name.toLowerCase()} configurations and copy browser source URLs.`
+              : toolset
+                ? toolset.tagline
+                : 'Pick a toolset to open its dashboard, or review everything you have saved across the platform.'}
           </p>
         </div>
+
+        {toolset && (activeTool || toolset.tools.length === 1) && (
+          <Button asChild size="sm" className="font-semibold gap-1.5 shadow-xs">
+            <Link href={(activeTool ?? toolset.tools[0]).path}>
+              Open {(activeTool ?? toolset.tools[0]).name}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </Button>
+        )}
 
         {!session && !loading && (
           <div className="flex items-center gap-2">
@@ -421,7 +446,63 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Quick Launch / Create New Widgets Section */}
+      {/* Overview: one card per toolset */}
+      {!toolset && (
+        <div className="mb-10">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 m-0">Your Toolsets</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {TOOLSETS.map((ts) => {
+              const SetIcon = ts.icon;
+              return (
+                <Link key={ts.id} href={`/dashboard?set=${ts.id}`} className="no-underline group">
+                  <Card className="border-border bg-card shadow-xs hover:border-primary/50 transition-all p-5 flex flex-row items-start gap-4 h-full">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <SetIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-sm text-foreground m-0">{ts.name}</h3>
+                        {ts.status === 'dev' && (
+                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">In Development</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed m-0">{ts.tagline}</p>
+                      <span className="text-[11px] text-muted-foreground mt-1">
+                        {ts.tools.length === 1 ? '1 tool' : `${ts.tools.length} tools`}
+                      </span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" />
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Single-tool / in-development toolsets (no saved widgets yet) */}
+      {toolset && !showSaved && (
+        <Card className="border-border bg-card shadow-xs p-6 flex flex-col gap-3 max-w-2xl">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">About this toolset</h2>
+          <p className="text-sm text-foreground m-0">{toolset.tagline}</p>
+          <p className="text-xs text-muted-foreground m-0">
+            {toolset.status === 'dev'
+              ? 'This toolset is still in development. Saved projects will appear here once it launches.'
+              : 'This toolset runs entirely in the browser, so there is nothing to save here yet.'}
+          </p>
+          <div>
+            <Button asChild size="sm" className="gap-1.5">
+              <Link href={toolset.tools[0].path}>
+                Open {toolset.tools[0].name}
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Quick Launch / Create New Widgets Section (Broadcast Studio hub only) */}
+      {toolset?.id === 'broadcast' && !activeTool && (
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">
@@ -526,13 +607,15 @@ export default function DashboardPage() {
 
         </div>
       </div>
+      )}
 
       {/* Saved Widgets Section */}
+      {showSaved && (
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">
-              Your Saved Widgets ({configsList.length})
+              {activeTool ? `Saved ${activeTool.name}s` : toolset ? 'Saved Broadcast Widgets' : 'Your Saved Widgets'} ({visibleList.length})
             </h2>
             {session && (
               <Badge variant="outline" className="text-[11px] font-normal text-muted-foreground">
@@ -563,21 +646,21 @@ export default function DashboardPage() {
               <Link href="/auth">Sign In or Create Account</Link>
             </Button>
           </Card>
-        ) : configsList.length === 0 ? (
+        ) : visibleList.length === 0 ? (
           <Card className="text-center py-12 px-6 border-dashed border-border bg-card">
             <p className="text-base font-semibold text-foreground mb-1">No saved widgets yet</p>
             <p className="text-sm text-muted-foreground max-w-md mx-auto mb-4">
               Select any of the creator studios above to configure your custom broadcast graphics and save them here.
             </p>
             <Button asChild variant="outline">
-              <Link href="/crawl">Create Your First Chyron</Link>
+              <Link href={activeTool?.path ?? '/crawl'}>{activeTool ? `Create Your First ${activeTool.name}` : 'Create Your First Chyron'}</Link>
             </Button>
           </Card>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={configsList.map(c => c.id)} strategy={verticalListSortingStrategy}>
+            <SortableContext items={visibleList.map(c => c.id)} strategy={verticalListSortingStrategy}>
               <div className="flex flex-col gap-3.5">
-                {configsList.map((item) => (
+                {visibleList.map((item) => (
                   <SortableWidgetCard 
                     key={item.id} 
                     item={item} 
@@ -594,6 +677,15 @@ export default function DashboardPage() {
           </DndContext>
         )}
       </div>
+      )}
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-sm text-muted-foreground">Loading dashboard...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
