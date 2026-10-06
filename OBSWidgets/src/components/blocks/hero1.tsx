@@ -1,0 +1,144 @@
+import React from "react";
+import Link from "next/link";
+import { ArrowRight, Sparkles, Tv, Clock, Timer, Monitor } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+
+interface HeroProps {
+  badgeText?: string;
+  badgeLabel?: string;
+  heading?: string;
+  description?: string;
+  primaryButtonText?: string;
+  primaryButtonUrl?: string;
+  secondaryButtonText?: string;
+  secondaryButtonUrl?: string;
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export function Hero1({
+  badgeText = "Studio Ready",
+  badgeLabel = "Tailored for OBS & Streamlabs",
+  heading = "Dynamic Broadcast Overlays Built for Streamers",
+  description = "Create real-time animated lower thirds, customizable scrolling chyron newsflashes, synchronized stream clocks, and count-down timers. Built on transparent browser sources for flawless 1080p integration.",
+  primaryButtonText = "Create Overlay",
+  primaryButtonUrl = "/crawl",
+  secondaryButtonText = "Explore Studio Screens",
+  secondaryButtonUrl = "/screen",
+  className,
+  children,
+}: HeroProps) {
+  return (
+    <section className={cn("py-12 md:py-20 lg:py-24 border-b border-border bg-card/40", className)}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
+          
+          {/* Left Column: Headline, Copy, Action Buttons */}
+          <div className="flex flex-col items-start text-left gap-5">
+            <div className="inline-flex items-center gap-2">
+              <Badge variant="outline" className="px-3 py-1 gap-1.5 border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>{badgeText}</span>
+              </Badge>
+              <span className="text-xs text-muted-foreground font-medium hidden sm:inline">
+                {badgeLabel}
+              </span>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+              {heading}
+            </h1>
+
+            <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl">
+              {description}
+            </p>
+
+            <div className="flex w-full sm:w-auto flex-col sm:flex-row items-center gap-3 pt-2">
+              <Button asChild size="lg" className="w-full sm:w-auto gap-2 text-sm font-semibold h-11 px-5 shadow-xs">
+                <Link href={primaryButtonUrl}>
+                  <span>{primaryButtonText}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-sm font-semibold h-11 px-5">
+                <Link href={secondaryButtonUrl}>
+                  {secondaryButtonText}
+                </Link>
+              </Button>
+            </div>
+
+            {/* Quick Feature Badges */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border w-full text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <Tv className="w-4 h-4 text-primary shrink-0" />
+                <span>Live Chyron</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-primary shrink-0" />
+                <span>Stream Clocks</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Timer className="w-4 h-4 text-primary shrink-0" />
+                <span>Event Timers</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Monitor className="w-4 h-4 text-primary shrink-0" />
+                <span>Scene Screens</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Interactive / Visual Showcase */}
+          <div className="w-full flex justify-center">
+            {children ? (
+              children
+            ) : (
+              <div className="w-full rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-md relative overflow-hidden group">
+                <div className="flex items-center justify-between pb-4 mb-4 border-b border-border text-xs font-semibold text-muted-foreground">
+                  <span className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    OBS Studio 1080p Preview Canvas
+                  </span>
+                  <Badge variant="secondary" className="text-xs font-mono">1920 × 1080</Badge>
+                </div>
+
+                <div className="aspect-video w-full rounded-xl bg-slate-950 p-4 flex flex-col justify-between border border-border/60 relative overflow-hidden shadow-inner">
+                  {/* Mock live broadcast upper right corner bug */}
+                  <div className="flex justify-end">
+                    <div className="px-2 py-1 rounded bg-red-600 text-white font-black text-[10px] tracking-wider uppercase">
+                      LIVE ON AIR
+                    </div>
+                  </div>
+
+                  {/* Mock Lower-Third Chyron overlay */}
+                  <div className="w-full rounded-lg overflow-hidden border border-white/10 shadow-2xl">
+                    <div className="bg-slate-900 px-3 py-2 flex items-center justify-between border-l-4 border-primary">
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-primary">Breaking Coverage</div>
+                        <div className="text-xs sm:text-sm font-extrabold text-white">CHAMPIONSHIP FINALS STREAM</div>
+                      </div>
+                      <span className="text-[11px] font-mono text-slate-400">18:45:00 UTC</span>
+                    </div>
+                    <div className="bg-slate-950 px-3 py-1 flex items-center gap-2 border-t border-white/10">
+                      <span className="text-[9px] font-bold text-red-400 uppercase tracking-wider">TICKER:</span>
+                      <span className="text-[10px] text-slate-300 font-medium truncate">
+                        Welcome to the official broadcast stream • Next round begins in 10 minutes • Powered by OBSWidgets
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="mt-3 text-xs text-muted-foreground text-center">
+                  All widgets include customizable 1-click URLs ready for copy-pasting into your streaming software.
+                </p>
+              </div>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}

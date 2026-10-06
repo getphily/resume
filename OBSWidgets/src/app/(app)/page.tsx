@@ -34,6 +34,9 @@ import { TimerPreview } from '@/components/TimerPreview';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ScreenPreview } from '@/components/ScreenPreview';
 import { ObsExportCard } from '@/components/ObsExportCard';
+import { Hero1 } from '@/components/blocks/hero1';
+import { Feature43 } from '@/components/blocks/feature43';
+import { Footer2 } from '@/components/blocks/footer2';
 
 function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
   const type = item.widget_type;
@@ -371,164 +374,174 @@ export default function Home() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto w-full">
-      
-      {/* Header */}
-      <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Broadcast Studio Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create, preview, and manage your live stream OBS browser sources.</p>
-        </div>
-      </div>
+    <div className="flex flex-col min-h-full w-full">
+      {/* 1. Shadcnblocks Hero Section */}
+      <Hero1 />
 
-      {/* Quick Launch / Create New Widgets Section */}
-      <div className="mb-8">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
-          Create New Widget
-        </h2>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. Main Studio Dashboard & Saved Widgets */}
+      <div className="p-6 max-w-7xl mx-auto w-full">
+        {/* Header */}
+        <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Broadcast Studio Dashboard</h2>
+            <p className="text-sm text-muted-foreground mt-1">Create, preview, and manage your live stream OBS browser sources.</p>
+          </div>
+        </div>
+
+        {/* Quick Launch / Create New Widgets Section */}
+        <div className="mb-8">
+          <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4">
+            Create New Widget
+          </h3>
           
-          {/* Clock Widget Card */}
-          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md overflow-hidden flex items-center justify-center">
-              <div className="font-mono text-2xl text-amber-500 font-bold">
-                12:34
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            {/* Clock Widget Card */}
+            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md overflow-hidden flex items-center justify-center">
+                <div className="font-mono text-2xl text-amber-500 font-bold">
+                  12:34
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm text-foreground">Clock Widget</h3>
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm text-foreground">Clock Widget</h4>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  Digital stream clock with timezones, seconds, dates, and glowing neon FX.
+                </p>
+                <Button asChild size="sm" className="w-full mt-auto">
+                  <Link href="/clock">Manage Clocks</Link>
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                Digital stream clock with timezones, seconds, dates, and glowing neon FX.
-              </p>
-              <Button asChild size="sm" className="w-full mt-auto">
-                <Link href="/clock">Manage Clocks</Link>
-              </Button>
-            </div>
-          </Card>
+            </Card>
 
-          {/* Timer Widget Card */}
-          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <svg width="64" height="64" className="absolute top-0 left-0">
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" className="text-border" strokeWidth="4" />
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="4" strokeDasharray="175" strokeDashoffset="42" strokeLinecap="round" transform="rotate(-90 32 32)" />
-                </svg>
-                <span className="text-sm font-bold text-foreground">4:47</span>
+            {/* Timer Widget Card */}
+            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
+                <div className="relative w-16 h-16 flex items-center justify-center">
+                  <svg width="64" height="64" className="absolute top-0 left-0">
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="currentColor" className="text-border" strokeWidth="4" />
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#3b82f6" strokeWidth="4" strokeDasharray="175" strokeDashoffset="42" strokeLinecap="round" transform="rotate(-90 32 32)" />
+                  </svg>
+                  <span className="text-sm font-bold text-foreground">4:47</span>
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <Timer className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm text-foreground">Timer Widget</h3>
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Timer className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm text-foreground">Timer Widget</h4>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  Countdown timer and stopwatch with SVG progress ring and chime alarms.
+                </p>
+                <Button asChild size="sm" className="w-full mt-auto">
+                  <Link href="/timer">Manage Timers</Link>
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                Countdown timer and stopwatch with SVG progress ring and chime alarms.
-              </p>
-              <Button asChild size="sm" className="w-full mt-auto">
-                <Link href="/timer">Manage Timers</Link>
-              </Button>
-            </div>
-          </Card>
+            </Card>
 
-          {/* Chyron Builder Card */}
-          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex flex-col justify-end items-stretch overflow-hidden">
-              <div className="bg-[#1a1a2e] w-full border-l-4 border-red-500 px-2 py-1 flex items-center justify-between">
-                <span className="text-white text-[9px] font-extrabold tracking-wide">BREAKING NEWS</span>
-                <span className="text-white text-[8px] font-mono bg-red-600 px-1 py-0.5 rounded font-bold">LIVE</span>
+            {/* Chyron Builder Card */}
+            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex flex-col justify-end items-stretch overflow-hidden">
+                <div className="bg-[#1a1a2e] w-full border-l-4 border-red-500 px-2 py-1 flex items-center justify-between">
+                  <span className="text-white text-[9px] font-extrabold tracking-wide">BREAKING NEWS</span>
+                  <span className="text-white text-[8px] font-mono bg-red-600 px-1 py-0.5 rounded font-bold">LIVE</span>
+                </div>
+                <div className="bg-[#0f172a] w-full border-t-2 border-red-500 px-2 py-0.5 overflow-hidden">
+                  <span className="text-white text-[8px] font-semibold whitespace-nowrap">SCROLLING TICKER TEXT ★</span>
+                </div>
               </div>
-              <div className="bg-[#0f172a] w-full border-t-2 border-red-500 px-2 py-0.5 overflow-hidden">
-                <span className="text-white text-[8px] font-semibold whitespace-nowrap">SCROLLING TICKER TEXT ★</span>
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Tv className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm text-foreground">Chyron Builder</h4>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  Broadcast lower thirds with headlines, logo bug, clock, and scrolling crawl.
+                </p>
+                <Button asChild size="sm" className="w-full mt-auto">
+                  <Link href="/crawl">Open Builder</Link>
+                </Button>
               </div>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <Tv className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm text-foreground">Chyron Builder</h3>
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                Broadcast lower thirds with headlines, logo bug, clock, and scrolling crawl.
-              </p>
-              <Button asChild size="sm" className="w-full mt-auto">
-                <Link href="/crawl">Open Builder</Link>
-              </Button>
-            </div>
-          </Card>
+            </Card>
 
-          {/* Screen Sets Card */}
-          <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
-            <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-base font-extrabold text-blue-500 uppercase leading-tight">STARTING SOON</div>
-                <div className="text-sm text-muted-foreground mt-0.5">Stream begins shortly...</div>
+            {/* Screen Sets Card */}
+            <Card className="border-border bg-card shadow-sm hover:shadow-md transition-shadow flex flex-col p-4">
+              <div aria-hidden="true" className="preview-window-container aspect-video mb-3.5 rounded-md flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-base font-extrabold text-blue-500 uppercase leading-tight">STARTING SOON</div>
+                  <div className="text-sm text-muted-foreground mt-0.5">Stream begins shortly...</div>
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col gap-2 flex-1">
-              <div className="flex items-center gap-2">
-                <Monitor className="w-4 h-4 text-primary" />
-                <h3 className="font-semibold text-sm text-foreground">Screen Sets</h3>
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <Monitor className="w-4 h-4 text-primary" />
+                  <h4 className="font-semibold text-sm text-foreground">Screen Sets</h4>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                  Full-screen Starting Soon, BRB, and Goodbye overlays with countdowns.
+                </p>
+                <Button asChild size="sm" className="w-full mt-auto">
+                  <Link href="/screen">Manage Screens</Link>
+                </Button>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed flex-1">
-                Full-screen Starting Soon, BRB, and Goodbye overlays with countdowns.
-              </p>
-              <Button asChild size="sm" className="w-full mt-auto">
-                <Link href="/screen">Manage Screens</Link>
-              </Button>
-            </div>
-          </Card>
+            </Card>
 
+          </div>
         </div>
-      </div>
 
-      {/* Saved Widgets Section */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-            Your Saved Widgets ({configsList.length})
-          </h2>
+        {/* Saved Widgets Section */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+              Your Saved Widgets ({configsList.length})
+            </h3>
 
-          {selectedIds.length > 0 && (
-            <Button variant="destructive" size="sm" onClick={deleteSelected} className="gap-1.5">
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete Selected ({selectedIds.length})</span>
-            </Button>
+            {selectedIds.length > 0 && (
+              <Button variant="destructive" size="sm" onClick={deleteSelected} className="gap-1.5">
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Delete Selected ({selectedIds.length})</span>
+              </Button>
+            )}
+          </div>
+          
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading your saved widgets...</p>
+          ) : configsList.length === 0 ? (
+            <Card className="text-center py-12 px-6 border-dashed border-border bg-card">
+              <p className="text-sm font-medium text-foreground mb-1">No saved widgets yet.</p>
+              <p className="text-sm text-muted-foreground">Click any of the widget types above to configure and save your first OBS overlay!</p>
+            </Card>
+          ) : (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={configsList.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                <div className="flex flex-col gap-3.5">
+                  {configsList.map((item) => (
+                    <SortableWidgetCard 
+                      key={item.id} 
+                      item={item} 
+                      copyUrl={copyUrl} 
+                      copySuccess={copySuccess} 
+                      isSelected={selectedIds.includes(item.id)}
+                      onToggleSelect={toggleSelect}
+                      onDelete={deleteSingle}
+                      time={time}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
-        
-        {loading ? (
-          <p className="text-sm text-muted-foreground">Loading your saved widgets...</p>
-        ) : configsList.length === 0 ? (
-          <Card className="text-center py-12 px-6 border-dashed border-border bg-card">
-            <p className="text-sm font-medium text-foreground mb-1">No saved widgets yet.</p>
-            <p className="text-sm text-muted-foreground">Click any of the widget types above to configure and save your first OBS overlay!</p>
-          </Card>
-        ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={configsList.map(c => c.id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-3.5">
-                {configsList.map((item) => (
-                  <SortableWidgetCard 
-                    key={item.id} 
-                    item={item} 
-                    copyUrl={copyUrl} 
-                    copySuccess={copySuccess} 
-                    isSelected={selectedIds.includes(item.id)}
-                    onToggleSelect={toggleSelect}
-                    onDelete={deleteSingle}
-                    time={time}
-                  />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
-        )}
       </div>
 
+      {/* 3. Shadcnblocks Feature Grid Section */}
+      <Feature43 />
+
+      {/* 4. Shadcnblocks Footer Section */}
+      <Footer2 />
     </div>
   );
 }
