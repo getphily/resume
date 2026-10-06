@@ -51,12 +51,9 @@ export default function Navbar() {
   }, []);
 
   const toggleTheme = async () => {
-    let nextTheme: ThemeMode = 'light';
-    if (currentTheme === 'light') nextTheme = 'dark';
-    else if (currentTheme === 'dark') nextTheme = 'light';
-    else if (currentTheme === 'antd-light') nextTheme = 'antd-dark';
-    else if (currentTheme === 'antd-dark') nextTheme = 'antd-light';
-    else nextTheme = 'light';
+    let nextTheme: ThemeMode = 'modern-minimal';
+    if (currentTheme === 'dark') nextTheme = 'modern-minimal';
+    else nextTheme = 'dark';
 
     setCurrentTheme(nextTheme);
     document.documentElement.setAttribute('data-theme', nextTheme);
@@ -68,19 +65,20 @@ export default function Navbar() {
         .from('profiles')
         .upsert({ id: session.user.id, theme: nextTheme, updated_at: new Date().toISOString() });
     }
-    const label = 
-      nextTheme === 'antd-light' ? 'Ant Design Pro (Light)' :
-      nextTheme === 'antd-dark' ? 'Ant Design Pro (Dark)' :
-      nextTheme === 'dark' ? 'Dark mode' : 'Light mode';
+    const THEME_LABELS: Record<ThemeMode, string> = {
+      'modern-minimal': 'Modern Minimal (Default)',
+      'autoblog': 'Autoblog',
+      'alpine': 'Alpine',
+      'light-green': 'Light Green',
+      'dark': 'Dark mode',
+      'light': 'Light mode',
+    };
+    const label = THEME_LABELS[nextTheme] || 'Theme';
     toast.success(`${label} enabled`, { id: 'theme-toast', duration: 1500 });
   };
 
-  const isDark = currentTheme === 'dark' || currentTheme === 'antd-dark';
-  const tooltipContent = 
-    currentTheme === 'dark' ? 'Switch to Light mode' :
-    currentTheme === 'light' ? 'Switch to Dark mode' :
-    currentTheme === 'antd-dark' ? 'Switch to Ant Design Pro (Light)' :
-    'Switch to Ant Design Pro (Dark)';
+  const isDark = currentTheme === 'dark';
+  const tooltipContent = isDark ? 'Switch to Modern Minimal' : 'Switch to Dark mode';
 
   return (
     <header className="h-[72px] bg-[#0f172a] text-white border-b border-white/10 px-4 flex items-center justify-between shrink-0 z-20">

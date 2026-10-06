@@ -3,12 +3,21 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export type ThemeMode = 'dark' | 'light' | 'antd-light' | 'antd-dark';
+export type ThemeMode = 'modern-minimal' | 'autoblog' | 'alpine' | 'light-green' | 'dark' | 'light';
 
-export const VALID_THEMES: ThemeMode[] = ['dark', 'light', 'antd-light', 'antd-dark'];
+export const VALID_THEMES: ThemeMode[] = [
+  'modern-minimal',
+  'autoblog',
+  'alpine',
+  'light-green',
+  'dark',
+  'light',
+];
+
+export const DEFAULT_THEME: ThemeMode = 'modern-minimal';
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<ThemeMode>('light');
+  const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
 
   useEffect(() => {
     // 1. Initial local theme check
@@ -59,14 +68,14 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     if (data && data.theme) {
       const resolved = VALID_THEMES.includes(data.theme as ThemeMode)
         ? (data.theme as ThemeMode)
-        : (data.theme === 'dark' ? 'dark' : 'light');
+        : DEFAULT_THEME;
       setTheme(resolved);
       document.documentElement.setAttribute('data-theme', resolved);
       localStorage.setItem('theme', resolved);
     }
   };
 
-  const isDark = theme === 'dark' || theme === 'antd-dark';
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);

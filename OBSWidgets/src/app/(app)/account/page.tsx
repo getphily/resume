@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, User, Sliders, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ThemeMode, VALID_THEMES } from '@/app/ThemeProvider';
+import { ThemeMode, VALID_THEMES, DEFAULT_THEME } from '@/app/ThemeProvider';
 
 interface ThemeOption {
   id: ThemeMode;
@@ -28,48 +28,48 @@ interface ThemeOption {
 
 const THEME_OPTIONS: ThemeOption[] = [
   {
-    id: 'dark',
-    name: 'Pioneer DJ Dark',
-    badge: 'Hardware Default',
-    description: 'Chassis black & module grey panels with active amber indicators and stems accents.',
-    headerBg: '#111111',
-    canvasBg: '#1c1c1c',
-    cardBg: '#242424',
-    accentColor: '#FF5900',
-    palette: ['#111111', '#1c1c1c', '#FF5900'],
-  },
-  {
-    id: 'light',
-    name: 'Clean Light',
-    badge: 'Minimalist',
-    description: 'Crisp off-white canvas with pure white panels and modern vibrant indigo accents.',
+    id: 'modern-minimal',
+    name: 'Modern Minimal',
+    badge: 'Default Theme',
+    description: 'Stripped-back minimal aesthetic with razor-sharp contrast and vibrant indigo focus accents.',
     headerBg: '#0f172a',
-    canvasBg: '#f4f5f7',
+    canvasBg: '#ffffff',
     cardBg: '#ffffff',
     accentColor: '#4f46e5',
-    palette: ['#f4f5f7', '#ffffff', '#4f46e5'],
+    palette: ['#0f172a', '#ffffff', '#4f46e5'],
   },
   {
-    id: 'antd-light',
-    name: 'Ant Design Pro (Light)',
-    badge: 'Enterprise Light',
-    description: 'Signature Navy #001529 top navbar, #f0f2f5 layout, and Daybreak Blue #1677ff.',
-    headerBg: '#001529',
-    canvasBg: '#f0f2f5',
+    id: 'autoblog',
+    name: 'Autoblog',
+    badge: 'Publishing',
+    description: 'Vivid orange primary, warm accent wash, and clean white background for high-energy broadcasts.',
+    headerBg: '#1c1917',
+    canvasBg: '#fefefe',
     cardBg: '#ffffff',
-    accentColor: '#1677ff',
-    palette: ['#001529', '#f0f2f5', '#1677ff'],
+    accentColor: '#ea580c',
+    palette: ['#1c1917', '#fefefe', '#ea580c'],
   },
   {
-    id: 'antd-dark',
-    name: 'Ant Design Pro (Dark)',
-    badge: 'realDark',
-    description: 'Enterprise realDark layout with deep #000000 background and Daybreak Blue #1677ff.',
-    headerBg: '#000000',
-    canvasBg: '#141414',
-    cardBg: '#1f1f1f',
-    accentColor: '#1677ff',
-    palette: ['#000000', '#141414', '#1677ff'],
+    id: 'alpine',
+    name: 'Alpine',
+    badge: 'Cobalt & Coral',
+    description: 'Cobalt structure, coral heat accent, and a warm blush canvas (#fcf5f7) inspired by night ski lodges.',
+    headerBg: '#1e293b',
+    canvasBg: '#fcf5f7',
+    cardBg: '#ffffff',
+    accentColor: '#1d4ed8',
+    palette: ['#1e293b', '#fcf5f7', '#fb7185'],
+  },
+  {
+    id: 'light-green',
+    name: 'Light Green',
+    badge: 'Fresh & Clean',
+    description: 'High-contrast neon green primary, deep indigo-slate text, and crisp modern cards.',
+    headerBg: '#0f172a',
+    canvasBg: '#fbfdf8',
+    cardBg: '#ffffff',
+    accentColor: '#22c55e',
+    palette: ['#0f172a', '#fbfdf8', '#22c55e'],
   },
 ];
 
@@ -82,7 +82,7 @@ export default function AccountPage() {
 
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
-  const [theme, setTheme] = useState<ThemeMode>('dark');
+  const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -107,7 +107,7 @@ export default function AccountPage() {
         if (data.theme && VALID_THEMES.includes(data.theme as ThemeMode)) {
           setTheme(data.theme as ThemeMode);
         } else {
-          setTheme('dark');
+          setTheme(DEFAULT_THEME);
         }
       }
       setLoading(false);

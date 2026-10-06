@@ -44,6 +44,18 @@ This app follows an **opinionated, bounded customization** model. Think Apple: u
 - **Prefer themes and curated color palettes** over raw color pickers wherever possible. Offer a set of named, pre-designed color combinations (e.g., "CNN Red", "Breaking Blue", "Dark Minimal") that users can select with one click. Raw color pickers can exist as an "Advanced / Custom" escape hatch, but should not be the primary UX for color selection.
 - When adding new controls, always ask: *"Does this need more than 3-4 options, or can we reduce it to Small / Medium / Large?"*
 
+## Shadcnblocks & Shadcnblocks/themes Guidelines
+- **Shadcnblocks Integration**: Use free blocks from [Shadcnblocks](https://www.shadcnblocks.com) whenever possible for surrounding application shells, landing pages, authentication, marketing sections, and dashboard overviews.
+- **Preserve Core Workspaces**: Always preserve our specialized custom studio editors (such as the Chyron, Crawl ticker, Clock, Timer, and Screen editors) and their fine-tuned drag-and-drop / real-time streaming architectures.
+- **Theming System ([shadcnblocks.com/themes](https://www.shadcnblocks.com/themes))**:
+  - The project uses Shadcnblocks theme tokens mapped to semantic CSS variables in `globals.css`.
+  - Available curated user preference themes:
+    1. **Modern Minimal** (`data-theme="modern-minimal"`): The default color scheme for the entire website. Clean, high contrast, stripped-back content-first UI.
+    2. **Autoblog** (`data-theme="autoblog"`): Publishing-focused aesthetic with vivid orange primary and warm accent wash.
+    3. **Alpine** (`data-theme="alpine"`): Cobalt structure, coral heat accent, and warm blush canvas (`#fcf5f7`).
+    4. **Light Green** (`data-theme="light-green"`): High-contrast neon green primary with deep slate typography.
+  - When introducing new components or blocks, ensure they utilize semantic theme tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `bg-primary`, `text-primary`, etc.) so they automatically adapt across all user-selected themes.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
