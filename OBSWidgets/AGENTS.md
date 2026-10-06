@@ -7,6 +7,10 @@ The application must strictly follow a "Hostinger Dashboard" inspired layout arc
 3. **Main Content Area**: Occupies the remaining space to the right of the sidebar. Uses a very light, off-white background (`var(--bg-main)`).
 4. **Cards / Panels**: Content within the main area must be contained in pure white, rounded panels with very subtle borders and soft drop shadows to separate them from the off-white background.
 
+## Unified Shell Principle (CRITICAL)
+- The shell for **each section or toolset** must share the exact same style, navigation, toolbars, and component styling. 
+- While the *output* of these tools (e.g., a 3D WebGL canvas, audio waveforms, OBS text tickers, or document diffs) will be vastly different, the application wrappers, controls, layout structures (`layout.tsx`), and UI primitives (buttons, cards, inputs) must remain **perfectly uniform across the entire platform**.
+
 ## Styling & Contrast Rules
 - **Aesthetic**: Clean, corporate, minimalist, and highly practical. Avoid heavy gradients, neon colors, or thick drop shadows.
 - **Backgrounds**: 
