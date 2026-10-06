@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "postinstall": "vite build",
-    "build:widgets": "cd OBSWidgets && npm install && npm run build",
+    "postinstall": "vite build && (cd OBSWidgets && npm run build || true)",
+    "build:widgets": "cd OBSWidgets && npm run build",
     "dev:server": "nodemon server.js",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "build": "vite build",
+    "build": "vite build && (cd OBSWidgets && npm run build || true)",
     "lint": "oxlint",
     "preview": "vite preview"
   },

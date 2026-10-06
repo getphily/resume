@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useSearchParams } from 'next/navigation';
-import { ClockPreview } from '../../(app)/clock/page';
+import { ClockPreview } from '@/components/ClockPreview';
 
 function ClockEmbedContent() {
   const searchParams = useSearchParams();
