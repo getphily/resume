@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, User, Sliders, Check } from 'lucide-react';
+import { ArrowLeft, User, Sliders, Check, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeMode, VALID_THEMES, DEFAULT_THEME } from '@/app/ThemeProvider';
 
@@ -81,6 +81,7 @@ export default function AccountPage() {
   const [activeTab, setActiveTab] = useState<'PREFS' | 'PROFILE'>('PREFS');
 
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
   const [userId, setUserId] = useState<string | null>(null);
@@ -94,6 +95,7 @@ export default function AccountPage() {
       }
       
       setUserId(session.user.id);
+      setEmail(session.user.email || '');
 
       const { data } = await supabase
         .from('profiles')
@@ -416,6 +418,28 @@ export default function AccountPage() {
                   Recommended: Square JPG or PNG, at least 256×256px.
                 </span>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2 mt-2">
+              <div className="flex items-center justify-between max-w-md">
+                <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Registered Account Email
+                </label>
+                <Badge variant="outline" className="text-xs font-semibold border-border text-muted-foreground gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                  Verified
+                </Badge>
+              </div>
+              <Input 
+                id="email"
+                value={email || 'No email associated'} 
+                readOnly
+                disabled
+                className="h-10 text-sm max-w-md bg-muted/30 text-muted-foreground cursor-not-allowed select-all"
+              />
+              <span className="text-xs text-muted-foreground">
+                Managed via your authentication provider.
+              </span>
             </div>
 
             <div className="flex flex-col gap-2 mt-2">
