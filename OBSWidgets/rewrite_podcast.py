@@ -1,4 +1,9 @@
-'use client';
+import re
+
+with open("src/app/(app)/podcast-tools/page.tsx", "r") as f:
+    original = f.read()
+
+new_code = """'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -105,3 +110,7 @@ export default function PodcastToolsPage() {
     />
   );
 }
+"""
+
+with open("src/app/(app)/podcast-tools/page.tsx", "w") as f:
+    f.write(new_code)

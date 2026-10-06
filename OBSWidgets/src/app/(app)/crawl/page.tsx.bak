@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
@@ -44,8 +43,7 @@ import {
   Trash2, 
   Plus, 
   ArrowLeft, 
-  Check,
-  Layers, 
+  Check, 
   Copy, 
   Maximize2 
 } from 'lucide-react';
@@ -936,20 +934,16 @@ function ChyronCardPreview({ config }: { config: ChyronConfig }) {
 // ═══════════════════════════════════════════════════════════════════
 //  MAIN PAGE COMPONENT
 // ═══════════════════════════════════════════════════════════════════
-
-import { StudioShell } from '@/components/StudioShell';
-
-function ChyronStudioContent() {
-  const router = useRouter();
+function ChyronBuilderContent() {
   const searchParams = useSearchParams();
   const queryId = searchParams.get('id');
 
   const [session, setSession] = useState<any>(null);
+  const [configsList, setConfigsList] = useState<any[]>([]);
+  const [loadingList, setLoadingList] = useState(true);
+
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  
   const [config, setConfig] = useState<ChyronConfig>(DEFAULT_CHYRON_CONFIG);
-  
   const [selectedLayer, setSelectedLayer] = useState<string | null>('crawl');
   const [selectedPanel, setSelectedPanel] = useState<'layer' | 'layout' | 'export' | 'crawlBlocks'>('layer');
   const [expandedBlockId, setExpandedBlockId] = useState<string | null>(null);
@@ -959,281 +953,690 @@ function ChyronStudioContent() {
   const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { setLoadingList(false); return; }
       setSession(session);
-      if (queryId && session) {
-        const { data } = await supabase.from('widget_configs').select('id, config').eq('id', queryId).single();
-        if (data) {
-          setActiveConfigId(data.id);
-          setConfig(data.config as ChyronConfig);
-        } else {
-          toast.error('Chyron not found.');
-          router.push('/dashboard');
-        }
-      } else {
-        setConfig({ ...DEFAULT_CHYRON_CONFIG, name: 'New Chyron Widget' });
-      }
-      setIsInitializing(false);
+      fetchConfigs(session.user.id, queryId);
     });
-  }, [queryId, router]);
+  }, [queryId]);
+
+  const fetchConfigs = async (userId: string, targetId?: string | null) => {
+    setLoadingList(true);
+    const { data } = await supabase
+      .from('widget_configs')
+      .select('id, config, widget_type')
+      .eq('user_id', userId)
+      .in('widget_type', ['crawl', 'chyron'])
+      .order('created_at', { ascending: true });
+    const list = data || [];
+    setConfigsList(list);
+    setLoadingList(false);
+
+    const toOpen = targetId || queryId;
+    if (toOpen && list.length > 0) {
+      const match = list.find(c => c.id === toOpen);
+      if (match) {
+        loadEditor(match.id, match.config);
+      }
+    }
+  };
 
   useEffect(() => {
-    if (!activeConfigId || !session || isInitializing) return;
+    if (!activeConfigId || !session) return;
     const saveConfig = async () => {
       setSaving(true);
       await supabase.from('widget_configs').update({ config }).eq('id', activeConfigId);
+      setConfigsList(prev => prev.map(c => c.id === activeConfigId ? { ...c, config } : c));
       setSaving(false);
     };
-    const debounceTimer = setTimeout(() => { saveConfig(); }, 1000);
-    return () => clearTimeout(debounceTimer);
-  }, [config, activeConfigId, session, isInitializing]);
+    const timer = setTimeout(saveConfig, 800);
+    return () => clearTimeout(timer);
+  }, [config, activeConfigId, session]);
 
-  const handleManualSave = async () => {
-    if (!session) {
-      toast.error('Please sign in to save widgets.');
-      router.push('/auth');
-      return;
+  const handleCreateNew = async () => {
+    if (!session || configsList.length >= 3) return;
+    const newConfig = { ...DEFAULT_CHYRON_CONFIG, name: `Chyron ${configsList.length + 1}` };
+    const { data } = await supabase
+      .from('widget_configs')
+      .insert({ user_id: session.user.id, widget_type: 'crawl', config: newConfig })
+      .select('id')
+      .single();
+    if (data) {
+      setConfigsList([...configsList, { id: data.id, config: newConfig, widget_type: 'crawl' }]);
+      loadEditor(data.id, newConfig);
     }
-    setSaving(true);
-    if (activeConfigId) {
-      await supabase.from('widget_configs').update({ config }).eq('id', activeConfigId);
-      toast.success('Chyron saved!');
-    } else {
-      const { data, error } = await supabase.from('widget_configs').insert({
-        user_id: session.user.id,
-        widget_type: 'crawl',
-        config
-      }).select('id').single();
-      
-      if (error) {
-        toast.error('Failed to create chyron.');
-      } else if (data) {
-        setActiveConfigId(data.id);
-        toast.success('New chyron created!');
-        router.replace(`/crawl?id=${data.id}`);
-      }
-    }
-    setSaving(false);
   };
 
-  const handleCopy = () => {
-    if (!activeConfigId) return;
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const url = `${origin}/widgets/embed/crawl?id=${activeConfigId}`;
-    navigator.clipboard.writeText(url);
+  const handleBackToList = () => {
+    setActiveConfigId(null);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('id');
+      window.history.pushState({}, '', url.pathname);
+    }
+  };
+
+  const loadEditor = (id: string, c: any) => {
+    setActiveConfigId(id);
+    
+    const loadedOrder = c?.layerOrder || DEFAULT_CHYRON_CONFIG.layerOrder;
+    const finalOrder = [...loadedOrder];
+    ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
+      if (!finalOrder.includes(l as any)) finalOrder.push(l as any);
+    });
+
+    const mergedConfig: ChyronConfig = {
+      ...DEFAULT_CHYRON_CONFIG,
+      ...(c || {}),
+      layout: { ...DEFAULT_CHYRON_CONFIG.layout, ...(c?.layout || {}) },
+      title: { ...DEFAULT_CHYRON_CONFIG.title, ...(c?.title || {}) },
+      subheader: { ...DEFAULT_CHYRON_CONFIG.subheader, ...(c?.subheader || {}) },
+      logo: { ...DEFAULT_CHYRON_CONFIG.logo, ...(c?.logo || {}) },
+      clock: { ...DEFAULT_CHYRON_CONFIG.clock, ...(c?.clock || {}) },
+      crawl: { 
+        ...DEFAULT_CHYRON_CONFIG.crawl, 
+        ...(c?.crawl || {}),
+        blocks: (Array.isArray(c?.crawl?.blocks) && c.crawl.blocks.length > 0)
+          ? c.crawl.blocks
+          : DEFAULT_CHYRON_CONFIG.crawl.blocks
+      },
+      layerOrder: finalOrder,
+    };
+    setConfig(mergedConfig);
+    setSelectedLayer('title');
+    setSelectedPanel('layer');
+  };
+
+  const deleteConfig = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2 p-1">
+          <p className="m-0 text-sm font-semibold text-foreground">Delete this chyron?</p>
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                await supabase.from('widget_configs').delete().eq('id', id);
+                setConfigsList(configsList.filter(c => c.id !== id));
+                if (activeConfigId === id) setActiveConfigId(null);
+                toast.success('Chyron deleted');
+              }}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-xs font-semibold cursor-pointer transition-colors"
+            >
+              Delete
+            </button>
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold cursor-pointer transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity, position: 'top-center' }
+    );
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}`);
     setCopySuccess(true);
-    toast.success('Widget URL copied to clipboard!');
+    toast.success('URL copied to clipboard!');
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  const handleDragEnd = (result: DropResult) => {
+  const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    const { source, destination, type } = result;
     
-    if (type === 'CRAWL_BLOCK') {
-      const reorderedBlocks = Array.from(config.crawl.blocks);
-      const [movedBlock] = reorderedBlocks.splice(source.index, 1);
-      reorderedBlocks.splice(destination.index, 0, movedBlock);
-      setConfig({ ...config, crawl: { ...config.crawl, blocks: reorderedBlocks } });
-    } else {
-      const newOrder = Array.from(config.layerOrder);
-      const [removed] = newOrder.splice(source.index, 1);
-      newOrder.splice(destination.index, 0, removed);
-      setConfig({ ...config, layerOrder: newOrder });
+    if (result.source.droppableId === 'crawl-blocks-list') {
+      const blocks = Array.from(config.crawl.blocks);
+      const [reorderedBlock] = blocks.splice(result.source.index, 1);
+      blocks.splice(result.destination.index, 0, reorderedBlock);
+      setConfig({ ...config, crawl: { ...config.crawl, blocks } });
+      return;
+    }
+
+    if (result.source.droppableId === 'layers-list') {
+      const items = Array.from(config.layerOrder);
+      ['title', 'subheader', 'crawl', 'logo', 'clock'].forEach(l => {
+        if (!items.includes(l as any)) items.push(l as any);
+      });
+      const [reorderedItem] = items.splice(result.source.index, 1);
+      items.splice(result.destination.index, 0, reorderedItem);
+      setConfig({ ...config, layerOrder: items as any });
+    }
+  };
+
+  const toggleLayer = (layerId: string) => {
+    const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
+    const layer = config[key];
+    if (layer && 'enabled' in layer) {
+      setConfig({ ...config, [key]: { ...layer, enabled: !layer.enabled } });
     }
   };
 
   const toggleBlockEnabled = (blockId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setConfig({
-      ...config,
-      crawl: {
-        ...config.crawl,
-        blocks: config.crawl.blocks.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b)
-      }
-    });
+    const updated = config.crawl.blocks.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b);
+    setConfig({ ...config, crawl: { ...config.crawl, blocks: updated } });
   };
 
   const addBlockFromSidebar = () => {
-    const newBlock = {
-      id: Math.random().toString(36).substr(2, 9),
-      label: `News Item ${config.crawl.blocks.length + 1}`,
-      text: '',
+    const newBlock: CrawlBlock = {
+      id: `block-${Date.now()}`,
+      label: `Block ${config.crawl.blocks.length + 1}`,
+      text: 'NEW CRAWL TEXT',
       enabled: true,
-      color: '#ffffff'
     };
     setConfig({
       ...config,
       crawl: {
         ...config.crawl,
-        blocks: [...config.crawl.blocks, newBlock]
-      }
+        blocks: [...config.crawl.blocks, newBlock],
+      },
     });
     setSelectedLayer(`crawlBlock:${newBlock.id}`);
-    setIsCrawlExpanded(true);
-    toast.success('Added news block');
+    setSelectedPanel('layer');
   };
 
-  const settingsPanel = (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-1 p-1 bg-muted rounded-md shrink-0">
-        <button
-          type="button"
-          onClick={() => setSelectedPanel('layer')}
-          className={cn("py-1.5 flex-1 text-xs font-semibold rounded-sm transition-all", selectedPanel === 'layer' ? "bg-background shadow-2xs text-foreground" : "text-muted-foreground hover:text-foreground")}
-        >
-          Layers
-        </button>
-        <button
-          type="button"
-          onClick={() => { setSelectedPanel('layout'); setSelectedLayer(null); }}
-          className={cn("py-1.5 flex-1 text-xs font-semibold rounded-sm transition-all", selectedPanel === 'layout' ? "bg-background shadow-2xs text-foreground" : "text-muted-foreground hover:text-foreground")}
-        >
-          Global Layout
-        </button>
+  if (!session) {
+    return (
+      <div className="p-10">
+        <p className="text-sm text-muted-foreground">Please <Link href="/auth" className="text-primary underline">Sign In</Link></p>
       </div>
+    );
+  }
 
-      <DragDropContext onDragEnd={handleDragEnd}>
-        {selectedPanel === 'layer' && (
-          <div className="flex flex-col gap-2 bg-muted/20 border border-border rounded-lg p-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">
-              Composition
+  // ── 1. CATALOG / DASHBOARD VIEW ──
+  if (!activeConfigId) {
+    return (
+      <div className="p-6 md:p-8 max-w-7xl mx-auto w-full flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
+          <div>
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider block mb-1">
+              Broadcast Overlays
             </span>
-            <Droppable droppableId="layers-list" type="LAYER">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-col">
-                  {['title', 'subheader', 'crawl', 'logo', 'clock']
-                    .sort((a, b) => {
-                      const idxA = config.layerOrder.indexOf(a as any);
-                      const idxB = config.layerOrder.indexOf(b as any);
-                      if (idxA === -1 && idxB === -1) return 0;
-                      if (idxA === -1) return 1;
-                      if (idxB === -1) return -1;
-                      return idxA - idxB;
-                    })
-                    .map((layerId, i) => {
-                      const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
-                      const layer = config[key];
-                      const isEnabled = layer && 'enabled' in layer ? layer.enabled : true;
-                      const isSelected = selectedPanel === 'layer' && selectedLayer === layerId;
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              Chyron Builder
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Broadcast lower thirds with animated headline titles, subheaders, logo bugs, live clocks, and continuous scrolling ticker crawls.
+            </p>
+          </div>
+          {configsList.length < 3 && (
+            <Button onClick={handleCreateNew} className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span>Create Chyron</span>
+            </Button>
+          )}
+        </div>
 
-                      return (
-                        <Draggable key={layerId} draggableId={layerId} index={i}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              style={provided.draggableProps.style}
-                              className={cn(snapshot.isDragging && "z-50 shadow-lg rounded-md bg-card ring-1 ring-border")}
-                            >
-                              <div
-                                onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
-                                className={cn(
-                                  "flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-colors border-l-2",
-                                  isSelected ? "bg-primary/10 border-primary text-primary" : snapshot.isDragging ? "bg-muted/80 border-transparent text-foreground" : "hover:bg-muted/40 border-transparent text-foreground",
-                                  !isEnabled && "bg-muted/50 text-muted-foreground"
-                                )}
-                              >
-                                <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab min-w-[20px]">
-                                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                                </div>
-                                <span className="flex-1 text-xs font-semibold capitalize">{layerId}</span>
-                              </div>
-                              {layerId === 'crawl' && (
-                                <div className={cn("ml-8 pl-2 border-l border-border mt-1 flex flex-col gap-1", !isCrawlExpanded && "hidden")}>
-                                  <Droppable droppableId="crawl-blocks" type="CRAWL_BLOCK">
-                                    {(provided) => (
-                                      <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-col">
-                                        {config.crawl.blocks.map((block, idx) => {
-                                          const isBlockActive = selectedLayer === `crawlBlock:${block.id}`;
-                                          return (
-                                            <Draggable key={block.id} draggableId={block.id} index={idx}>
-                                              {(provided, snapshot) => (
-                                                <div
-                                                  ref={provided.innerRef}
-                                                  {...provided.draggableProps}
-                                                  style={provided.draggableProps.style}
-                                                >
-                                                  <div
-                                                    onClick={(e) => { e.stopPropagation(); setSelectedLayer(`crawlBlock:${block.id}`); setSelectedPanel('layer'); }}
-                                                    className={cn("flex items-center gap-2 px-2 py-1.5 cursor-pointer text-xs transition-colors rounded-sm", isBlockActive ? "bg-primary/20 text-primary" : "hover:bg-muted", !block.enabled && "opacity-50")}
-                                                  >
-                                                    <div {...provided.dragHandleProps} className="cursor-grab shrink-0 text-muted-foreground">
-                                                       <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
-                                                    </div>
-                                                    <button onClick={(e) => toggleBlockEnabled(block.id, e)} className="shrink-0 text-muted-foreground hover:text-foreground">
-                                                      {block.enabled ? 'O' : '-'}
-                                                    </button>
-                                                    <span className="truncate">{block.label || 'Unnamed'}</span>
-                                                  </div>
-                                                </div>
-                                              )}
-                                            </Draggable>
-                                          );
-                                        })}
-                                        {provided.placeholder}
-                                      </div>
-                                    )}
-                                  </Droppable>
-                                  <button onClick={(e) => { e.stopPropagation(); addBlockFromSidebar(); }} className="text-xs text-primary hover:underline self-start mt-1 px-2">+ Add Block</button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </Draggable>
-                      );
-                    })}
-                  {provided.placeholder}
+        {/* Storage Capacity Banner */}
+        <div className="flex justify-between items-center mb-6 p-4 bg-card rounded-xl border border-border shadow-xs">
+          <span className="text-xs font-semibold text-muted-foreground">Storage Allocation</span>
+          <span className={cn("text-xs font-bold", configsList.length >= 3 ? "text-red-500" : "text-primary")}>
+            {configsList.length} / 3 Chyrons Used
+          </span>
+        </div>
+
+        {/* Content Grid */}
+        {loadingList ? (
+          <p className="text-sm text-muted-foreground">Loading chyrons...</p>
+        ) : configsList.length === 0 ? (
+          <Card className="text-center py-16 px-6 border-dashed border-border bg-card rounded-2xl">
+            <p className="text-sm font-medium text-foreground mb-4">You don&apos;t have any chyrons created yet.</p>
+            <Button onClick={handleCreateNew}>Create Your First Chyron</Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {configsList.map(c => (
+              <Card 
+                key={c.id} 
+                onClick={() => loadEditor(c.id, c.config)} 
+                className="cursor-pointer border-border bg-card rounded-2xl shadow-xs hover:shadow-md hover:border-primary/40 transition-all flex flex-col p-5 group"
+              >
+                <ChyronCardPreview config={c.config} />
+
+                <div className="flex justify-between items-center mt-3 mb-2">
+                  <span className="text-base font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                    {c.config.name || 'Unnamed Chyron'}
+                  </span>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    onClick={e => deleteConfig(c.id, e)} 
+                    title="Delete chyron"
+                    className="h-8 w-8 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 shrink-0"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
-              )}
-            </Droppable>
+
+                <div className="text-xs text-muted-foreground mb-4 flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "w-2 h-2 rounded-full shrink-0",
+                      c.config.crawl?.enabled ? "bg-emerald-500" : "bg-muted-foreground/30"
+                    )} />
+                    <span className="truncate">
+                      {c.config.crawl?.enabled 
+                        ? `${c.config.crawl.blocks?.filter((b: any) => b.enabled).length || 0} Active Crawl Blocks` 
+                        : 'Crawl Disabled'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "w-2 h-2 rounded-full shrink-0",
+                      c.config.logo?.enabled ? "bg-amber-500" : "bg-muted-foreground/30"
+                    )} />
+                    <span>{c.config.logo?.enabled ? 'Logo Enabled' : 'Logo Disabled'}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mt-auto pt-3 border-t border-border" onClick={e => e.stopPropagation()}>
+                  <div className="flex gap-2">
+                    <Input
+                      readOnly
+                      value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${c.id}` : ''}
+                      onClick={e => (e.target as HTMLInputElement).select()}
+                      aria-label="URL" className="font-mono flex-1 bg-muted/40"
+                    />
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={e => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(`${window.location.origin}/widgets/embed/crawl?id=${c.id}`);
+                        toast.success('URL copied to clipboard!');
+                      }}
+                      className="h-8 text-xs font-semibold px-3 shrink-0"
+                    >
+                      Copy
+                    </Button>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => loadEditor(c.id, c.config)}
+                    className="w-full text-xs font-semibold h-8 mt-1 group-hover:border-primary/40 transition-colors"
+                  >
+                    Open in Studio →
+                  </Button>
+                </div>
+              </Card>
+            ))}
+
+            {configsList.length < 3 && (
+              <Card 
+                onClick={handleCreateNew} 
+                className="cursor-pointer border-dashed border-2 border-border hover:border-primary/50 bg-transparent flex flex-col items-center justify-center min-h-[300px] p-6 transition-all hover:bg-muted/30 group"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
+                  Create New Chyron
+                </span>
+                <span className="text-xs text-muted-foreground mt-1 text-center">
+                  Add another lower third widget (up to 3)
+                </span>
+              </Card>
+            )}
           </div>
         )}
-      </DragDropContext>
-
-      <div className="flex-1 min-h-[400px]">
-        {selectedPanel === 'layer' && selectedLayer === 'title' && <TitleProperties config={config} onChange={setConfig} />}
-        {selectedPanel === 'layer' && selectedLayer === 'subheader' && <SubheaderProperties config={config} onChange={setConfig} />}
-        {selectedPanel === 'layer' && selectedLayer === 'logo' && <LogoProperties config={config} onChange={setConfig} />}
-        {selectedPanel === 'layer' && selectedLayer === 'clock' && <ClockProperties config={config} onChange={setConfig} />}
-        {selectedPanel === 'layer' && selectedLayer === 'crawl' && <CrawlProperties config={config} onChange={setConfig} />}
-        {selectedPanel === 'layer' && selectedLayer?.startsWith('crawlBlock:') && <CrawlBlockProperties config={config} onChange={setConfig} blockId={selectedLayer.replace('crawlBlock:', '')} />}
-        {selectedPanel === 'layout' && <LayoutProperties config={config} onChange={setConfig} />}
       </div>
-    </div>
-  );
+    );
+  }
 
-  const previewCanvas = (
-    <div className="w-full h-full flex items-end justify-center pb-8 px-4 overflow-hidden">
-      <div className="w-full max-w-5xl shadow-2xl rounded-xl border border-border/50 overflow-hidden relative" style={{aspectRatio: '1920/200'}}>
-         <ChyronCardPreview config={config} />
-      </div>
-    </div>
-  );
-
-  if (isInitializing) return <div className="p-10 text-sm text-muted-foreground">Loading Chyron Studio...</div>;
-
+  // ── 2. WORKSPACE / EDITOR VIEW ──
   return (
-    <StudioShell
-      title="Chyron Studio"
-      icon={<Layers className="w-4 h-4" />}
-      widgetName={config.name || ''}
-      onNameChange={(n) => setConfig({ ...config, name: n })}
-      onSave={handleManualSave}
-      isSaving={saving}
-      hasId={!!activeConfigId}
-      onCopyUrl={handleCopy}
-      copySuccess={copySuccess}
-      settingsPanel={settingsPanel}
-      previewCanvas={previewCanvas}
-    />
+    <div className="flex w-full h-full overflow-hidden bg-background text-foreground">
+
+      {/* ── LEFT SIDEBAR ──────────────────────────────────────── */}
+      <aside className="w-80 border-r border-border flex flex-col bg-card shrink-0 select-none z-10">
+        <div className="p-4 border-b border-border flex flex-col gap-2">
+          <Button variant="ghost" size="sm" onClick={handleBackToList} className="w-fit text-xs text-muted-foreground hover:text-foreground -ml-2 gap-1.5 h-8">
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Chyrons
+          </Button>
+          <input
+            type="text"
+            value={config.name || ''}
+            onChange={(e) => setConfig({ ...config, name: e.target.value })}
+            placeholder="Chyron Name"
+            className="font-bold text-base text-foreground bg-transparent border-0 border-b border-transparent hover:border-border focus:border-primary focus:outline-hidden px-0 py-0.5 w-full truncate transition-colors"
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="flex flex-col">
+              {/* LAYERS header */}
+              <div className="px-4 pt-4 pb-2 text-sm font-bold text-muted-foreground tracking-wider uppercase">
+                Layers
+              </div>
+
+              {/* Layer rows */}
+              <Droppable droppableId="layers-list">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef}>
+                    {['title', 'subheader', 'crawl', 'logo', 'clock']
+                      .sort((a, b) => {
+                        const idxA = config.layerOrder.indexOf(a as any);
+                        const idxB = config.layerOrder.indexOf(b as any);
+                        if (idxA === -1 && idxB === -1) return 0;
+                        if (idxA === -1) return 1;
+                        if (idxB === -1) return -1;
+                        return idxA - idxB;
+                      })
+                      .map((layerId, i) => {
+                        const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
+                        const layer = config[key];
+                        const isEnabled = layer && 'enabled' in layer ? layer.enabled : true;
+                        const isSelected = selectedPanel === 'layer' && selectedLayer === layerId;
+
+                        return (
+                          <Draggable key={layerId} draggableId={layerId} index={i}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                style={provided.draggableProps.style}
+                              >
+                                <div
+                                  onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
+                                  className={cn(
+                                    "flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer transition-colors border-l-2",
+                                    isSelected
+                                      ? "bg-primary/10 border-primary text-primary"
+                                      : snapshot.isDragging
+                                      ? "bg-muted border-transparent"
+                                      : "hover:bg-muted/40 border-transparent text-foreground",
+                                    !isEnabled && "bg-muted/50 text-muted-foreground"
+                                  )}
+                                >
+                                  {/* Drag Handle */}
+                                  <div
+                                    {...provided.dragHandleProps} aria-label="Drag to reorder"
+                                    className="text-muted-foreground hover:text-foreground cursor-grab min-w-[24px] min-h-[24px] flex items-center justify-center -ml-1"
+                                  >
+                                    <GripVertical className="w-3.5 h-3.5" />
+                                  </div>
+
+                                  {/* Visibility toggle */}
+                                  <button
+                                    type="button"
+                                    onClick={e => { e.stopPropagation(); toggleLayer(layerId); }}
+                                    className="bg-transparent border-0 cursor-pointer min-w-[24px] min-h-[24px] flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0"
+                                    aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
+                                  >
+                                    {isEnabled ? <Eye className="w-3.5 h-3.5 text-success" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                  </button>
+
+                                  {/* Label */}
+                                  <span className="flex-1 text-xs font-semibold truncate">
+                                    {LAYER_LABELS[layerId] || layerId}
+                                  </span>
+
+                                  {layerId === 'crawl' && (
+                                    <div 
+                                      className="flex items-center gap-1 cursor-pointer" 
+                                      onClick={e => { e.stopPropagation(); setIsCrawlExpanded(!isCrawlExpanded); }}
+                                    >
+                                      <Badge variant="secondary" className="text-sm px-1.5 py-0 h-4 font-bold">
+                                        {config.crawl.blocks.length}
+                                      </Badge>
+                                      <span className={cn(
+                                        "text-sm text-muted-foreground transition-transform inline-block p-0.5",
+                                        isCrawlExpanded ? "rotate-0" : "-rotate-90"
+                                      )}>
+                                        ▼
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* NESTED CRAWL BLOCKS UNDERNEATH CRAWL TICKER IN LAYERS PANEL */}
+                                {layerId === 'crawl' && isCrawlExpanded && (
+                                  <div className="flex flex-col pl-8 pr-3 pb-2 gap-1 relative">
+                                    <div className="absolute left-6 top-0 bottom-3 w-px bg-border" />
+                                    
+                                    <Droppable droppableId="crawl-blocks-list">
+                                      {(provided) => (
+                                        <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-col gap-1 w-full">
+                                          {config.crawl.blocks.map((block, idx) => {
+                                            const isBlockActive = selectedPanel === 'layer' && selectedLayer === `crawlBlock:${block.id}`;
+
+                                            return (
+                                              <Draggable key={block.id} draggableId={`crawlBlock-${block.id}`} index={idx}>
+                                                {(provided, snapshot) => {
+                                                  const child = (
+                                                    <div
+                                                      ref={provided.innerRef}
+                                                      {...provided.draggableProps}
+                                                      style={provided.draggableProps.style}
+                                                      className={cn(
+                                                        snapshot.isDragging && "z-50 shadow-lg rounded-md bg-card ring-1 ring-border"
+                                                      )}
+                                                    >
+                                                      <div
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setSelectedLayer(`crawlBlock:${block.id}`);
+                                                          setSelectedPanel('layer');
+                                                        }}
+                                                        className={cn(
+                                                          "flex items-center gap-2.5 px-3.5 py-2.5 cursor-pointer transition-colors border-l-2",
+                                                          isBlockActive
+                                                            ? "bg-primary/10 border-primary text-primary"
+                                                            : snapshot.isDragging
+                                                            ? "bg-muted/80 border-transparent text-foreground"
+                                                            : "hover:bg-muted/40 border-transparent text-foreground",
+                                                          !block.enabled && "bg-muted/50 text-muted-foreground"
+                                                        )}
+                                                      >
+                                                        {/* Drag Handle */}
+                                                        <div
+                                                          {...provided.dragHandleProps}
+                                                          onClick={(e) => e.stopPropagation()}
+                                                          className="text-muted-foreground hover:text-foreground cursor-grab min-w-[24px] min-h-[24px] flex items-center justify-center -ml-1"
+                                                          aria-label="Drag to reorder"
+                                                        >
+                                                          <GripVertical className="w-3.5 h-3.5" />
+                                                        </div>
+
+                                                        {/* Visibility toggle */}
+                                                        <button
+                                                          type="button"
+                                                          onClick={(e) => toggleBlockEnabled(block.id, e)}
+                                                          className="bg-transparent border-0 cursor-pointer min-w-[24px] min-h-[24px] flex items-center justify-center text-muted-foreground hover:text-foreground shrink-0"
+                                                          title={block.enabled ? "Hide block" : "Show block"}
+                                                        >
+                                                          {block.enabled ? <Eye className="w-3.5 h-3.5 text-success" /> : <EyeOff className="w-3.5 h-3.5" />}
+                                                        </button>
+
+                                                        {/* Label */}
+                                                        <span className="flex-1 text-xs font-semibold truncate">
+                                                          {block.label || 'Unnamed Block'}
+                                                        </span>
+                                                      </div>
+                                                    </div>
+                                                  );
+
+                                                  if (snapshot.isDragging && typeof document !== 'undefined') {
+                                                    return createPortal(child, document.body);
+                                                  }
+                                                  return child;
+                                                }}
+                                              </Draggable>
+                                            );
+                                          })}
+                                          {provided.placeholder}
+                                        </div>
+                                      )}
+                                    </Droppable>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        addBlockFromSidebar();
+                                      }}
+                                      className="flex items-center gap-1 px-2 py-1.5 mt-1 border border-dashed border-border rounded-md text-sm font-semibold text-primary hover:bg-primary/5 cursor-pointer text-left transition-colors ml-4"
+                                    >
+                                      <span>+</span> Add Block
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+
+              <div className="h-px bg-border my-2" />
+
+              <div className="p-2 flex flex-col gap-1">
+                <span className="px-3 pt-2 pb-1 text-sm font-bold text-muted-foreground tracking-wider uppercase">
+                  Global
+                </span>
+                <Button
+                  variant={selectedPanel === 'layout' ? 'secondary' : 'ghost'}
+                  onClick={() => { setSelectedPanel('layout'); setSelectedLayer(null); }}
+                  className={cn(
+                    "w-full justify-start text-xs font-semibold h-9",
+                    selectedPanel === 'layout' && "bg-primary/10 text-primary border-l-2 border-primary"
+                  )}
+                >
+                  Layout & Background
+                </Button>
+                <Button
+                  variant={selectedPanel === 'export' ? 'secondary' : 'ghost'}
+                  onClick={() => { setSelectedPanel('export'); setSelectedLayer(null); }}
+                  className={cn(
+                    "w-full justify-start text-xs font-semibold h-9",
+                    selectedPanel === 'export' && "bg-primary/10 text-primary border-l-2 border-primary"
+                  )}
+                >
+                  Export & OBS
+                </Button>
+              </div>
+            </div>
+          </DragDropContext>
+        </div>
+        
+        <div className="p-4 border-t border-border mt-auto">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleBackToList}
+            className="w-full text-xs font-semibold h-9 gap-1.5"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to Chyrons
+          </Button>
+        </div>
+      </aside>
+
+      {/* ── MAIN CONTENT ──────────────────────────────────────── */}
+      <div className="flex-1 flex flex-col overflow-y-auto bg-background">
+        {/* Live Preview Header */}
+        <div className="sticky top-0 z-20 shrink-0 py-5 px-8 flex flex-col justify-center items-center border-b border-border bg-card shadow-xs">
+          <div className="flex w-full max-w-4xl justify-between items-center mb-2.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Live Monitor Preview
+            </span>
+            <span className={cn(
+              "text-xs font-bold flex items-center gap-1.5",
+              saving ? "text-warning" : "text-success"
+            )}>
+              <span className={cn("w-2 h-2 rounded-full", saving ? "bg-amber-500 animate-pulse" : "bg-emerald-500")} />
+              {saving ? 'SAVING...' : 'LIVE SYNCED'}
+            </span>
+          </div>
+          <div className="w-full max-w-4xl mb-3">
+            <ChyronCardPreview config={config} />
+          </div>
+          <div className="flex gap-2 w-full max-w-4xl">
+            <Input
+              readOnly
+              value={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
+              onClick={e => (e.target as HTMLInputElement).select()}
+              aria-label="URL" className="font-mono flex-1 bg-background"
+            />
+            <Button
+              size="sm"
+              onClick={handleCopy}
+              className={cn(
+                "h-9 px-4 text-xs font-bold gap-1.5 shrink-0 transition-colors",
+                copySuccess ? "bg-emerald-600 hover:bg-emerald-700 text-white" : ""
+              )}
+            >
+              {copySuccess ? (
+                <>
+                  <Check className="w-3.5 h-3.5" /> Copied URL
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" /> Copy Widget URL
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Properties Panel */}
+        <div className="flex-1 p-6 md:p-8 max-w-4xl mx-auto w-full">
+          {selectedPanel === 'layer' && selectedLayer === 'title' && (
+            <TitleProperties config={config} onChange={setConfig} />
+          )}
+          {selectedPanel === 'layer' && selectedLayer === 'subheader' && (
+            <SubheaderProperties config={config} onChange={setConfig} />
+          )}
+          {selectedPanel === 'layer' && selectedLayer === 'logo' && (
+            <LogoProperties config={config} onChange={setConfig} />
+          )}
+          {selectedPanel === 'layer' && selectedLayer === 'clock' && (
+            <ClockProperties config={config} onChange={setConfig} />
+          )}
+          {(selectedPanel === 'layer' && selectedLayer === 'crawl') && (
+            <CrawlProperties 
+              config={config} 
+              onChange={setConfig} 
+            />
+          )}
+          {(selectedPanel === 'layer' && selectedLayer?.startsWith('crawlBlock:')) && (
+            <CrawlBlockProperties 
+              config={config} 
+              onChange={setConfig} 
+              blockId={selectedLayer.replace('crawlBlock:', '')}
+            />
+          )}
+          {selectedPanel === 'layout' && (
+            <LayoutProperties config={config} onChange={setConfig} />
+          )}
+          {selectedPanel === 'export' && activeConfigId && (
+            <ObsExportCard
+              url={typeof window !== 'undefined' ? `${window.location.origin}/widgets/embed/crawl?id=${activeConfigId}` : ''}
+              dimensions="1920 × 200"
+              allowTransparency={true}
+              notes={["Designed to overlay seamlessly at the bottom of your 1920×1080 stream canvas."]}
+            />
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 export default function ChyronBuilder() {
   return (
-    <Suspense fallback={<div className="p-10 text-sm text-muted-foreground">Loading studio...</div>}>
-      <ChyronStudioContent />
+    <Suspense fallback={<div className="p-8 text-sm text-muted-foreground">Loading Chyron Studio...</div>}>
+      <ChyronBuilderContent />
     </Suspense>
   );
 }

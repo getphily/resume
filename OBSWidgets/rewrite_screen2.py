@@ -1,114 +1,12 @@
-'use client';
+import re
 
-import React, { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import toast from 'react-hot-toast';
-import { ScreenPreview } from '@/components/ScreenPreview';
-import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
-import { TextFormattingToolbar } from '@/components/TextFormattingToolbar';
-import { ImageUploadOrUrl } from '@/components/ImageUploadOrUrl';
-import { ObsExportCard } from '@/components/ObsExportCard';
-import { DEFAULT_SCREEN_CONFIG, ScreenConfig, ScreenPage } from '@/types/screen';
-import { BROADCAST_PRESETS } from '@/lib/presets';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Trash2, ArrowLeft, Plus, Play, RotateCcw, Copy, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+with open("src/app/(app)/screen/page.tsx.bak", "r") as f:
+    original = f.read()
 
-function ScreenCardPreview({ config, activePageId }: { config: ScreenConfig; activePageId?: string }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.2);
+idx = original.find("function ScreenCustomizerContent() {")
+components_part = original[:idx]
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const update = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        if (w > 0) setScale(w / 1920);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div 
-      ref={containerRef}
-      aria-hidden="true" className="preview-window-container w-full aspect-video rounded-md overflow-hidden relative border border-border"
-    >
-      <div 
-        style={{ 
-          width: 1920, 
-          height: 1080, 
-          transform: `scale(${scale})`, 
-          transformOrigin: 'top left',
-          position: 'absolute',
-          top: 0,
-          left: 0
-        }}
-      >
-        <ScreenPreview config={config} activePageId={activePageId} />
-      </div>
-    </div>
-  );
-}
-
-function ScreenEditorPreview({ config, activePageId }: { config: ScreenConfig; activePageId?: string }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.45);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const update = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        if (w > 0) setScale(w / 1920);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div 
-      ref={containerRef}
-      aria-hidden="true" className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-lg border border-border overflow-hidden relative"
-    >
-      <div 
-        style={{ 
-          width: 1920, 
-          height: 1080, 
-          transform: `scale(${scale})`, 
-          transformOrigin: 'top left',
-          position: 'absolute',
-          top: 0,
-          left: 0
-        }}
-      >
-        <ScreenPreview config={config} activePageId={activePageId} />
-      </div>
-    </div>
-  );
-}
-
-
+new_code = components_part + """
 import { useRouter } from 'next/navigation';
 import { Monitor } from 'lucide-react';
 import { StudioShell } from '@/components/StudioShell';
@@ -292,7 +190,7 @@ function ScreenStudioContent() {
                   key={key}
                   type="button"
                   onClick={() => {
-                    update({ layout: preset as any });
+                    update({ layout: preset.layout });
                     toast.success('Preset applied');
                   }}
                   className="px-3 py-2 text-xs font-semibold rounded-md border border-border bg-muted/50 hover:bg-muted hover:border-primary/50 transition-colors text-left truncate"
@@ -323,7 +221,7 @@ function ScreenStudioContent() {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground">Background Image (URL)</label>
-              <ImageUploadOrUrl label="Background Image" value={config.layout.bgImageUrl || ''} onChange={url => update({ layout: { ...config.layout, bgImageUrl: url } })} />
+              <ImageUploadOrUrl value={config.layout.bgImageUrl || ''} onChange={url => update({ layout: { ...config.layout, bgImageUrl: url } })} />
             </div>
           </Card>
         </>
@@ -365,3 +263,7 @@ export default function ScreenBuilder() {
     </Suspense>
   );
 }
+"""
+
+with open("src/app/(app)/screen/page.tsx", "w") as f:
+    f.write(new_code)

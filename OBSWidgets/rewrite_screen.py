@@ -1,114 +1,12 @@
-'use client';
+import re
 
-import React, { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import toast from 'react-hot-toast';
-import { ScreenPreview } from '@/components/ScreenPreview';
-import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
-import { TextFormattingToolbar } from '@/components/TextFormattingToolbar';
-import { ImageUploadOrUrl } from '@/components/ImageUploadOrUrl';
-import { ObsExportCard } from '@/components/ObsExportCard';
-import { DEFAULT_SCREEN_CONFIG, ScreenConfig, ScreenPage } from '@/types/screen';
-import { BROADCAST_PRESETS } from '@/lib/presets';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from '@/components/ui/select';
-import { Trash2, ArrowLeft, Plus, Play, RotateCcw, Copy, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+with open("src/app/(app)/screen/page.tsx.bak", "r") as f:
+    original = f.read()
 
-function ScreenCardPreview({ config, activePageId }: { config: ScreenConfig; activePageId?: string }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.2);
+idx = original.find("function ScreenCustomizerContent() {")
+components_part = original[:idx]
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const update = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        if (w > 0) setScale(w / 1920);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div 
-      ref={containerRef}
-      aria-hidden="true" className="preview-window-container w-full aspect-video rounded-md overflow-hidden relative border border-border"
-    >
-      <div 
-        style={{ 
-          width: 1920, 
-          height: 1080, 
-          transform: `scale(${scale})`, 
-          transformOrigin: 'top left',
-          position: 'absolute',
-          top: 0,
-          left: 0
-        }}
-      >
-        <ScreenPreview config={config} activePageId={activePageId} />
-      </div>
-    </div>
-  );
-}
-
-function ScreenEditorPreview({ config, activePageId }: { config: ScreenConfig; activePageId?: string }) {
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0.45);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const update = () => {
-      if (containerRef.current) {
-        const w = containerRef.current.clientWidth;
-        if (w > 0) setScale(w / 1920);
-      }
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  return (
-    <div 
-      ref={containerRef}
-      aria-hidden="true" className="preview-window-container w-full max-w-4xl aspect-video rounded-xl shadow-lg border border-border overflow-hidden relative"
-    >
-      <div 
-        style={{ 
-          width: 1920, 
-          height: 1080, 
-          transform: `scale(${scale})`, 
-          transformOrigin: 'top left',
-          position: 'absolute',
-          top: 0,
-          left: 0
-        }}
-      >
-        <ScreenPreview config={config} activePageId={activePageId} />
-      </div>
-    </div>
-  );
-}
-
-
+new_code = components_part + """
 import { useRouter } from 'next/navigation';
 import { Monitor } from 'lucide-react';
 import { StudioShell } from '@/components/StudioShell';
@@ -127,7 +25,6 @@ function ScreenStudioContent() {
   const [copySuccess, setCopySuccess] = useState(false);
   
   const [selectedPanel, setSelectedPanel] = useState<'pages' | 'global'>('pages');
-  const [previewPageId, setPreviewPageId] = useState<string>('starting-soon');
 
   const update = (patch: Partial<ScreenConfig>) => setConfig({ ...config, ...patch });
 
@@ -139,9 +36,6 @@ function ScreenStudioContent() {
         if (data) {
           setActiveConfigId(data.id);
           setConfig(data.config as ScreenConfig);
-          if (data.config.pages?.length > 0) {
-            setPreviewPageId(data.config.pages[0].id);
-          }
         } else {
           toast.error('Screen not found.');
           router.push('/dashboard');
@@ -201,18 +95,14 @@ function ScreenStudioContent() {
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  const activePageObj = config.pages.find(p => p.id === previewPageId) || config.pages[0];
+  const activePageObj = config.pages.find(p => p.id === config.activePageId) || config.pages[0];
   const updateActivePage = (patch: Partial<ScreenPage>) => {
-    update({ pages: config.pages.map(p => p.id === previewPageId ? { ...p, ...patch } : p) });
-  };
-  
-  const updateTimer = (patch: Partial<ScreenPage['timer']>) => {
-    const currentTimer = activePageObj.timer || { enabled: false, durationMinutes: 5, endTime: null };
-    updateActivePage({ timer: { ...currentTimer, ...patch } as any });
+    update({ pages: config.pages.map(p => p.id === config.activePageId ? { ...p, ...patch } : p) });
   };
 
   const settingsPanel = (
-    <div className="flex flex-col gap-4 pb-10">
+    <div className="flex flex-col gap-4">
+      {/* Top Segment: Pages & Global Tabs */}
       <div className="flex gap-1 p-1 bg-muted rounded-md shrink-0">
         <button
           type="button"
@@ -234,17 +124,20 @@ function ScreenStudioContent() {
         <>
           {/* Active Page Selector */}
           <Card className="border-border bg-card p-4 flex flex-col gap-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Screen</span>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Stream Page</span>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
               {config.pages.map((p) => (
                 <Button
                   key={p.id}
-                  variant={previewPageId === p.id ? 'default' : 'secondary'}
+                  variant={config.activePageId === p.id ? 'default' : 'secondary'}
                   size="sm"
-                  onClick={() => setPreviewPageId(p.id)}
+                  onClick={() => update({ activePageId: p.id })}
                   className="h-10 text-xs font-semibold px-2"
                 >
-                  {p.name}
+                  {p.id === 'STARTING' && 'Starting'}
+                  {p.id === 'BRB' && 'BRB'}
+                  {p.id === 'ENDED' && 'Ended'}
+                  {p.id === 'TECHNICAL_DIFFICULTIES' && 'Tech Issues'}
                 </Button>
               ))}
             </div>
@@ -252,7 +145,7 @@ function ScreenStudioContent() {
 
           {/* Active Page Properties */}
           <Card className="border-border bg-card p-5 flex flex-col gap-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Edit: {activePageObj.name}</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Edit: {activePageObj.id}</h3>
             
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground">Headline</label>
@@ -266,15 +159,17 @@ function ScreenStudioContent() {
 
             <div className="flex justify-between items-center pt-2 border-t border-border">
               <span className="text-xs font-semibold text-foreground">Show Countdown Timer</span>
-              <Switch checked={activePageObj.timer?.enabled ?? false} onCheckedChange={c => updateTimer({ enabled: c })} />
+              <Switch checked={activePageObj.showTimer} onCheckedChange={c => updateActivePage({ showTimer: c })} />
             </div>
 
-            {activePageObj.timer?.enabled && (
+            {activePageObj.showTimer && (
               <div className="flex flex-col gap-1.5 pl-4 border-l-2 border-border">
-                <label className="text-xs font-semibold text-foreground">Timer Duration (Minutes)</label>
+                <label className="text-xs font-semibold text-foreground">Minutes to Countdown</label>
                 <div className="flex gap-2 items-center">
-                  <Input type="number" min={1} value={activePageObj.timer.durationMinutes} onChange={e => updateTimer({ durationMinutes: parseInt(e.target.value) || 5 })} className="h-9 text-xs flex-1" />
-                  <span className="text-xs font-semibold text-muted-foreground">min</span>
+                  <Input type="number" value={Math.floor(activePageObj.timerDurationSeconds / 60)} onChange={e => updateActivePage({ timerDurationSeconds: (parseInt(e.target.value) || 0) * 60 + (activePageObj.timerDurationSeconds % 60) })} className="h-9 text-xs flex-1" />
+                  <span className="text-xs font-semibold text-muted-foreground">m</span>
+                  <Input type="number" max={59} value={activePageObj.timerDurationSeconds % 60} onChange={e => updateActivePage({ timerDurationSeconds: Math.floor(activePageObj.timerDurationSeconds / 60) * 60 + (parseInt(e.target.value) || 0) })} className="h-9 text-xs flex-1" />
+                  <span className="text-xs font-semibold text-muted-foreground">s</span>
                 </div>
               </div>
             )}
@@ -292,7 +187,7 @@ function ScreenStudioContent() {
                   key={key}
                   type="button"
                   onClick={() => {
-                    update({ layout: preset as any });
+                    update({ layout: preset.layout });
                     toast.success('Preset applied');
                   }}
                   className="px-3 py-2 text-xs font-semibold rounded-md border border-border bg-muted/50 hover:bg-muted hover:border-primary/50 transition-colors text-left truncate"
@@ -318,12 +213,12 @@ function ScreenStudioContent() {
               <ColorInputWithPalette value={config.layout.bgColor} onChange={c => update({ layout: { ...config.layout, bgColor: c } })} />
             </div>
             <div className="pt-2 border-t border-border flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-foreground">Accent Color</label>
+              <label className="text-xs font-semibold text-foreground">Accent Color (Timer/Bars)</label>
               <ColorInputWithPalette value={config.layout.accentColor} onChange={c => update({ layout: { ...config.layout, accentColor: c } })} />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-foreground">Background Image (URL)</label>
-              <ImageUploadOrUrl label="Background Image" value={config.layout.bgImageUrl || ''} onChange={url => update({ layout: { ...config.layout, bgImageUrl: url } })} />
+              <label className="text-xs font-semibold text-foreground">Background Image (Optional)</label>
+              <ImageUploadOrUrl value={config.layout.bgImage || ''} onChange={url => update({ layout: { ...config.layout, bgImage: url } })} />
             </div>
           </Card>
         </>
@@ -334,7 +229,7 @@ function ScreenStudioContent() {
   const previewCanvas = (
     <div className="w-full h-full flex items-center justify-center p-0">
       <div className="w-full h-full border border-border shadow-2xl relative overflow-hidden flex items-center justify-center">
-        <ScreenPreview config={config} activePageId={previewPageId} />
+        <ScreenPreview config={config} isLive={false} />
       </div>
     </div>
   );
@@ -346,7 +241,7 @@ function ScreenStudioContent() {
       title="Screen Studio"
       icon={<Monitor className="w-4 h-4" />}
       widgetName={config.name || ''}
-      onNameChange={(n) => update({ name: n })}
+      onNameChange={(n) => setConfig({ ...config, name: n })}
       onSave={handleManualSave}
       isSaving={saving}
       hasId={!!activeConfigId}
@@ -365,3 +260,7 @@ export default function ScreenBuilder() {
     </Suspense>
   );
 }
+"""
+
+with open("src/app/(app)/screen/page.tsx", "w") as f:
+    f.write(new_code)

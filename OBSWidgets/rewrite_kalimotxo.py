@@ -1,4 +1,9 @@
-'use client';
+import re
+
+with open("src/app/(app)/kalimotxo/page.tsx", "r") as f:
+    original = f.read()
+
+new_code = """'use client';
 
 import React, { useState } from 'react';
 import { 
@@ -151,10 +156,7 @@ export default function KalimotxoPage() {
       title="Kalimotxo Studio"
       icon={<Sparkles className="w-4 h-4" />}
       widgetName="Kalimotxo FLX10 Default"
-      hasId={true}
-      onNameChange={() => {}}
-      onSave={() => {}}
-      isSaving={false} // For the copy URL button to be active
+      hasId={true} // For the copy URL button to be active
       onCopyUrl={copyObsUrl}
       copySuccess={copied}
       settingsPanel={settingsPanel}
@@ -162,3 +164,7 @@ export default function KalimotxoPage() {
     />
   );
 }
+"""
+
+with open("src/app/(app)/kalimotxo/page.tsx", "w") as f:
+    f.write(new_code)
