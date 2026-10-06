@@ -71,7 +71,7 @@ export function Footer2({ className }: Footer2Props) {
                 <Radio className="w-4 h-4" />
               </div>
               <span className="font-extrabold text-base tracking-tight text-foreground">
-                getphily&apos;s code stand
+                getphily&apos;s Codebox
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
@@ -108,7 +108,7 @@ export function Footer2({ className }: Footer2Props) {
 
         {/* Bottom Strip */}
         <div className="pt-8 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} getphily&apos;s code stand (code.getphily.io). Built with Shadcn UI & Tailwind CSS.</p>
+          <p>© {new Date().getFullYear()} getphily&apos;s Codebox (code.getphily.io). Built with Shadcn UI & Tailwind CSS.</p>
           <div className="flex items-center gap-4">
             <Link href="/account" className="hover:text-foreground hover:underline">
               Theme Settings

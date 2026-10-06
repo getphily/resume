@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { 
@@ -96,15 +97,13 @@ export default function Navbar() {
         </Button>
 
         {/* Brand Logo & Title */}
-        <Link href="/" className="flex items-center gap-3 no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
-          <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center text-primary-foreground shadow-md shadow-primary/30 group-hover:opacity-90 transition-opacity" aria-hidden="true">
-            <Radio className="w-5 h-5" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-base tracking-tight text-white leading-tight">
-              getphily&apos;s code stand
+        <Link href="/" className="flex items-center gap-4 no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
+          <Image src="/logo.png" alt="GetPhily's Codebox" width={48} height={48} className="w-12 h-12 object-contain drop-shadow-md group-hover:opacity-90 transition-opacity" priority />
+          <div className="flex flex-col justify-center -space-y-0.5">
+            <span className="font-bold text-lg tracking-tight text-white">
+              GetPhily&apos;s Codebox
             </span>
-            <span className="text-xs font-semibold text-slate-400 tracking-wider mt-0.5">
+            <span className="text-[11px] font-bold text-slate-400 tracking-widest uppercase mt-1">
               code.getphily.io
             </span>
           </div>
@@ -198,7 +197,7 @@ export default function Navbar() {
             variant="outline" 
             size="sm" 
             asChild 
-            className="border-white/20 text-white hover:bg-white/10 text-sm h-11 px-4"
+            className="bg-transparent border-white/20 text-white hover:text-white hover:bg-white/10 text-sm h-11 px-4"
           >
             <Link href="/auth">Sign In</Link>
           </Button>

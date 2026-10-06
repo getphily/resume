@@ -159,5 +159,5 @@ export const DEFAULT_CHYRON_CONFIG: ChyronConfig = {
     bgColor: '#0f172a',
   },
 
-  layerOrder: ['crawl', 'title'],
+  layerOrder: ['clock', 'logo', 'title', 'subheader', 'crawl'],
 };

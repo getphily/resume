@@ -64,13 +64,13 @@ export function Hero1({
             </p>
 
             <div className="flex w-full sm:w-auto flex-col sm:flex-row items-center gap-3 pt-2">
-              <Button asChild size="lg" className="w-full sm:w-auto gap-2 text-sm font-semibold h-11 px-5 shadow-xs">
+              <Button asChild size="lg" className="w-full sm:w-auto gap-2 text-sm font-semibold h-auto py-2.5 px-5 shadow-xs whitespace-normal flex-wrap text-center">
                 <Link href={primaryButtonUrl}>
                   <span>{primaryButtonText}</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-sm font-semibold h-11 px-5">
+              <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-sm font-semibold h-auto py-2.5 px-5 whitespace-normal flex-wrap text-center">
                 <Link href={secondaryButtonUrl}>
                   {secondaryButtonText}
                 </Link>
@@ -161,7 +161,7 @@ export function Hero1({
                           </span>
                           <Badge variant="secondary" className="text-xs font-mono">Transparent</Badge>
                         </div>
-                        <div className="aspect-video w-full rounded-xl bg-slate-950/80 flex items-center justify-center border border-border/60 relative overflow-hidden shadow-inner bg-[url('https://transparenttextures.com/patterns/cubes.png')]">
+                        <div className="aspect-video w-full rounded-xl bg-slate-950/80 flex items-center justify-center border border-border/60 relative overflow-hidden shadow-inner" >
                            <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-2xl">
                               <div className="text-sm font-bold text-blue-400 tracking-widest uppercase mb-1">Stream Starts In</div>
                               <div className="text-5xl font-black text-white font-mono tracking-tighter">04:59</div>

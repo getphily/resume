@@ -4,6 +4,7 @@ import path from "path";
 const nextConfig: NextConfig = {
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   output: 'export',
+  images: { unoptimized: true },
   trailingSlash: true,
   turbopack: {
     root: path.resolve(__dirname),

@@ -28,7 +28,7 @@ export default function Home() {
       <Hero1 
         badgeText="code.getphily.io"
         badgeLabel="Handcrafted Creator & Developer Toolsets"
-        heading="getphily's code stand"
+        heading="GetPhily's Codebox"
         description="Specialized web toolsets for live broadcasters, DJs, audio creators, and labor organizers. Built on modern web standards with zero-latency transparent OBS integration."
         primaryButtonText="Explore Toolsets"
         primaryButtonUrl="#toolsets"
@@ -49,7 +49,7 @@ export default function Home() {
             Platform Toolsets
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2 leading-relaxed">
-            Welcome to <strong>getphily&apos;s code stand</strong> at <code>code.getphily.io</code>. Select a toolset below to launch active production studios or preview upcoming creator utilities.
+            Welcome to <strong>GetPhily&apos;s Codebox</strong> at <code>code.getphily.io</code>. Select a toolset below to launch active production studios or preview upcoming creator utilities.
           </p>
         </div>
 
@@ -71,9 +71,9 @@ export default function Home() {
               Real-time broadcast graphics, animated lower thirds, news tickers, stream clocks, countdown timers, and multi-page scene sets with transparent OBS browser embeds.
             </p>
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
-              <Button asChild size="default" className="w-full font-bold text-xs uppercase tracking-wide gap-1.5 shadow-xs">
+              <Button asChild size="default" className="w-full h-auto py-2.5 whitespace-normal flex-wrap font-bold text-xs uppercase tracking-wide gap-1.5 shadow-xs">
                 <Link href="/dashboard">
-                  <span>Open Studio Dashboard</span>
+                  <span>Studio Dashboard</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </Button>
@@ -105,7 +105,7 @@ export default function Home() {
               Tactile Pioneer DJ DDJ-FLX10 inspired audio-reactive 3D graphics studio. Web Audio loopback, 3-band stems isolation, and 16:9 OBS canvas.
             </p>
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
-              <Button asChild size="default" className="w-full bg-[#FF5900] hover:bg-[#FF5900]/90 text-black font-extrabold text-xs uppercase tracking-wider gap-1.5 shadow-xs">
+              <Button asChild size="default" className="w-full h-auto py-2.5 whitespace-normal flex-wrap bg-[#FF5900] hover:bg-[#FF5900]/90 text-black font-extrabold text-xs uppercase tracking-wider gap-1.5 shadow-xs">
                 <Link href="/kalimotxo">
                   <span>Launch Kalimotxo</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -134,7 +134,7 @@ export default function Home() {
               Automated chapter markers for YouTube and Spotify, ID3v2 tag chunking, waveform teaser clips, and syndicated RSS show notes.
             </p>
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
-              <Button asChild variant="outline" size="default" className="w-full font-semibold text-xs gap-1.5">
+              <Button asChild variant="outline" size="default" className="w-full h-auto py-2.5 whitespace-normal flex-wrap font-semibold text-xs gap-1.5">
                 <Link href="/podcast-tools">
                   <span>Preview Roadmap</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -163,7 +163,7 @@ export default function Home() {
               Open digital utilities for stewards and bargaining committees. Side-by-side CBA diffing, grievance deadline tracking, and wage step modeling.
             </p>
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
-              <Button asChild variant="outline" size="default" className="w-full font-semibold text-xs gap-1.5">
+              <Button asChild variant="outline" size="default" className="w-full h-auto py-2.5 whitespace-normal flex-wrap font-semibold text-xs gap-1.5">
                 <Link href="/union-tools">
                   <span>Preview Roadmap</span>
                   <ArrowRight className="w-3.5 h-3.5" />

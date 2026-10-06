@@ -66,7 +66,13 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
 
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Title Bar</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Title Bar</h3>
+        <div className="flex items-center gap-2">
+          <Switch aria-label="Enable Title Bar" checked={t.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
+          <span className="text-xs font-bold text-muted-foreground uppercase">Enable Title</span>
+        </div>
+      </div>
       <TextFormattingToolbar
         text={t.text}
         fontFamily={t.fontFamily}
@@ -89,7 +95,13 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
 
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Subheader</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Subheader</h3>
+        <div className="flex items-center gap-2">
+          <Switch aria-label="Enable Subheader" checked={s.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
+          <span className="text-xs font-bold text-muted-foreground uppercase">Enable Subheader</span>
+        </div>
+      </div>
       <TextFormattingToolbar
         text={s.text}
         fontFamily={s.fontFamily}
@@ -112,7 +124,13 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
 
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
-      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Logo Bug</h3>
+      <div className="flex justify-between items-center">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Logo Bug</h3>
+        <div className="flex items-center gap-2">
+          <Switch aria-label="Enable Logo Bug" checked={l.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
+          <span className="text-xs font-bold text-muted-foreground uppercase">Enable Logo</span>
+        </div>
+      </div>
       
       <div className="flex gap-4 flex-wrap">
         <div className="flex-1 min-w-[180px] flex flex-col gap-1.5">
@@ -924,7 +942,7 @@ function ChyronCardPreview({ config }: { config: ChyronConfig }) {
   return (
     <div 
       ref={containerRef}
-      aria-hidden="true" className="preview-window-container w-full aspect-[16/5] rounded-md overflow-hidden flex items-end justify-center relative border border-border"
+      aria-hidden="true" className="preview-window-container w-full h-full rounded-md overflow-hidden flex items-end justify-center relative border border-border"
     >
       <div style={{ width: 1920 * scale, height: '100%', display: 'flex', alignItems: 'flex-end' }}>
         <ChyronPreview config={config} scale={scale} />
@@ -1036,10 +1054,17 @@ function ChyronStudioContent() {
       reorderedBlocks.splice(destination.index, 0, movedBlock);
       setConfig({ ...config, crawl: { ...config.crawl, blocks: reorderedBlocks } });
     } else {
-      const newOrder = Array.from(config.layerOrder);
+      const fullOrder = ['clock', 'logo', 'title', 'subheader', 'crawl'].sort((a, b) => {
+        const idxA = config.layerOrder.indexOf(a as any);
+        const idxB = config.layerOrder.indexOf(b as any);
+        if (idxA === -1) return 1;
+        if (idxB === -1) return -1;
+        return idxA - idxB;
+      });
+      const newOrder = Array.from(fullOrder);
       const [removed] = newOrder.splice(source.index, 1);
       newOrder.splice(destination.index, 0, removed);
-      setConfig({ ...config, layerOrder: newOrder });
+      setConfig({ ...config, layerOrder: newOrder as any });
     }
   };
 
@@ -1052,6 +1077,22 @@ function ChyronStudioContent() {
         blocks: config.crawl.blocks.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b)
       }
     });
+  };
+
+  const toggleLayerEnabled = (layerId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const key = layerId as keyof Pick<ChyronConfig, 'title' | 'subheader' | 'logo' | 'clock' | 'crawl'>;
+    const currentLayer = config[key];
+    if (currentLayer && typeof currentLayer === 'object' && 'enabled' in currentLayer) {
+      const isCurrentlyEnabled = currentLayer.enabled !== false;
+      setConfig({
+        ...config,
+        [key]: {
+          ...currentLayer,
+          enabled: !isCurrentlyEnabled,
+        },
+      });
+    }
   };
 
   const addBlockFromSidebar = () => {
@@ -1134,9 +1175,22 @@ function ChyronStudioContent() {
                                   !isEnabled && "bg-muted/50 text-muted-foreground"
                                 )}
                               >
-                                <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab min-w-[20px]">
+                                <div {...provided.dragHandleProps} className="text-muted-foreground cursor-grab min-w-[16px] flex items-center justify-center">
                                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                                 </div>
+                                <button
+                                  type="button"
+                                  onClick={(e) => toggleLayerEnabled(layerId, e)}
+                                  className="shrink-0 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                  title={isEnabled ? `Hide ${layerId}` : `Show ${layerId}`}
+                                  aria-label={isEnabled ? `Hide ${layerId}` : `Show ${layerId}`}
+                                >
+                                  {isEnabled ? (
+                                    <Eye className="w-3.5 h-3.5 text-foreground" />
+                                  ) : (
+                                    <EyeOff className="w-3.5 h-3.5 text-muted-foreground/60" />
+                                  )}
+                                </button>
                                 <span className="flex-1 text-xs font-semibold capitalize">{layerId}</span>
                               </div>
                               {layerId === 'crawl' && (
@@ -1158,11 +1212,21 @@ function ChyronStudioContent() {
                                                     onClick={(e) => { e.stopPropagation(); setSelectedLayer(`crawlBlock:${block.id}`); setSelectedPanel('layer'); }}
                                                     className={cn("flex items-center gap-2 px-2 py-1.5 cursor-pointer text-xs transition-colors rounded-sm", isBlockActive ? "bg-primary/20 text-primary" : "hover:bg-muted", !block.enabled && "opacity-50")}
                                                   >
-                                                    <div {...provided.dragHandleProps} className="cursor-grab shrink-0 text-muted-foreground">
+                                                    <div {...provided.dragHandleProps} className="cursor-grab shrink-0 text-muted-foreground flex items-center justify-center">
                                                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="19" r="1"/></svg>
                                                     </div>
-                                                    <button onClick={(e) => toggleBlockEnabled(block.id, e)} className="shrink-0 text-muted-foreground hover:text-foreground">
-                                                      {block.enabled ? 'O' : '-'}
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => toggleBlockEnabled(block.id, e)}
+                                                      className="shrink-0 p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                                      title={block.enabled ? "Hide block" : "Show block"}
+                                                      aria-label={block.enabled ? "Hide block" : "Show block"}
+                                                    >
+                                                      {block.enabled ? (
+                                                        <Eye className="w-3.5 h-3.5 text-foreground" />
+                                                      ) : (
+                                                        <EyeOff className="w-3.5 h-3.5 text-muted-foreground/60" />
+                                                      )}
                                                     </button>
                                                     <span className="truncate">{block.label || 'Unnamed'}</span>
                                                   </div>
@@ -1205,7 +1269,7 @@ function ChyronStudioContent() {
 
   const previewCanvas = (
     <div className="w-full h-full flex items-end justify-center pb-8 px-4 overflow-hidden">
-      <div className="w-full max-w-5xl shadow-2xl rounded-xl border border-border/50 overflow-hidden relative" style={{aspectRatio: '1920/200'}}>
+      <div className="w-full max-w-5xl aspect-video shadow-2xl rounded-xl border border-border/50 overflow-hidden relative">
          <ChyronCardPreview config={config} />
       </div>
     </div>
