@@ -97,18 +97,52 @@ export default function Navbar() {
 
         {/* Brand Logo & Title */}
         <Link href="/" className="flex items-center gap-3 no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
-          <div className="w-10 h-10 bg-indigo-600 rounded-md flex items-center justify-center text-white shadow-md shadow-indigo-600/30 group-hover:bg-indigo-500 transition-colors" aria-hidden="true">
+          <div className="w-10 h-10 bg-primary rounded-md flex items-center justify-center text-primary-foreground shadow-md shadow-primary/30 group-hover:opacity-90 transition-opacity" aria-hidden="true">
             <Radio className="w-5 h-5" />
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-base tracking-tight text-white leading-tight">
-              getphily.io
+              OBSWidgets
             </span>
             <span className="text-xs font-semibold text-slate-400 tracking-wider uppercase mt-0.5">
-              OBS Stream Studio
+              Broadcast Studio
             </span>
           </div>
         </Link>
+
+        {/* Desktop Quick Nav (Shadcnblocks Navbar1 pattern) */}
+        <nav className="hidden xl:flex items-center gap-1 ml-6 text-sm font-medium text-slate-300">
+          <Link 
+            href="/" 
+            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Dashboard
+          </Link>
+          <Link 
+            href="/crawl" 
+            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Chyron & Ticker
+          </Link>
+          <Link 
+            href="/clock" 
+            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Stream Clock
+          </Link>
+          <Link 
+            href="/timer" 
+            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Event Timer
+          </Link>
+          <Link 
+            href="/screen" 
+            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
+          >
+            Scene Screens
+          </Link>
+        </nav>
       </div>
 
       <div className="flex items-center gap-2">
