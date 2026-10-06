@@ -9,7 +9,10 @@ import {
   Layers, 
   Palette, 
   ShieldCheck, 
-  ArrowRight 
+  ArrowRight,
+  Sliders,
+  Mic,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -37,15 +40,15 @@ const defaultFeatures: FeatureItem[] = [
   },
   {
     icon: <Clock className="w-5 h-5 text-primary" />,
-    title: "Timezone Stream Clocks",
-    description: "Accurate clocks with synchronized UTC/local time, customizable digital & retro typography, and date banners.",
+    title: "Timezone Clocks & Timers",
+    description: "Synchronized UTC/local stream clocks and countdown timers with SVG rings and audio chime alarms.",
     url: "/clock",
   },
   {
-    icon: <Timer className="w-5 h-5 text-primary" />,
-    title: "Event & Match Timers",
-    description: "Configurable count-up and count-down timers featuring circular SVG progress rings and chime alarms.",
-    url: "/timer",
+    icon: <Sliders className="w-5 h-5 text-primary" />,
+    title: "Kalimotxo 3D Visualizer",
+    description: "Pioneer DJ DDJ-FLX10 tactile aesthetic with 3-band stems separation and audio-reactive Three.js geometry.",
+    url: "/kalimotxo",
   },
   {
     icon: <Monitor className="w-5 h-5 text-primary" />,
@@ -54,21 +57,22 @@ const defaultFeatures: FeatureItem[] = [
     url: "/screen",
   },
   {
-    icon: <Palette className="w-5 h-5 text-primary" />,
-    title: "Theme Token Styling",
-    description: "Native support for curated broadcast palettes and Shadcnblocks themes (Modern Minimal, Alpine, Autoblog, Light Green).",
-    url: "/account",
+    icon: <Mic className="w-5 h-5 text-primary" />,
+    title: "Podcast Production Tools",
+    description: "Automated YouTube/Spotify chapter markers, ID3v2 metadata chunking, and syndicated RSS show notes.",
+    url: "/podcast-tools",
   },
   {
-    icon: <ShieldCheck className="w-5 h-5 text-primary" />,
-    title: "Zero Lag Browser Sources",
-    description: "Ultra-lean standalone embed URLs optimized for hardware-accelerated rendering in OBS, vMix, and Streamlabs.",
+    icon: <Users className="w-5 h-5 text-primary" />,
+    title: "Union Solidarity Toolkit",
+    description: "Open collective bargaining tools for stewards: contract clause diffing, grievance deadlines, and wage calculators.",
+    url: "/union-tools",
   },
 ];
 
 export function Feature43({
-  heading = "Professional Stream Tools for OBS Studio",
-  subheading = "Everything you need to produce television-grade stream overlays without complicated scene setups or design software.",
+  heading = "Crafted for Broadcasters, DJs & Organizers",
+  subheading = "An expanding ecosystem of purpose-built open web utilities hosted at code.getphily.io to streamline your workflow.",
   features = defaultFeatures,
   className,
 }: Feature43Props) {

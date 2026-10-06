@@ -56,6 +56,14 @@ This app follows an **opinionated, bounded customization** model. Think Apple: u
     4. **Light Green** (`data-theme="light-green"`): High-contrast neon green primary with deep slate typography.
   - When introducing new components or blocks, ensure they utilize semantic theme tokens (`bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `bg-primary`, `text-primary`, etc.) so they automatically adapt across all user-selected themes.
 
+## Platform Architecture: getphily's code stand (code.getphily.io)
+The website functions as a unified platform hub for multiple specialized creator, broadcast, and organizing toolsets:
+1. **OBS Stream Studio** (`/`, `/stream-studio`, `/crawl`, `/clock`, `/timer`, `/screen`): Real-time broadcast overlays, animated lower-third news chyrons, stream clocks, countdown timers, multi-page scene sets, and transparent OBS browser source embed URLs (`/embed/*`).
+2. **Kalimotxo** (`/kalimotxo`): Tactile Pioneer DJ DDJ-FLX10 inspired audio-reactive 3D graphics engine utilizing Web Audio loopback and Three.js geometry.
+3. **Podcast Tools** (`/podcast-tools`): Audio publishing automation including YouTube/Spotify chapter markers, ID3v2 metadata chunking, and syndicated RSS show notes.
+4. **Union Tools** (`/union-tools`): Open labor solidarity utilities for stewards and bargaining committees including CBA contract clause diffing, grievance deadline tracking, and wage step progression models.
+All toolsets share global authentication, verified account profiles, and the Shadcnblocks theming system under `code.getphily.io`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

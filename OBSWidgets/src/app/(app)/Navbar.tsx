@@ -102,10 +102,10 @@ export default function Navbar() {
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-base tracking-tight text-white leading-tight">
-              OBSWidgets
+              getphily&apos;s code stand
             </span>
-            <span className="text-xs font-semibold text-slate-400 tracking-wider uppercase mt-0.5">
-              Broadcast Studio
+            <span className="text-xs font-semibold text-slate-400 tracking-wider mt-0.5">
+              code.getphily.io
             </span>
           </div>
         </Link>
@@ -113,34 +113,34 @@ export default function Navbar() {
         {/* Desktop Quick Nav (Shadcnblocks Navbar1 pattern) */}
         <nav className="hidden xl:flex items-center gap-1 ml-6 text-sm font-medium text-slate-300">
           <Link 
-            href="/" 
-            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
+            href="/#toolsets" 
+            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors font-semibold text-white/90"
           >
-            Dashboard
+            All Toolsets
           </Link>
           <Link 
-            href="/crawl" 
+            href="/#broadcast-studio" 
             className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
           >
-            Chyron & Ticker
+            OBS Studio
           </Link>
           <Link 
-            href="/clock" 
+            href="/kalimotxo" 
             className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
           >
-            Stream Clock
+            Kalimotxo
           </Link>
           <Link 
-            href="/timer" 
+            href="/podcast-tools" 
             className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
           >
-            Event Timer
+            Podcast Tools
           </Link>
           <Link 
-            href="/screen" 
+            href="/union-tools" 
             className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
           >
-            Scene Screens
+            Union Tools
           </Link>
         </nav>
       </div>

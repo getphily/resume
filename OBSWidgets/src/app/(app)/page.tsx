@@ -23,7 +23,13 @@ import {
   Clock, 
   Timer, 
   Tv, 
-  Monitor 
+  Monitor,
+  Radio,
+  Sliders,
+  Mic,
+  Users,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -376,13 +382,168 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-full w-full">
       {/* 1. Shadcnblocks Hero Section */}
-      <Hero1 />
+      <Hero1 
+        badgeText="code.getphily.io"
+        badgeLabel="Handcrafted Creator & Developer Toolsets"
+        heading="getphily's code stand"
+        description="Specialized web toolsets for live broadcasters, DJs, audio creators, and organizers. Built on modern web standards with zero-latency transparent OBS integration."
+        primaryButtonText="Explore Toolsets"
+        primaryButtonUrl="#toolsets"
+        secondaryButtonText="Open OBS Studio"
+        secondaryButtonUrl="#broadcast-studio"
+      />
 
-      {/* 2. Main Studio Dashboard & Saved Widgets */}
-      <div className="p-6 max-w-7xl mx-auto w-full">
+      {/* 2. Platform Toolsets Showcase Grid */}
+      <section id="toolsets" className="py-12 px-6 max-w-7xl mx-auto w-full border-b border-border">
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 mb-2">
+            <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5 mr-1" />
+              Four Specialized Suites
+            </Badge>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Platform Toolsets
+          </h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1 max-w-3xl leading-relaxed">
+            Welcome to <strong>getphily&apos;s code stand</strong> at <code>code.getphily.io</code>. Select a toolset below to launch active production studios or preview upcoming creator utilities.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Toolset 1: OBS Stream Studio */}
+          <Card className="border-border bg-card shadow-xs hover:border-primary/50 transition-all flex flex-col p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Radio className="w-5 h-5" />
+              </div>
+              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-semibold">
+                Ready • Live
+              </Badge>
+            </div>
+            <h3 className="font-extrabold text-lg text-foreground mb-1">
+              OBS Stream Studio
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+              Real-time broadcast graphics, animated lower thirds, news tickers, stream clocks, count-down timers, and multi-page scene sets.
+            </p>
+            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
+              <Button asChild size="sm" className="w-full font-bold text-xs gap-1.5 shadow-xs">
+                <a href="#broadcast-studio">
+                  <span>Manage Widgets</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+              </Button>
+              <div className="grid grid-cols-2 gap-1.5 text-center">
+                <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-1">
+                  <Link href="/crawl">Chyron</Link>
+                </Button>
+                <Button asChild variant="outline" size="sm" className="h-7 text-[11px] px-1">
+                  <Link href="/clock">Clock</Link>
+                </Button>
+              </div>
+            </div>
+          </Card>
+
+          {/* Toolset 2: Kalimotxo 3D Visualizer */}
+          <Card className="border-border bg-card shadow-xs hover:border-[#FF5900]/50 transition-all flex flex-col p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#FF5900]/10 text-[#FF5900] flex items-center justify-center shrink-0">
+                <Sliders className="w-5 h-5" />
+              </div>
+              <Badge className="bg-[#FF5900]/15 text-[#FF5900] border border-[#FF5900]/30 text-[10px] font-mono font-bold">
+                FLX10 Stage • Live
+              </Badge>
+            </div>
+            <h3 className="font-extrabold text-lg text-foreground mb-1">
+              KALIMOTXO
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+              Tactile Pioneer DJ DDJ-FLX10 inspired audio-reactive 3D graphics studio. Web Audio loopback, 3-band stems isolation, and 16:9 OBS canvas.
+            </p>
+            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
+              <Button asChild size="sm" className="w-full bg-[#FF5900] hover:bg-[#FF5900]/90 text-black font-extrabold text-xs uppercase tracking-wider gap-1.5 shadow-xs">
+                <Link href="/kalimotxo">
+                  <span>Launch Kalimotxo</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Button>
+              <div className="text-[11px] text-center text-muted-foreground font-mono">
+                16:9 Three.js Audio Canvas
+              </div>
+            </div>
+          </Card>
+
+          {/* Toolset 3: Podcast Tools (Placeholder) */}
+          <Card className="border-border bg-card shadow-xs hover:border-amber-500/40 transition-all flex flex-col p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Mic className="w-5 h-5" />
+              </div>
+              <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-semibold">
+                In Development
+              </Badge>
+            </div>
+            <h3 className="font-extrabold text-lg text-foreground mb-1">
+              Podcast Tools
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+              Automated chapter markers for YouTube and Spotify, ID3v2 tag chunking, waveform teaser clips, and syndicated RSS show notes.
+            </p>
+            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
+              <Button asChild variant="outline" size="sm" className="w-full font-semibold text-xs gap-1.5">
+                <Link href="/podcast-tools">
+                  <span>Preview Toolset</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Button>
+              <div className="text-[11px] text-center text-muted-foreground">
+                Roadmap preview available
+              </div>
+            </div>
+          </Card>
+
+          {/* Toolset 4: Union Tools (Placeholder) */}
+          <Card className="border-border bg-card shadow-xs hover:border-blue-500/40 transition-all flex flex-col p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[11px] font-semibold">
+                Solidarity Suite
+              </Badge>
+            </div>
+            <h3 className="font-extrabold text-lg text-foreground mb-1">
+              Union Tools
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 mb-4">
+              Open digital utilities for stewards and bargaining committees. Side-by-side CBA diffing, grievance deadline tracking, and wage step modeling.
+            </p>
+            <div className="flex flex-col gap-2 pt-2 border-t border-border mt-auto">
+              <Button asChild variant="outline" size="sm" className="w-full font-semibold text-xs gap-1.5">
+                <Link href="/union-tools">
+                  <span>Preview Toolset</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </Button>
+              <div className="text-[11px] text-center text-muted-foreground">
+                Open source & pro-labor
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* 3. Main Studio Dashboard & Saved Widgets */}
+      <div id="broadcast-studio" className="p-6 max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="flex justify-between items-end mb-6 flex-wrap gap-4">
           <div>
+            <div className="inline-flex items-center gap-2 mb-1">
+              <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold">
+                OBS Stream Studio
+              </Badge>
+            </div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Broadcast Studio Dashboard</h2>
             <p className="text-sm text-muted-foreground mt-1">Create, preview, and manage your live stream OBS browser sources.</p>
           </div>

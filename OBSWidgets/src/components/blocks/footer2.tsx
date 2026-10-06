@@ -19,7 +19,7 @@ interface Footer2Props {
 
 const defaultSections: FooterSection[] = [
   {
-    title: "Studio Overlays",
+    title: "Stream Studio",
     links: [
       { name: "Live Chyron & Crawl", href: "/crawl" },
       { name: "Stream Clocks", href: "/clock" },
@@ -28,29 +28,30 @@ const defaultSections: FooterSection[] = [
     ],
   },
   {
-    title: "Broadcasting",
+    title: "Audio & Visuals",
     links: [
-      { name: "OBS Browser Setup", href: "/#setup" },
-      { name: "Streamlabs Source", href: "/#streamlabs" },
-      { name: "vMix HTML Embed", href: "/#vmix" },
-      { name: "Hardware Aesthetics", href: "/account" },
+      { name: "Kalimotxo 3D Visualizer", href: "/kalimotxo" },
+      { name: "Pioneer DJ Aesthetic", href: "/kalimotxo" },
+      { name: "Web Audio Loopback", href: "/kalimotxo" },
+      { name: "Stems Separation FX", href: "/kalimotxo" },
     ],
   },
   {
-    title: "Preferences",
+    title: "Creator Toolsets",
+    links: [
+      { name: "Podcast Tools", href: "/podcast-tools" },
+      { name: "Union Tools", href: "/union-tools" },
+      { name: "Platform Toolsets", href: "/#toolsets" },
+      { name: "Broadcast Dashboard", href: "/#broadcast-studio" },
+    ],
+  },
+  {
+    title: "Account & Themes",
     links: [
       { name: "Modern Minimal Theme", href: "/account" },
       { name: "Alpine Cobalt Theme", href: "/account" },
       { name: "Autoblog Orange Theme", href: "/account" },
-      { name: "Light Green Theme", href: "/account" },
-    ],
-  },
-  {
-    title: "Account",
-    links: [
-      { name: "DJ Profile", href: "/account" },
-      { name: "Authentication", href: "/auth" },
-      { name: "Saved Widgets", href: "/" },
+      { name: "Public Profile", href: "/account" },
     ],
   },
 ];
@@ -70,15 +71,15 @@ export function Footer2({ className }: Footer2Props) {
                 <Radio className="w-4 h-4" />
               </div>
               <span className="font-extrabold text-base tracking-tight text-foreground">
-                OBSWidgets Studio
+                getphily&apos;s code stand
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-              Live broadcast overlays and animated browser sources crafted for OBS Studio, Streamlabs, and live broadcast workflows.
+              Specialized, handcrafted web toolsets for live broadcasters, DJs, audio creators, and organizers. Hosted at code.getphily.io.
             </p>
             <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
               <span className="inline-block size-2 rounded-full bg-emerald-500" />
-              <span>Broadcast Engine: Live & Synchronized</span>
+              <span>Platform Engine: Active & Synchronized</span>
             </div>
           </div>
 
@@ -107,7 +108,7 @@ export function Footer2({ className }: Footer2Props) {
 
         {/* Bottom Strip */}
         <div className="pt-8 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} OBSWidgets Studio. Designed with Shadcnblocks & Tailwind CSS.</p>
+          <p>© {new Date().getFullYear()} getphily&apos;s code stand (code.getphily.io). Built with Shadcn UI & Tailwind CSS.</p>
           <div className="flex items-center gap-4">
             <Link href="/account" className="hover:text-foreground hover:underline">
               Theme Settings
