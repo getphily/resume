@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
@@ -49,6 +50,29 @@ if (supabaseUrl && supabaseServiceKey) {
   console.warn('WARNING: SUPABASE_SERVICE_KEY missing. Admin write operations will be unavailable.');
 }
 
+
+// --- Subdomain routing for code.getphily.io (getphily's code stand) ---
+app.use((req, res, next) => {
+  const host = (req.headers.host || '').toLowerCase();
+  const isCodeSubdomain = host.startsWith('code.') || host.includes('code.getphily.io');
+
+  if (isCodeSubdomain) {
+    // Serve OBSWidgets/out directly at root for code.getphily.io
+    return express.static(path.join(__dirname, 'OBSWidgets/out'))(req, res, () => {
+      // Check if html file exists (e.g. /crawl -> /crawl/index.html)
+      const cleanPath = req.path.replace(/^\//, '').replace(/\/$/, '');
+      const indexPath = cleanPath 
+        ? path.join(__dirname, 'OBSWidgets/out', cleanPath, 'index.html') 
+        : path.join(__dirname, 'OBSWidgets/out', 'index.html');
+      
+      if (fs.existsSync(indexPath)) {
+        return res.sendFile(indexPath);
+      }
+      return res.sendFile(path.join(__dirname, 'OBSWidgets/out', 'index.html'));
+    });
+  }
+  next();
+});
 
 // Serve static assets from dist folder (production build)
 app.use(express.static(path.join(__dirname, 'dist')));
@@ -868,6 +892,18 @@ app.delete('/api/admin/education/:id', checkAdmin, async (req, res) => {
 
 // Fallback endpoint for Spa routing
 app.get('*', (req, res, next) => {
+  const host = (req.headers.host || '').toLowerCase();
+  if (host.startsWith('code.') || host.includes('code.getphily.io')) {
+    const cleanPath = req.path.replace(/^\//, '').replace(/\/$/, '');
+    const indexPath = cleanPath 
+      ? path.join(__dirname, 'OBSWidgets/out', cleanPath, 'index.html') 
+      : path.join(__dirname, 'OBSWidgets/out', 'index.html');
+    if (fs.existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+    return res.sendFile(path.join(__dirname, 'OBSWidgets/out', 'index.html'));
+  }
+
   if (req.path.includes('.')) {
     return next();
   }

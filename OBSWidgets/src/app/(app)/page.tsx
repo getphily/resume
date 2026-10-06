@@ -88,12 +88,15 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
 
   const getPrimaryEmbedUrl = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const prefix = typeof window !== 'undefined' && window.location.pathname.startsWith('/widgets') 
+      ? `${origin}/widgets/embed` 
+      : `${origin}/embed`;
     if (item.widget_type === 'screen') {
       const firstPageId = item.config.pages?.[0]?.id || 'starting-soon';
-      return `${origin}/widgets/embed/screen?id=${item.id}&page=${firstPageId}`;
+      return `${prefix}/screen?id=${item.id}&page=${firstPageId}`;
     }
     const embedType = (item.widget_type === 'chyron' || item.widget_type === 'crawl') ? 'crawl' : item.widget_type;
-    return `${origin}/widgets/embed/${embedType}?id=${item.id}`;
+    return `${prefix}/${embedType}?id=${item.id}`;
   };
 
   const primaryUrl = getPrimaryEmbedUrl();

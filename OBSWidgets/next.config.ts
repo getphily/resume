@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  basePath: '/widgets',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
   output: 'export',
   trailingSlash: true,
   turbopack: {
