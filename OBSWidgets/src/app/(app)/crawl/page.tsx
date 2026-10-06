@@ -444,8 +444,20 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
 }
 
 // ─── Properties: Crawl Blocks Manager ──────────────────────────────
-function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+function CrawlBlocksManager({
+  config,
+  onChange,
+  expandedId: propExpandedId,
+  setExpandedId: propSetExpandedId,
+}: {
+  config: ChyronConfig;
+  onChange: (c: ChyronConfig) => void;
+  expandedId?: string | null;
+  setExpandedId?: (id: string | null) => void;
+}) {
+  const [localExpandedId, setLocalExpandedId] = useState<string | null>(null);
+  const expandedId = propExpandedId !== undefined ? propExpandedId : localExpandedId;
+  const setExpandedId = propSetExpandedId || setLocalExpandedId;
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [selectedBlockIds, setSelectedBlockIds] = useState<Set<string>>(new Set());
   const cr = config.crawl;
@@ -689,7 +701,17 @@ function CrawlBlocksManager({ config, onChange }: { config: ChyronConfig; onChan
 }
 
 // ─── Properties: Crawl + Nested Block Manager ──────────────────────
-function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange: (c: ChyronConfig) => void }) {
+function CrawlProperties({
+  config,
+  onChange,
+  expandedBlockId,
+  setExpandedBlockId,
+}: {
+  config: ChyronConfig;
+  onChange: (c: ChyronConfig) => void;
+  expandedBlockId?: string | null;
+  setExpandedBlockId?: (id: string | null) => void;
+}) {
   const cr = config.crawl;
   const updateCrawl = (patch: Partial<typeof cr>) => onChange({ ...config, crawl: { ...cr, ...patch } });
 
@@ -811,7 +833,12 @@ function CrawlProperties({ config, onChange }: { config: ChyronConfig; onChange:
       </Card>
 
       {/* 2. Elegantly Nested Crawl Blocks Manager */}
-      <CrawlBlocksManager config={config} onChange={onChange} />
+      <CrawlBlocksManager 
+        config={config} 
+        onChange={onChange}
+        expandedId={expandedBlockId}
+        setExpandedId={setExpandedBlockId}
+      />
     </div>
   );
 }
@@ -931,8 +958,10 @@ function ChyronBuilderContent() {
 
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
   const [config, setConfig] = useState<ChyronConfig>(DEFAULT_CHYRON_CONFIG);
-  const [selectedLayer, setSelectedLayer] = useState<string | null>('title');
+  const [selectedLayer, setSelectedLayer] = useState<string | null>('crawl');
   const [selectedPanel, setSelectedPanel] = useState<'layer' | 'layout' | 'export' | 'crawlBlocks'>('layer');
+  const [expandedBlockId, setExpandedBlockId] = useState<string | null>(null);
+  const [isCrawlExpanded, setIsCrawlExpanded] = useState<boolean>(true);
 
   const [saving, setSaving] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -1112,6 +1141,31 @@ function ChyronBuilderContent() {
     }
   };
 
+  const toggleBlockEnabled = (blockId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const updated = config.crawl.blocks.map(b => b.id === blockId ? { ...b, enabled: !b.enabled } : b);
+    setConfig({ ...config, crawl: { ...config.crawl, blocks: updated } });
+  };
+
+  const addBlockFromSidebar = () => {
+    const newBlock: CrawlBlock = {
+      id: `block-${Date.now()}`,
+      label: `Block ${config.crawl.blocks.length + 1}`,
+      text: 'NEW CRAWL TEXT',
+      enabled: true,
+    };
+    setConfig({
+      ...config,
+      crawl: {
+        ...config.crawl,
+        blocks: [...config.crawl.blocks, newBlock],
+      },
+    });
+    setSelectedLayer('crawl');
+    setSelectedPanel('layer');
+    setExpandedBlockId(newBlock.id);
+  };
+
   // ── Render ─────────────────────────────────────────────────────
   if (!session) return <main style={{ padding: '40px' }}><p>Please <Link href="/auth">Sign In</Link></p></main>;
 
@@ -1171,52 +1225,180 @@ function ChyronBuilderContent() {
                                 <div
                                   ref={provided.innerRef}
                                   {...provided.draggableProps}
-                                  onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
-                                  style={{
-                                    display: 'flex', alignItems: 'center', gap: '10px',
-                                    padding: '12px 16px',
-                                    backgroundColor: isSelected ? 'var(--module-grey)' : (snapshot.isDragging ? 'var(--module-grey)' : 'transparent'),
-                                    borderLeft: isSelected ? '3px solid var(--active-amber)' : '3px solid transparent',
-                                    cursor: 'pointer',
-                                    transition: 'background-color 0.15s ease',
-                                    opacity: isEnabled ? 1 : 0.4,
-                                    boxShadow: snapshot.isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : 'none',
-                                    ...provided.draggableProps.style,
-                                  }}
+                                  style={{ ...provided.draggableProps.style }}
                                 >
-                                  {/* Drag Handle */}
                                   <div
-                                    {...provided.dragHandleProps}
+                                    onClick={() => { setSelectedLayer(layerId); setSelectedPanel('layer'); }}
                                     style={{
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      color: 'var(--text-muted)',
-                                      cursor: 'grab',
+                                      display: 'flex', alignItems: 'center', gap: '10px',
+                                      padding: '12px 16px',
+                                      backgroundColor: isSelected ? 'var(--module-grey)' : (snapshot.isDragging ? 'var(--module-grey)' : 'transparent'),
+                                      borderLeft: isSelected ? '3px solid var(--active-amber)' : '3px solid transparent',
+                                      cursor: 'pointer',
+                                      transition: 'background-color 0.15s ease',
+                                      opacity: isEnabled ? 1 : 0.4,
+                                      boxShadow: snapshot.isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : 'none',
                                     }}
                                   >
-                                    <DragHandleDots2Icon />
+                                    {/* Drag Handle */}
+                                    <div
+                                      {...provided.dragHandleProps}
+                                      style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        color: 'var(--text-muted)',
+                                        cursor: 'grab',
+                                      }}
+                                    >
+                                      <DragHandleDots2Icon />
+                                    </div>
+
+                                    {/* Visibility toggle */}
+                                    <button
+                                      onClick={e => { e.stopPropagation(); toggleLayer(layerId); }}
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
+                                      aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
+                                    >
+                                      <EyeIcon visible={isEnabled} />
+                                    </button>
+
+                                    {/* Label */}
+                                    <span style={{
+                                      flex: 1, fontSize: '13px', fontWeight: 600,
+                                      color: isSelected ? 'var(--active-amber)' : 'var(--text-primary)',
+                                    }}>
+                                      {LAYER_LABELS[layerId] || layerId}
+                                    </span>
+
+                                    {layerId === 'crawl' && (
+                                      <Flex align="center" gap="1" onClick={e => { e.stopPropagation(); setIsCrawlExpanded(!isCrawlExpanded); }}>
+                                        <Badge size="1" variant="surface" color="gray" style={{ fontSize: '10px', fontWeight: 600 }}>
+                                          {config.crawl.blocks.length}
+                                        </Badge>
+                                        <span style={{
+                                          fontSize: '8px',
+                                          color: 'var(--text-muted)',
+                                          transform: isCrawlExpanded ? 'rotate(0deg)' : 'rotate(-90deg)',
+                                          transition: 'transform 0.15s ease',
+                                          display: 'inline-block',
+                                          padding: '2px',
+                                          cursor: 'pointer'
+                                        }}>
+                                          ▼
+                                        </span>
+                                      </Flex>
+                                    )}
                                   </div>
 
-                                  {/* Visibility toggle */}
-                                  <button
-                                    onClick={e => { e.stopPropagation(); toggleLayer(layerId); }}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
-                                    aria-label={isEnabled ? `Hide ${LAYER_LABELS[layerId]}` : `Show ${LAYER_LABELS[layerId]}`}
-                                  >
-                                    <EyeIcon visible={isEnabled} />
-                                  </button>
+                                  {/* NESTED CRAWL BLOCKS UNDERNEATH CRAWL TICKER IN LAYERS PANEL */}
+                                  {layerId === 'crawl' && isCrawlExpanded && (
+                                    <div style={{
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      paddingLeft: '32px',
+                                      paddingRight: '12px',
+                                      paddingBottom: '8px',
+                                      gap: '2px',
+                                      position: 'relative',
+                                    }}>
+                                      {/* Tree hierarchy vertical guide line */}
+                                      <div style={{
+                                        position: 'absolute',
+                                        left: '23px',
+                                        top: '0',
+                                        bottom: '12px',
+                                        width: '1px',
+                                        backgroundColor: 'var(--border-subtle)',
+                                      }} />
 
-                                  {/* Label */}
-                                  <span style={{
-                                    flex: 1, fontSize: '13px', fontWeight: 600,
-                                    color: isSelected ? 'var(--active-amber)' : 'var(--text-primary)',
-                                  }}>
-                                    {LAYER_LABELS[layerId] || layerId}
-                                  </span>
+                                      {config.crawl.blocks.map((block) => {
+                                        const isBlockActive = selectedPanel === 'layer' && selectedLayer === 'crawl' && expandedBlockId === block.id;
 
-                                  {layerId === 'crawl' && (
-                                    <Badge size="1" variant="surface" color="gray" style={{ fontSize: '10px', fontWeight: 600 }}>
-                                      {config.crawl.blocks.length} {config.crawl.blocks.length === 1 ? 'block' : 'blocks'}
-                                    </Badge>
+                                        return (
+                                          <div
+                                            key={block.id}
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setSelectedLayer('crawl');
+                                              setSelectedPanel('layer');
+                                              setExpandedBlockId(block.id);
+                                            }}
+                                            style={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '8px',
+                                              padding: '6px 8px',
+                                              borderRadius: '4px',
+                                              cursor: 'pointer',
+                                              fontSize: '12px',
+                                              fontWeight: isBlockActive ? 700 : 500,
+                                              color: isBlockActive ? 'var(--active-amber)' : (block.enabled ? 'var(--text-primary)' : 'var(--text-muted)'),
+                                              backgroundColor: isBlockActive ? 'var(--accent-subtle, rgba(255, 89, 0, 0.08))' : 'transparent',
+                                              borderLeft: isBlockActive ? '2px solid var(--active-amber)' : '2px solid transparent',
+                                              transition: 'all 0.15s ease',
+                                              opacity: block.enabled ? 1 : 0.5,
+                                            }}
+                                            onMouseOver={(e) => {
+                                              if (!isBlockActive) e.currentTarget.style.backgroundColor = 'var(--module-grey, rgba(0,0,0,0.04))';
+                                            }}
+                                            onMouseOut={(e) => {
+                                              if (!isBlockActive) e.currentTarget.style.backgroundColor = 'transparent';
+                                            }}
+                                          >
+                                            {/* Eye toggle for individual block */}
+                                            <button
+                                              onClick={(e) => toggleBlockEnabled(block.id, e)}
+                                              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0', display: 'flex', alignItems: 'center' }}
+                                              title={block.enabled ? "Hide block" : "Show block"}
+                                            >
+                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: block.enabled ? 0.9 : 0.35 }}>
+                                                {block.enabled ? (
+                                                  <>
+                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                    <circle cx="12" cy="12" r="3" />
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                                  </>
+                                                )}
+                                              </svg>
+                                            </button>
+
+                                            {/* Block label */}
+                                            <span style={{ flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                              {block.label || 'Unnamed Block'}
+                                            </span>
+                                          </div>
+                                        );
+                                      })}
+
+                                      {/* Quick Add Block in sidebar */}
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          addBlockFromSidebar();
+                                        }}
+                                        style={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '6px',
+                                          padding: '6px 8px',
+                                          marginTop: '2px',
+                                          background: 'none',
+                                          border: '1px dashed var(--border-subtle)',
+                                          borderRadius: '4px',
+                                          color: 'var(--active-amber)',
+                                          fontSize: '11px',
+                                          fontWeight: 600,
+                                          cursor: 'pointer',
+                                          textAlign: 'left',
+                                        }}
+                                      >
+                                        <span>+</span> Add Block
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                               )}
@@ -1397,7 +1579,12 @@ function ChyronBuilderContent() {
                 <ClockProperties config={config} onChange={setConfig} />
               )}
               {((selectedPanel === 'layer' && selectedLayer === 'crawl') || selectedPanel === 'crawlBlocks') && (
-                <CrawlProperties config={config} onChange={setConfig} />
+                <CrawlProperties 
+                  config={config} 
+                  onChange={setConfig} 
+                  expandedBlockId={expandedBlockId}
+                  setExpandedBlockId={setExpandedBlockId}
+                />
               )}
               {selectedPanel === 'layout' && (
                 <LayoutProperties config={config} onChange={setConfig} />
