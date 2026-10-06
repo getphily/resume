@@ -61,8 +61,20 @@ The website functions as a unified platform hub for multiple specialized creator
 1. **OBS Stream Studio** (`/`, `/stream-studio`, `/crawl`, `/clock`, `/timer`, `/screen`): Real-time broadcast overlays, animated lower-third news chyrons, stream clocks, countdown timers, multi-page scene sets, and transparent OBS browser source embed URLs (`/embed/*`).
 2. **Kalimotxo** (`/kalimotxo`): Tactile Pioneer DJ DDJ-FLX10 inspired audio-reactive 3D graphics engine utilizing Web Audio loopback and Three.js geometry.
 3. **Podcast Tools** (`/podcast-tools`): Audio publishing automation including YouTube/Spotify chapter markers, ID3v2 metadata chunking, and syndicated RSS show notes.
-4. **Union Tools** (`/union-tools`): Open labor solidarity utilities for stewards and bargaining committees including CBA contract clause diffing, grievance deadline tracking, and wage step progression models.
 All toolsets share global authentication, verified account profiles, and the Shadcnblocks theming system under `code.getphily.io`.
+
+## Technology Stack & Deployment Notes
+For detailed specifications, see `STACK.md`.
+- **Framework & Runtime**: Next.js `16.3.8` (App Router, SSG `output: 'export'`), React `19.2.8`, TypeScript `5.x`.
+- **Styling & Components**: Tailwind CSS `v4.3.3`, Radix UI primitives, Shadcnblocks blocks & themes.
+- **Backend & Auth**: Supabase PostgreSQL + Auth (Google OAuth redirect via `/auth/callback`, Email/Password, RLS).
+- **Drag-and-Drop**: `@dnd-kit/core` & `@dnd-kit/sortable` for sortable widget cards.
+- **Toasts**: `react-hot-toast` positioned exclusively at `top-center`. Never use native `alert()`, `confirm()`, or `prompt()`.
+- **Hosting & Production Deployment**:
+  - Hosted on Hostinger LiteSpeed server under subdomain `code.getphily.io`.
+  - Document root: `/home/u239940464/domains/getphily.io/public_html/code`.
+  - Deployment command: Build locally via `npm run build` with `BypassSandbox: true` (exporting to `out/`), and sync to Hostinger via `rsync -avz --delete -e "ssh -p 65002 -i ~/.ssh/id_ed25519_podabio" out/ u239940464@46.202.198.21:/home/u239940464/domains/getphily.io/public_html/code/`.
+  - Always stage, commit, and run `git push origin main` directly after verification.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
