@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Bold, Italic, CaseUpper, Paintbrush } from 'lucide-react';
+import { Bold, Italic, CaseUpper, Paintbrush, AlignLeft, AlignCenter, AlignRight, Space } from 'lucide-react';
 import { ColorInputWithPalette } from '@/components/ColorInputWithPalette';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,9 @@ interface TextFormatProps {
   opacity?: number;
   bgColor?: string;
   bgOpacity?: number;
+  textAlign?: 'left' | 'center' | 'right';
+  letterSpacing?: number;
+  lineHeight?: number;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onChange: (patch: any) => void;
   showBgColor?: boolean;
@@ -60,6 +63,9 @@ export function TextFormattingToolbar({
   opacity,
   bgColor,
   bgOpacity,
+  textAlign,
+  letterSpacing,
+  lineHeight,
   onChange,
   showBgColor = false,
 }: TextFormatProps) {
@@ -204,6 +210,95 @@ export function TextFormattingToolbar({
 
         {(bold !== undefined || italic !== undefined || textTransform !== undefined) && (
           <div className="w-px h-4 bg-border mx-0.5" />
+        )}
+
+        {textAlign !== undefined && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={textAlign === 'left' ? "secondary" : "ghost"} 
+                  size="icon" 
+                  onClick={() => onChange({ textAlign: 'left' })}
+                  aria-label="Align left"
+                  aria-pressed={textAlign === 'left'}
+                  className={`h-11 w-11 ${textAlign === 'left' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                >
+                  <AlignLeft className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Align Left</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={textAlign === 'center' ? "secondary" : "ghost"} 
+                  size="icon" 
+                  onClick={() => onChange({ textAlign: 'center' })}
+                  aria-label="Align center"
+                  aria-pressed={textAlign === 'center'}
+                  className={`h-11 w-11 ${textAlign === 'center' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                >
+                  <AlignCenter className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Align Center</p></TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={textAlign === 'right' ? "secondary" : "ghost"} 
+                  size="icon" 
+                  onClick={() => onChange({ textAlign: 'right' })}
+                  aria-label="Align right"
+                  aria-pressed={textAlign === 'right'}
+                  className={`h-11 w-11 ${textAlign === 'right' ? 'text-primary bg-primary/10' : 'text-muted-foreground'}`}
+                >
+                  <AlignRight className="w-3.5 h-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent><p>Align Right</p></TooltipContent>
+            </Tooltip>
+            <div className="w-px h-4 bg-border mx-0.5" />
+          </>
+        )}
+
+        {letterSpacing !== undefined && (
+          <>
+            <Popover>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      aria-label="Letter and line spacing"
+                      className="h-11 w-11 text-muted-foreground"
+                    >
+                      <Space className="w-3.5 h-3.5" />
+                    </Button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent><p>Spacing</p></TooltipContent>
+              </Tooltip>
+              <PopoverContent sideOffset={5} className="w-64 p-4">
+                <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">
+                  Letter Spacing
+                </span>
+                <Slider min={-0.02} max={0.15} step={0.005} value={[letterSpacing]} onValueChange={v => onChange({ letterSpacing: v[0] })} />
+                
+                {lineHeight !== undefined && (
+                  <div className="mt-4 flex flex-col gap-1.5">
+                    <span className="block text-sm font-bold tracking-wider text-muted-foreground uppercase mb-2">
+                      Line Height
+                    </span>
+                    <Slider min={0.9} max={1.4} step={0.01} value={[lineHeight]} onValueChange={v => onChange({ lineHeight: v[0] })} />
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+            <div className="w-px h-4 bg-border mx-0.5" />
+          </>
         )}
 
         {/* Text Color Popover */}

@@ -44,12 +44,7 @@ const defaultFeatures: FeatureItem[] = [
     description: "Synchronized UTC/local stream clocks and countdown timers with SVG rings and audio chime alarms.",
     url: "/clock",
   },
-  {
-    icon: <Sliders className="w-5 h-5 text-primary" />,
-    title: "Kalimotxo 3D Visualizer",
-    description: "Pioneer DJ DDJ-FLX10 tactile aesthetic with 3-band stems separation and audio-reactive Three.js geometry.",
-    url: "/kalimotxo",
-  },
+
   {
     icon: <Monitor className="w-5 h-5 text-primary" />,
     title: "Studio Scene Screens",

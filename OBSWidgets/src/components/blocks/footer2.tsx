@@ -27,15 +27,7 @@ const defaultSections: FooterSection[] = [
       { name: "Scene Overlays", href: "/screen" },
     ],
   },
-  {
-    title: "Audio & Visuals",
-    links: [
-      { name: "Kalimotxo 3D Visualizer", href: "/kalimotxo" },
-      { name: "Pioneer DJ Aesthetic", href: "/kalimotxo" },
-      { name: "Web Audio Loopback", href: "/kalimotxo" },
-      { name: "Stems Separation FX", href: "/kalimotxo" },
-    ],
-  },
+
   {
     title: "Creator Toolsets",
     links: [

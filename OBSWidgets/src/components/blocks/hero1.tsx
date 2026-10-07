@@ -171,37 +171,7 @@ export function Hero1({
                     </div>
                   </CarouselItem>
 
-                  {/* Slide 3: Kalimotxo Visuals */}
-                  <CarouselItem>
-                    <div className="p-1">
-                      <div className="w-full rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-md relative overflow-hidden group">
-                        <div className="flex items-center justify-between pb-4 mb-4 border-b border-border text-xs font-semibold text-muted-foreground">
-                          <span className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                            Audio Reactive Canvas
-                          </span>
-                          <Badge variant="secondary" className="text-xs font-mono">Web Audio API</Badge>
-                        </div>
-                        <div className="aspect-video w-full rounded-xl bg-[#050505] p-4 flex flex-col justify-between border border-[#333333] relative overflow-hidden shadow-inner">
-                          <div className="flex justify-between items-start">
-                            <div className="flex gap-1.5">
-                               <div className="w-2 h-8 bg-blue-600 rounded-sm"></div>
-                               <div className="w-2 h-12 bg-blue-500 rounded-sm"></div>
-                               <div className="w-2 h-6 bg-blue-600 rounded-sm"></div>
-                            </div>
-                            <div className="px-2 py-1 rounded bg-[#1c1c1c] border border-[#333333] text-amber-500 font-mono text-[10px] tracking-widest">
-                              STEMS ACTIVE
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-center">
-                            <div className="w-24 h-24 rounded-full border-4 border-[#333333] border-t-amber-500 animate-spin flex items-center justify-center">
-                               <div className="w-16 h-16 rounded-full border-2 border-[#1c1c1c] border-b-blue-500 animate-reverse-spin"></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CarouselItem>
+
 
                 </CarouselContent>
                 <div className="hidden sm:flex items-center justify-center gap-4 mt-6">

@@ -444,13 +444,13 @@ export default function AccountPage() {
 
             <div className="flex flex-col gap-2 mt-2">
               <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                DJ / Channel Name
+                Username
               </label>
               <Input 
                 id="username"
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
-                placeholder="DJ Name / Username" 
+                placeholder="Username" 
                 className="h-10 text-sm max-w-md bg-background"
               />
               <span className="text-sm text-muted-foreground">

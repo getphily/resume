@@ -39,6 +39,7 @@ import { TimerPreview } from '@/components/TimerPreview';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ScreenPreview } from '@/components/ScreenPreview';
 import { ObsExportCard } from '@/components/ObsExportCard';
+import YourPodcastLandingPage from '../podcast-tools/page';
 
 function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
   const type = item.widget_type;
@@ -244,6 +245,10 @@ function DashboardContent() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [time, setTime] = useState<Date | null>(null);
   const router = useRouter();
+
+  if (toolset?.id === 'podcast' && (!toolId || toolId === 'podcast')) {
+    return <YourPodcastLandingPage />;
+  }
 
   const visibleTypes = toolset
     ? (activeTool ? activeTool.widgetTypes : toolset.tools.flatMap((t) => t.widgetTypes ?? [])) ?? []

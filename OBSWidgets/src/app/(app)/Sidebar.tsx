@@ -22,7 +22,8 @@ import {
   TrendingUp,
   Tag,
   Bookmark,
-  ChevronDown
+  ChevronDown,
+  BookOpen
 } from 'lucide-react';
 import { TOOLSETS } from '@/lib/toolsets';
 import { cn } from '@/lib/utils';
@@ -73,17 +74,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
     };
   }
 
-  // 2. Kalimotxo Audio Studio
-  if (pathname.startsWith('/kalimotxo')) {
-    return {
-      title: 'Kalimotxo Studio',
-      badge: 'Pioneer DJ',
-      links: [
-        { name: '3D Visualizer', path: '/kalimotxo', icon: Sliders, desc: 'Tactile DDJ-FLX10 engine' },
-        { name: 'Stream Canvas', path: '/kalimotxo#canvas', icon: Monitor, desc: '16:9 OBS output' },
-      ],
-    };
-  }
+
 
   // 3. PodcastTools
   if (pathname.startsWith('/podcast-tools')) {
@@ -92,6 +83,8 @@ function getToolSection(pathname: string): ToolSectionConfig {
       badge: 'Publishing',
       links: [
         { name: 'Tools Overview', path: '/podcast-tools', icon: Mic, desc: 'Audio automation suite' },
+        { name: 'Your Podcast', path: '/podcast-tools/your-podcast', icon: BookOpen, desc: 'Interactive startup guide', badge: 'New' },
+        { name: 'Short Courses', path: '/podcast-tools/courses', icon: BookOpen, desc: 'Podcast mini-courses', badge: 'New' },
         { name: 'Chapter Markers', path: '/podcast-tools#chapters', icon: Bookmark, desc: 'YouTube & Spotify', badge: 'Dev' },
         { name: 'ID3v2 Metadata', path: '/podcast-tools#id3', icon: Tag, desc: 'Tag chunking utility', badge: 'Dev' },
         { name: 'Show Notes RSS', path: '/podcast-tools#rss', icon: Radio, desc: 'Syndicated notes feed', badge: 'Dev' },

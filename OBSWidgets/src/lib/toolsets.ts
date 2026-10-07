@@ -8,6 +8,7 @@ import {
   Mic,
   Users,
   Radio,
+  BookOpen,
 } from 'lucide-react';
 
 export interface ToolsetTool {
@@ -49,24 +50,16 @@ export const TOOLSETS: Toolset[] = [
       { id: 'screen', name: 'Screen Sets', path: '/screen', icon: Monitor, widgetTypes: ['screen'], desc: 'Starting soon / BRB scenes' },
     ],
   },
-  {
-    id: 'kalimotxo',
-    name: 'Kalimotxo',
-    tagline: 'Audio-reactive 3D visuals inspired by the Pioneer DDJ-FLX10.',
-    icon: Sliders,
-    status: 'live',
-    tools: [
-      { id: 'visualizer', name: '3D Visualizer', path: '/kalimotxo', icon: Sliders, desc: 'Web Audio + Three.js engine' },
-    ],
-  },
+
   {
     id: 'podcast',
     name: 'PodcastTools',
-    tagline: 'Chapter markers, ID3v2 metadata and syndicated show notes.',
+    tagline: 'Interactive guides, chapter markers, and syndicated show notes.',
     icon: Mic,
     status: 'dev',
     tools: [
-      { id: 'podcast', name: 'PodcastTools', path: '/podcast-tools', icon: Mic, desc: 'Publishing automation' },
+      { id: 'podcast', name: 'Your Podcast', path: '/podcast-tools', icon: Mic, desc: 'Public Directory Profile' },
+      { id: 'courses', name: 'Short Courses', path: '/podcast-tools/courses', icon: BookOpen, desc: 'Podcast mini-courses' },
     ],
   },
   {
