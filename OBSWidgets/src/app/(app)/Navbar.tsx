@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { TOOLSETS } from '@/lib/toolsets';
+import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { 
@@ -22,6 +25,50 @@ import {
 import toast from 'react-hot-toast';
 import { ThemeMode, VALID_THEMES } from '@/app/ThemeProvider';
 import { useMobileNav } from '@/components/MobileNavContext';
+
+function TopNavLinks() {
+  const pathname = (usePathname() || '').replace(/\/$/, '') || '/';
+  const searchParams = useSearchParams();
+  const activeSet = searchParams.get('set');
+
+  const base = "px-3 py-2 rounded-md transition-colors whitespace-nowrap";
+  const cls = (active: boolean) =>
+    cn(base, active ? "text-white bg-white/10 font-semibold" : "text-slate-300 hover:text-white hover:bg-white/10");
+
+  const toolsetActive = (ts: (typeof TOOLSETS)[number]) =>
+    (pathname === '/dashboard' && activeSet === ts.id) ||
+    ts.tools.some((t) => pathname.startsWith(t.path)) ||
+    (ts.id === 'broadcast' && ['/chyron', '/stream-studio'].some((p) => pathname.startsWith(p)));
+
+  return (
+    <nav className="hidden lg:flex items-center gap-1 ml-4 text-sm font-medium" aria-label="Main">
+      <Link href="/" className={cls(pathname === '/')} aria-current={pathname === '/' ? 'page' : undefined}>
+        Home
+      </Link>
+      <Link
+        href="/dashboard"
+        className={cls(pathname === '/dashboard' && !activeSet)}
+        aria-current={pathname === '/dashboard' && !activeSet ? 'page' : undefined}
+      >
+        Dashboard
+      </Link>
+      <span className="w-px h-5 bg-white/15 mx-2" aria-hidden="true" />
+      {TOOLSETS.map((ts) => {
+        const active = toolsetActive(ts);
+        return (
+          <Link
+            key={ts.id}
+            href={`/dashboard?set=${ts.id}`}
+            className={cls(active)}
+            aria-current={active ? 'page' : undefined}
+          >
+            {ts.name}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export default function Navbar() {
   const [session, setSession] = useState<any>(null);
@@ -109,39 +156,10 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Desktop Quick Nav (Shadcnblocks Navbar1 pattern) */}
-        <nav className="hidden xl:flex items-center gap-1 ml-6 text-sm font-medium text-slate-300">
-          <Link 
-            href="/#toolsets" 
-            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors font-semibold text-white/90"
-          >
-            All Toolsets
-          </Link>
-          <Link 
-            href="/dashboard" 
-            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Dashboard
-          </Link>
-          <Link 
-            href="/kalimotxo" 
-            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Kalimotxo
-          </Link>
-          <Link 
-            href="/podcast-tools" 
-            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Podcast Tools
-          </Link>
-          <Link 
-            href="/union-tools" 
-            className="px-3 py-2 rounded-md hover:text-white hover:bg-white/10 transition-colors"
-          >
-            Union Tools
-          </Link>
-        </nav>
+        {/* Desktop Nav: Home, Dashboard, one item per toolset */}
+        <Suspense fallback={null}>
+          <TopNavLinks />
+        </Suspense>
       </div>
 
       <div className="flex items-center gap-2">

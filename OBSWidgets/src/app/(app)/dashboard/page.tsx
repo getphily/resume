@@ -501,7 +501,7 @@ function DashboardContent() {
         </Card>
       )}
 
-      {/* Quick Launch / Create New Widgets Section (Broadcast Studio hub only) */}
+      {/* Quick Launch / Create New Widgets Section (StreamTools hub only) */}
       {toolset?.id === 'broadcast' && !activeTool && (
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">

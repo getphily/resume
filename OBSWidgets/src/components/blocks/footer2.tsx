@@ -39,8 +39,8 @@ const defaultSections: FooterSection[] = [
   {
     title: "Creator Toolsets",
     links: [
-      { name: "Podcast Tools", href: "/podcast-tools" },
-      { name: "Union Tools", href: "/union-tools" },
+      { name: "PodcastTools", href: "/podcast-tools" },
+      { name: "UnionTools", href: "/union-tools" },
       { name: "Platform Toolsets", href: "/#toolsets" },
       { name: "Broadcast Dashboard", href: "/#broadcast-studio" },
     ],

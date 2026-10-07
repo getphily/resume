@@ -38,7 +38,7 @@ export interface Toolset {
 export const TOOLSETS: Toolset[] = [
   {
     id: 'broadcast',
-    name: 'Broadcast Studio',
+    name: 'StreamTools',
     tagline: 'Real-time OBS overlays, chyrons, clocks, timers and scene screens.',
     icon: Radio,
     status: 'live',
@@ -61,22 +61,22 @@ export const TOOLSETS: Toolset[] = [
   },
   {
     id: 'podcast',
-    name: 'Podcast Tools',
+    name: 'PodcastTools',
     tagline: 'Chapter markers, ID3v2 metadata and syndicated show notes.',
     icon: Mic,
     status: 'dev',
     tools: [
-      { id: 'podcast', name: 'Podcast Tools', path: '/podcast-tools', icon: Mic, desc: 'Publishing automation' },
+      { id: 'podcast', name: 'PodcastTools', path: '/podcast-tools', icon: Mic, desc: 'Publishing automation' },
     ],
   },
   {
     id: 'union',
-    name: 'Union Tools',
+    name: 'UnionTools',
     tagline: 'Digital utilities for stewards and bargaining committees.',
     icon: Users,
     status: 'dev',
     tools: [
-      { id: 'union', name: 'Union Tools', path: '/union-tools', icon: Users, desc: 'CBA diffing & grievance tracking' },
+      { id: 'union', name: 'UnionTools', path: '/union-tools', icon: Users, desc: 'CBA diffing & grievance tracking' },
     ],
   },
 ];

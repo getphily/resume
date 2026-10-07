@@ -117,7 +117,7 @@ export default function Home() {
             </div>
           </Card>
 
-          {/* Toolset 3: Podcast Tools (Placeholder) */}
+          {/* Toolset 3: PodcastTools (Placeholder) */}
           <Card className="border-border bg-card shadow-xs hover:border-amber-500/40 transition-all flex flex-col p-6 rounded-2xl">
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
@@ -128,7 +128,7 @@ export default function Home() {
               </Badge>
             </div>
             <h3 className="font-extrabold text-xl text-foreground mb-2">
-              Podcast Tools
+              PodcastTools
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
               Automated chapter markers for YouTube and Spotify, ID3v2 tag chunking, waveform teaser clips, and syndicated RSS show notes.
@@ -146,7 +146,7 @@ export default function Home() {
             </div>
           </Card>
 
-          {/* Toolset 4: Union Tools (Placeholder) */}
+          {/* Toolset 4: UnionTools (Placeholder) */}
           <Card className="border-border bg-card shadow-xs hover:border-blue-500/40 transition-all flex flex-col p-6 rounded-2xl">
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -157,7 +157,7 @@ export default function Home() {
               </Badge>
             </div>
             <h3 className="font-extrabold text-xl text-foreground mb-2">
-              Union Tools
+              UnionTools
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
               Open digital utilities for stewards and bargaining committees. Side-by-side CBA diffing, grievance deadline tracking, and wage step modeling.

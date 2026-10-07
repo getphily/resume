@@ -80,7 +80,7 @@ export default function PodcastToolsPage() {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
         <Mic className="w-10 h-10 text-primary" />
       </div>
-      <h2 className="text-2xl font-bold text-foreground mb-2">Podcast Toolset</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-2">PodcastToolset</h2>
       <p className="text-sm text-muted-foreground max-w-md text-center mb-8">
         Streamline audio publishing workflows with automated chaptering, rich metadata tagging, and syndicated RSS show notes.
       </p>
@@ -93,7 +93,7 @@ export default function PodcastToolsPage() {
 
   return (
     <StudioShell
-      title="Podcast Tools"
+      title="PodcastTools"
       icon={<Mic className="w-4 h-4" />}
       widgetName="Audio Syndication Hub"
       hasId={false}

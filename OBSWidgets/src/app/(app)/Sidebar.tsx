@@ -50,7 +50,7 @@ interface ToolSectionConfig {
 }
 
 function getToolSection(pathname: string): ToolSectionConfig {
-  // 1. Broadcast Studio (OBS Widgets)
+  // 1. StreamTools (OBS Widgets)
   if (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/crawl') ||
@@ -61,7 +61,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
     pathname.startsWith('/stream-studio')
   ) {
     return {
-      title: 'Broadcast Studio',
+      title: 'StreamTools',
       badge: 'OBS Overlays',
       links: [
         { name: 'Studio Hub', path: '/dashboard', icon: LayoutDashboard, desc: 'All widgets & embeds' },
@@ -85,10 +85,10 @@ function getToolSection(pathname: string): ToolSectionConfig {
     };
   }
 
-  // 3. Podcast Tools
+  // 3. PodcastTools
   if (pathname.startsWith('/podcast-tools')) {
     return {
-      title: 'Podcast Tools',
+      title: 'PodcastTools',
       badge: 'Publishing',
       links: [
         { name: 'Tools Overview', path: '/podcast-tools', icon: Mic, desc: 'Audio automation suite' },
@@ -99,10 +99,10 @@ function getToolSection(pathname: string): ToolSectionConfig {
     };
   }
 
-  // 4. Union Tools
+  // 4. UnionTools
   if (pathname.startsWith('/union-tools')) {
     return {
-      title: 'Solidarity Suite',
+      title: 'UnionTools',
       badge: 'Labor Tech',
       links: [
         { name: 'Suite Overview', path: '/union-tools', icon: Users, desc: 'Digital organizer utilities' },
@@ -127,7 +127,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
 
   // Fallback default
   return {
-    title: 'Broadcast Studio',
+    title: 'StreamTools',
     badge: 'Tools',
     links: [
       { name: 'Studio Hub', path: '/dashboard', icon: LayoutDashboard, desc: 'Widgets & embeds' },

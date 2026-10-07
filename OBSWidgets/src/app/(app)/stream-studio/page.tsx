@@ -26,7 +26,7 @@ export default function StreamStudioPage() {
       </p>
       <Button asChild size="sm" className="mt-2 gap-2">
         <Link href="/#broadcast-studio">
-          <span>Go to Broadcast Studio</span>
+          <span>Go to StreamTools</span>
           <ArrowRight className="w-4 h-4" />
         </Link>
       </Button>

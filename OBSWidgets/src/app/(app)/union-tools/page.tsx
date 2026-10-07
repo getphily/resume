@@ -80,7 +80,7 @@ export default function UnionToolsPage() {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
         <Users className="w-10 h-10 text-primary" />
       </div>
-      <h2 className="text-2xl font-bold text-foreground mb-2">Union Tools</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-2">UnionTools</h2>
       <p className="text-sm text-muted-foreground max-w-md text-center mb-8">
         Open digital utilities to empower stewards, bargaining committees, and rank-and-file union members.
       </p>
@@ -93,7 +93,7 @@ export default function UnionToolsPage() {
 
   return (
     <StudioShell
-      title="Union Tools"
+      title="UnionTools"
       icon={<Users className="w-4 h-4" />}
       widgetName="Labor Organizing Hub"
       hasId={false}
