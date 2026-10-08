@@ -494,21 +494,6 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                       />
                     </div>
                   )}
-
-                  <div className="flex flex-col gap-1.5 pt-2">
-                    <label className="text-xs font-bold text-foreground">Horizontal Position</label>
-                    <Slider 
-                      value={[cfg.badge.x]} min={0} max={2500} step={10} 
-                      onValueChange={(val) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, x: val[0] } }))}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-foreground">Vertical Position</label>
-                    <Slider 
-                      value={[cfg.badge.baselineY]} min={900} max={2500} step={10} 
-                      onValueChange={(val) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, baselineY: val[0] } }))}
-                    />
-                  </div>
                 </div>
               </div>
             </div>
