@@ -797,12 +797,12 @@ export default function YourPodcastLandingPage() {
                     <CategoryDropdown 
                       value={data.secondaryCategory} 
                       onSave={(v) => updateData({ secondaryCategory: v })} 
-                      label="Select Secondary Category (Optional)" 
+                      label="Select Secondary Category (Recommended)" 
                     />
                     <CategoryDropdown 
                       value={data.tertiaryCategory} 
                       onSave={(v) => updateData({ tertiaryCategory: v })} 
-                      label="Select Tertiary Category (Optional)" 
+                      label="Select Tertiary Category (Recommended)" 
                     />
                   </div>
                 </div>
