@@ -39,25 +39,6 @@ export function TextTab({ layer, onChange, kind }: TextTabProps) {
 
   return (
     <div className="flex flex-col gap-5 p-1">
-      <p className="text-xs text-muted-foreground font-medium">
-        {isTitle 
-          ? "Keep it to 1–3 short lines; very long titles shrink automatically."
-          : "Short and bold works best on small phone screens."}
-      </p>
-
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-bold text-foreground">Text (From Meta)</label>
-        <Input 
-          value={layer.text} 
-          disabled
-          readOnly
-          className="bg-muted text-muted-foreground font-medium cursor-not-allowed opacity-100"
-        />
-        <p className="text-[10px] text-muted-foreground leading-tight">
-          To change this text, close the studio and edit your show details in Step 1.
-        </p>
-      </div>
-
       <TextFormattingToolbar
         fontFamily={layer.font}
         fontSize={layer.sizeScale}
