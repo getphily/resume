@@ -415,6 +415,19 @@ export default function YourPodcastLandingPage() {
   }
 
 
+  const isMetaComplete = Boolean(
+    data.title && data.title !== 'Untitled Show' &&
+    data.host && data.host !== 'Unknown Host' &&
+    data.description && data.description !== defaultData.description &&
+    data.primaryCategory
+  );
+  const isCoverComplete = Boolean(data.artworkUrl);
+  const isHostingComplete = Boolean(data.rssFeedUrl && data.rssFeedUrl.trim());
+  const isDirectoriesComplete = Boolean(data.directoryStatus.apple && data.directoryStatus.spotify);
+  const isFirstReleaseComplete = Boolean(data.trailerPublished || data.firstEpisodePublished);
+
+  const activeStepIndex = [isMetaComplete, isCoverComplete, isHostingComplete, isDirectoriesComplete, isFirstReleaseComplete].findIndex(c => !c);
+
   return (
     <div className="w-full min-h-screen bg-background overflow-y-auto p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto flex flex-col gap-8">
@@ -663,7 +676,9 @@ export default function YourPodcastLandingPage() {
           <div className="lg:col-span-2 flex flex-col gap-6">
             
             {/* Podcast Meta Info Container */}
-            <Card id="section-metadata" className="border-border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6">
+            <div className="relative">
+              {activeStepIndex === 0 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card id="section-metadata" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", activeStepIndex === 0 ? "border-primary/50" : "border-border")}>
               <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
                 <Info className="w-5 h-5 text-primary" />
                 Podcast Metadata
@@ -673,12 +688,17 @@ export default function YourPodcastLandingPage() {
                 {/* Artwork */}
                 <div id="section-artwork" className="flex flex-col shrink-0 scroll-mt-6 w-32 md:w-48">
                   <FieldLabel text="Cover Art" complete={!!data.artworkUrl} />
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 relative">
+                  {activeStepIndex === 1 && !data.artworkUrl && <div className="absolute -inset-2 rounded-2xl bg-primary/30 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
                   <div 
-                    className={cn("w-32 h-32 md:w-48 md:h-48 rounded-xl shadow-md border bg-muted overflow-hidden flex items-center justify-center relative group cursor-pointer", data.artworkUrl ? "border-emerald-500/50 shadow-emerald-500/20" : "border-destructive shadow-destructive/20")}
+                    className={cn("w-32 h-32 md:w-48 md:h-48 rounded-xl shadow-md border bg-muted overflow-hidden flex items-center justify-center relative group cursor-pointer transition-colors duration-500", 
+                      data.artworkUrl ? "border-emerald-500/50 shadow-emerald-500/20" : 
+                      activeStepIndex === 1 ? "border-primary/60 shadow-primary/20" : "border-destructive shadow-destructive/20"
+                    )}
                     title="Click to upload artwork"
                   >
-                    {!data.artworkUrl && <AlertCircle className="absolute top-2 right-2 w-5 h-5 text-destructive animate-pulse z-20" />}
+                    {!data.artworkUrl && activeStepIndex !== 1 && <AlertCircle className="absolute top-2 right-2 w-5 h-5 text-destructive animate-pulse z-20" />}
+
 
                     <label className="absolute inset-0 w-full h-full cursor-pointer z-10">
                       <input type="file" accept="image/png, image/jpeg" className="hidden" onChange={handleFileUpload} />
@@ -828,9 +848,12 @@ export default function YourPodcastLandingPage() {
                 </div>
               </div>
             </Card>
+            </div>
 
             {/* Directory Submission Container */}
-            <Card id="section-directories" className="border-border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6">
+            <div className="relative">
+              {(activeStepIndex === 2 || activeStepIndex === 3) && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card id="section-directories" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", (activeStepIndex === 2 || activeStepIndex === 3) ? "border-primary/50" : "border-border")}>
               <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 Syndication & Directories
@@ -897,7 +920,7 @@ export default function YourPodcastLandingPage() {
                   </div>
                 </div>
             </Card>
-
+            </div>
           </div>
 
           {/* Right Column */}
@@ -1199,7 +1222,9 @@ export default function YourPodcastLandingPage() {
             </Card>
 
             {/* Recording Studio now lives at /podcast-tools/studio */}
-            <Card className="border-border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative">
+              {activeStepIndex === 4 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center transition-colors duration-500", activeStepIndex === 4 ? "border-primary/50" : "border-border")}>
               <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <AudioLines className="w-5 h-5" aria-hidden="true" />
               </div>
@@ -1216,6 +1241,7 @@ export default function YourPodcastLandingPage() {
                 </Link>
               </Button>
             </Card>
+            </div>
           </div>
         </div>
       </div>
