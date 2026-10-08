@@ -8,15 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { encodeWav } from '@/lib/audioEditor/buffer';
 import {
   DEFAULT_MASTER_SETTINGS, masterAudio,
   type MasterPreset, type MasterSettings, type MasterStage,
 } from '@/lib/audioEditor/master';
-import { getDriveToken, isDriveConfigured, preloadDriveSdk, saveToDrive } from '@/lib/audioEditor/drive';
-import { makeFileName, saveToCloud } from '@/lib/audioEditor/save';
-import { toastDriveError, toastDriveSaved } from '@/components/podcast-tools/driveToasts';
 
 const PRESETS: { id: MasterPreset; label: string; blurb: string }[] = [
   { id: 'gentle', label: 'Gentle', blurb: 'Light touch. Keeps your natural dynamics.' },
@@ -57,61 +52,21 @@ interface MagicPolishPanelProps {
 export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, onToggleLayer }: MagicPolishPanelProps) {
   const [settings, setSettings] = useState<MasterSettings>(DEFAULT_MASTER_SETTINGS);
   const [showFineTune, setShowFineTune] = useState(false);
-  const [saveCloudCopy, setSaveCloudCopy] = useState(false);
-  const [saveDriveCopy, setSaveDriveCopy] = useState(false);
   const [run, setRun] = useState<{ label: string; pct: number } | null>(null);
   const [lastRun, setLastRun] = useState<{ before: AudioBuffer; after: AudioBuffer } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const driveAvailable = isDriveConfigured();
   const isRunning = run !== null;
   const preset = PRESETS.find(p => p.id === settings.preset)!;
 
-  useEffect(() => {
-    if (driveAvailable) preloadDriveSdk();
-  }, [driveAvailable]);
   useEffect(() => () => abortRef.current?.abort(), []);
 
   // Which side of the A/B are we currently on? Derived from identity, so any later edit hides the toggle.
   const view: 'polished' | 'original' | null =
     lastRun && buffer === lastRun.after ? 'polished' : lastRun && buffer === lastRun.before ? 'original' : null;
 
-  const saveCopies = async (polished: AudioBuffer, signal: AbortSignal) => {
-    const blob = encodeWav(polished);
-    const name = `${makeFileName(fileBase, 'polished')}.wav`;
-    if (saveCloudCopy) {
-      setRun({ label: 'Saving to your cloud…', pct: 100 });
-      try {
-        await saveToCloud(blob, name);
-        toast.success(`Saved ${name} to your cloud storage.`, { position: 'top-center' });
-      } catch (e) {
-        console.error('[MagicPolish] cloud save failed', e);
-        toast.error(e instanceof Error ? e.message : 'Cloud save failed.', { position: 'top-center' });
-      }
-    }
-    if (saveDriveCopy && driveAvailable) {
-      setRun({ label: 'Uploading to Google Drive…', pct: 0 });
-      try {
-        const file = await saveToDrive(blob, name, f => setRun({ label: 'Uploading to Google Drive…', pct: Math.round(f * 100) }), signal);
-        toastDriveSaved(file);
-      } catch (e) {
-        toastDriveError(e);
-      }
-    }
-  };
-
   const handlePolish = async () => {
     if (!buffer || isRunning) return;
-
-    // Google's consent popup must open inside this click, so ask BEFORE the long render.
-    if (saveDriveCopy && driveAvailable) {
-      try {
-        await getDriveToken();
-      } catch (e) {
-        toastDriveError(e);
-        return;
-      }
-    }
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -126,7 +81,6 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
       setLastRun({ before: buffer, after: polished });
       onResult(polished);
       toast.success('Polished! Use "Original" to compare, or Undo to go back.', { position: 'top-center' });
-      if (saveCloudCopy || (saveDriveCopy && driveAvailable)) await saveCopies(polished, controller.signal);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') {
         toast('Polish cancelled.', { position: 'top-center' });
@@ -158,24 +112,37 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
         </p>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <Label id="polish-style-label" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Style</Label>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={settings.preset}
-          onValueChange={v => v && setSettings(s => ({ ...s, preset: v as MasterPreset }))}
-          aria-labelledby="polish-style-label"
-          disabled={isRunning}
-          className="grid grid-cols-3 w-full"
-        >
-          {PRESETS.map(p => (
-            <ToggleGroupItem key={p.id} value={p.id} className="h-11 sm:h-9 text-sm font-semibold w-full data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary data-[state=on]:hover:bg-primary/90">
-              {p.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        <p className="text-xs text-muted-foreground">{preset.blurb}</p>
+        <div className="flex flex-col gap-3 pt-2 pb-1">
+          <Slider
+            aria-labelledby="polish-style-label"
+            min={0}
+            max={PRESETS.length - 1}
+            step={1}
+            value={[PRESETS.findIndex(p => p.id === settings.preset)]}
+            onValueChange={([v]) => setSettings(s => ({ ...s, preset: PRESETS[v].id }))}
+            disabled={isRunning}
+            className="cursor-pointer"
+          />
+          <div className="flex justify-between px-1">
+            {PRESETS.map((p, i) => {
+              const isActive = settings.preset === p.id;
+              return (
+                <div
+                  key={p.id}
+                  className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                  onClick={() => !isRunning && setSettings(s => ({ ...s, preset: p.id }))}
+                  role="button"
+                  aria-pressed={isActive}
+                >
+                  <span className={`text-xs sm:text-sm font-semibold`}>{p.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground text-center">{preset.blurb}</p>
       </div>
 
       {showFineTune && (
@@ -224,20 +191,6 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
           </div>
         </div>
       )}
-
-      <div className="flex flex-col gap-3 rounded-md border border-border bg-card p-3">
-        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Also save a copy to</span>
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <Label htmlFor="polish-save-cloud" className="flex-1 self-stretch cursor-pointer items-center text-sm">My cloud storage</Label>
-          <Switch id="polish-save-cloud" checked={saveCloudCopy} onCheckedChange={setSaveCloudCopy} disabled={isRunning} />
-        </div>
-        {driveAvailable && (
-          <div className="flex min-h-11 items-center justify-between gap-3">
-            <Label htmlFor="polish-save-drive" className="flex-1 self-stretch cursor-pointer items-center text-sm">Google Drive</Label>
-            <Switch id="polish-save-drive" checked={saveDriveCopy} onCheckedChange={setSaveDriveCopy} disabled={isRunning} />
-          </div>
-        )}
-      </div>
 
       {isRunning ? (
         <div className="flex flex-col gap-2" role="status" aria-live="polite">

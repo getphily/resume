@@ -387,6 +387,17 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
 
+  const copyTranscript = async () => {
+    if (!transcript) return;
+    try {
+      const text = exportText(transcript, kept);
+      await navigator.clipboard.writeText(text);
+      toast.success('Transcript copied to clipboard', { position: 'top-center' });
+    } catch (e) {
+      toast.error('Failed to copy transcript', { position: 'top-center' });
+    }
+  };
+
   const downloadWav = () => {
     if (!current) return;
     const url = URL.createObjectURL(encodeWav(current));
@@ -701,6 +712,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={copyTranscript}>Copy to clipboard</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => downloadTranscript('txt')}>Download as .txt</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => downloadTranscript('srt')}>Download as .srt</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => downloadTranscript('vtt')}>Download as .vtt</DropdownMenuItem>
