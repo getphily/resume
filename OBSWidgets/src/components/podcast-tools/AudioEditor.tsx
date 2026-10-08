@@ -70,6 +70,8 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
 
   const [hist, setHist] = useState<{ stack: Range[][]; cursor: number }>({ stack: [], cursor: -1 });
   const kept = hist.cursor >= 0 ? hist.stack[hist.cursor] ?? [] : [];
+  const keptRef = useRef(kept);
+  keptRef.current = kept;
 
   const currentSource = layer === 'polished' && polished ? polished : source;
   const current = useMemo(() => {
@@ -184,7 +186,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
       setCurrentTime(t);
       if (transcriptRef.current) {
         // Find current source time based on the active EDL
-        const sourceTime = timelineToSource(kept, t);
+        const sourceTime = timelineToSource(keptRef.current, t);
         transcriptRef.current.syncPlayback(sourceTime);
       }
     });
@@ -200,7 +202,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
       regionsRef.current = null;
       recordRef.current = null;
     };
-  }, [kept]); // Re-bind on kept change is not strictly necessary but fine
+  }, []); // Initialize WaveSurfer once, use refs for dynamic state
 
   useEffect(() => {
     const ws = wavesurferRef.current;
