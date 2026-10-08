@@ -1,3 +1,7 @@
+drop table if exists public.media_usages cascade;
+drop table if exists public.media_collection_items cascade;
+drop table if exists public.media_collections cascade;
+drop table if exists public.media_assets cascade;
 -- =========================================================================================
 -- Media Library Schema & Policies
 -- Run this script in the Supabase SQL Editor.
