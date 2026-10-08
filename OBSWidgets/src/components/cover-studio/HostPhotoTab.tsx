@@ -5,6 +5,7 @@ import { CoverConfig, CoverImages } from '@/lib/coverStudio/types';
 import { toast } from 'react-hot-toast';
 import { Upload, X, Wand2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Switch } from '@/components/ui/switch';
 
 interface HostPhotoTabProps {
   cfg: CoverConfig;
@@ -145,25 +146,20 @@ export function HostPhotoTab({ cfg, setCfg, images, setImages }: HostPhotoTabPro
             )}
           </div>
           
+          <div className="flex items-center justify-between border-b pb-4">
+            <label className="text-xs font-bold text-foreground">Show Image</label>
+            <Switch 
+              checked={cfg.host.enabled}
+              onCheckedChange={(c) => setCfg(prev => ({ ...prev, host: { ...prev.host, enabled: c } }))}
+            />
+          </div>
+          
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-foreground">Zoom ({cfg.host.zoom.toFixed(2)}x)</label>
             <Slider 
               value={[cfg.host.zoom]} min={0.7} max={1.4} step={0.05} 
               onValueChange={(val) => setCfg(prev => ({ ...prev, host: { ...prev.host, zoom: val[0] } }))}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">Horizontal Position</label>
-            <Slider 
-              value={[cfg.host.cx]} min={1200} max={2400} step={10} 
-              onValueChange={(val) => setCfg(prev => ({ ...prev, host: { ...prev.host, cx: val[0] } }))}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">Vertical Position</label>
-            <Slider 
-              value={[cfg.host.bottom]} min={2700} max={3300} step={10} 
-              onValueChange={(val) => setCfg(prev => ({ ...prev, host: { ...prev.host, bottom: val[0] } }))}
+              disabled={!cfg.host.enabled}
             />
           </div>
         </div>

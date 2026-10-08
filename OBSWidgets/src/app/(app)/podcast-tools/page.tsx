@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Mic, Play, Plus, Share, MoreHorizontal, Headphones, Info, Edit2, CheckCircle2, ExternalLink, Check, GraduationCap, BookOpen, Upload, Download, AlertCircle, Trash2, Wand2, Rocket, Sparkles, Palette, ChevronDown, AudioLines, ArrowRight } from 'lucide-react';
+import { Mic, Play, Plus, Share, MoreHorizontal, Headphones, Info, Edit2, CheckCircle2, ExternalLink, Check, GraduationCap, BookOpen, Upload, Download, AlertCircle, Trash2, Wand2, Rocket, Sparkles, Palette, ChevronDown, AudioLines, ArrowRight, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -280,6 +281,7 @@ export default function YourPodcastLandingPage() {
   const [mounted, setMounted] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
+  const [helpModalStep, setHelpModalStep] = useState<{ title: string; content: React.ReactNode } | null>(null);
   const [spotifyExpanded, setSpotifyExpanded] = useState(false);
   const [wizardData, setWizardData] = useState({ about: '', for: '', why: '' });
   const [session, setSession] = useState<any>(null);
@@ -467,6 +469,19 @@ export default function YourPodcastLandingPage() {
               onClick: () => {
                 document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' });
               },
+              helpArticle: {
+                title: 'Step 1: Meta & Cover Art',
+                content: (
+                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                    <p>The foundation of your podcast. Before directories like Apple or Spotify can list your show, they require strict metadata.</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li><strong>Title & Description:</strong> Must clearly describe the show without keyword stuffing.</li>
+                      <li><strong>Categories:</strong> Choose exactly where you want to rank in podcast apps.</li>
+                      <li><strong>Cover Art:</strong> Must be perfectly square, between 1400x1400px and 3000x3000px, and under 2MB. Use our built-in Cover Studio to generate one!</li>
+                    </ul>
+                  </div>
+                )
+              },
               checklist: [
                 { label: 'Complete Title, Host and Description', completed: s1_metaComplete, tooltip: 'These fields are required before any directory will accept your podcast.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
                 { label: 'Pick Categories and Rating', completed: s1_catComplete, tooltip: 'Helps listeners find you. Rating marks if you use explicit language.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
@@ -482,6 +497,20 @@ export default function YourPodcastLandingPage() {
               actionLabel: isStep2Complete ? 'Hosting Connected' : 'Setup Hosting',
               onClick: () => {
                 document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' });
+              },
+              helpArticle: {
+                title: 'Step 2: Hosting Setup',
+                content: (
+                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                    <p>To distribute a podcast, you need an RSS feed. This is a special link that holds your audio files and metadata.</p>
+                    <p>We recommend <strong>Spotify for Podcasters</strong> as your media host because it's completely free and highly reliable. We also recommend linking it to <strong>Substack</strong> to build your mailing list concurrently.</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Create your Spotify host account.</li>
+                      <li>Input your Substack handle.</li>
+                      <li>Copy the generated RSS feed URL back here.</li>
+                    </ul>
+                  </div>
+                )
               },
               checklist: [
                 { label: 'Sign Up for a Spotify Account', completed: s2_spotify, tooltip: 'Click to mark as done after creating a free Spotify for Podcasters account.', onClick: () => updateData({ hasSpotifyAccount: !data.hasSpotifyAccount }) },
@@ -500,6 +529,16 @@ export default function YourPodcastLandingPage() {
               onClick: () => {
                 document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' });
               },
+              helpArticle: {
+                title: 'Step 3: Directory Syndication',
+                content: (
+                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                    <p>Once your RSS feed is ready and has at least one published audio file (like a trailer), you need to tell Apple and Spotify about it.</p>
+                    <p>Submit your RSS feed link to <strong>Apple Podcasts Connect</strong>. Apple acts as the master directory for almost all other smaller podcast apps (Overcast, Pocket Casts, etc.).</p>
+                    <p>Approval usually takes a few days. Once approved, every time you publish an episode to your host, it will automatically appear in all apps!</p>
+                  </div>
+                )
+              },
               checklist: [
                 { label: 'Get listed on Apple', completed: s3_apple, tooltip: 'Submit your RSS feed to Apple Podcasts Connect.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
                 { label: 'Get listed on Spotify', completed: s3_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
@@ -514,6 +553,16 @@ export default function YourPodcastLandingPage() {
               actionLabel: isStep4Complete ? 'Published' : 'Open Studio',
               onClick: () => {
                 window.location.href = '/podcast-tools/studio';
+              },
+              helpArticle: {
+                title: 'Step 4: The First Episode',
+                content: (
+                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                    <p>It's time to record! You can record a short 1-minute trailer, or dive straight into Episode 1.</p>
+                    <p>Use our built-in <strong>Recording Studio</strong> to lay down your audio. Then, use <strong>Magic Polish</strong> to instantly master the audio, removing background noise and leveling your voice to professional broadcast standards.</p>
+                    <p>Finally, download the audio and upload it to your host (Spotify for Podcasters). Congratulations, you're a podcaster!</p>
+                  </div>
+                )
               },
               checklist: [
                 { label: 'Record Episode', completed: s4_record, tooltip: 'Click to toggle once you have recorded audio.', onClick: () => updateData({ episodeRecorded: !data.episodeRecorded }) },
@@ -616,12 +665,21 @@ export default function YourPodcastLandingPage() {
                         </div>
 
                         <div className="flex flex-col gap-1 mt-1">
-                          <h3 className={cn(
-                            "text-xs font-bold leading-tight",
-                            step.complete ? "text-emerald-700 dark:text-emerald-300" : "text-foreground"
-                          )}>
-                            {step.title}
-                          </h3>
+                          <div className="flex items-center gap-1.5">
+                            <h3 className={cn(
+                              "text-xs font-bold leading-tight",
+                              step.complete ? "text-emerald-700 dark:text-emerald-300" : "text-foreground"
+                            )}>
+                              {step.title}
+                            </h3>
+                            <button
+                              onClick={() => setHelpModalStep({ title: step.helpArticle.title, content: step.helpArticle.content })}
+                              className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 ring-primary rounded-full p-0.5"
+                              title="Learn more about this step"
+                            >
+                              <HelpCircle className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Checklist */}
@@ -1383,6 +1441,21 @@ export default function YourPodcastLandingPage() {
           </div>
         </div>
       )}
+
+      {/* Help Article Modal */}
+      <Dialog open={!!helpModalStep} onOpenChange={(open) => !open && setHelpModalStep(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-primary" />
+              {helpModalStep?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {helpModalStep?.content}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <CoverStudioDialog
         open={studioOpen}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
 import { CoverConfig, CoverImages } from '@/lib/coverStudio/types';
 import { CANVAS, DEFAULT_CONFIG, PREVIEW_CSS, PREVIEW_SCALE } from '@/lib/coverStudio/defaults';
 import { drawCover, ensureFonts } from '@/lib/coverStudio/draw';
@@ -49,6 +50,7 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
   // State (not a ref): the dialog content is portaled and mounts AFTER `open` flips, so a plain ref
   // is still null when the draw effect first runs and the preview would stay blank.
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('background');
 
   // Seed configuration
   const initialConfig = useMemo(() => {
@@ -286,6 +288,45 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
     toast('Reset to template', { position: 'top-center', icon: '🔄' });
   };
 
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0, initialX: 0, initialY: 0 });
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    isDragging.current = true;
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      initialX: activeTab === 'background' ? cfg.bg.imgX : cfg.host.cx,
+      initialY: activeTab === 'background' ? cfg.bg.imgY : cfg.host.bottom,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDragging.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    // Scale from CSS space (e.g., 300px) to internal space (3000px)
+    const ratio = CANVAS / PREVIEW_CSS;
+    
+    if (activeTab === 'background' && cfg.bg.type === 'image') {
+      setCfg(prev => ({
+        ...prev,
+        bg: { ...prev.bg, imgX: dragStart.current.initialX + (dx * ratio), imgY: dragStart.current.initialY + (dy * ratio) }
+      }));
+    } else if (activeTab === 'host' && cfg.host.enabled !== false) {
+      setCfg(prev => ({
+        ...prev,
+        host: { ...prev.host, cx: dragStart.current.initialX + (dx * ratio), bottom: dragStart.current.initialY + (dy * ratio) }
+      }));
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    isDragging.current = false;
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full sm:max-w-4xl max-h-[90vh] overflow-y-auto p-6">
@@ -304,7 +345,14 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                 ref={setCanvasEl}
                 width={CANVAS * PREVIEW_SCALE} // 600 (3000 x 0.2)
                 height={CANVAS * PREVIEW_SCALE}
-                className="w-[300px] h-[300px]"
+                className={cn(
+                  "w-[300px] h-[300px]",
+                  (activeTab === 'background' || activeTab === 'host') ? "cursor-grab active:cursor-grabbing" : ""
+                )}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
               />
             </div>
             <p className="text-xs text-muted-foreground text-center mt-2">
@@ -341,7 +389,7 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
 
           {/* Right: Tabs Shell */}
           <div className="min-w-0">
-            <Tabs defaultValue="background" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="w-full justify-start overflow-x-auto">
                 <TabsTrigger value="background" className="flex-1 px-3">Background</TabsTrigger>
                 <TabsTrigger value="host" className="flex-1 px-3">Host photo</TabsTrigger>

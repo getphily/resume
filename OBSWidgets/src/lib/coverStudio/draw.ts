@@ -81,6 +81,11 @@ export function drawCover(
     if (blurVal > 0) {
       ctx.filter = "none";
     }
+
+    if (cfg.bg.overlayOpacity && cfg.bg.overlayOpacity > 0) {
+      ctx.fillStyle = `rgba(0,0,0,${cfg.bg.overlayOpacity})`;
+      ctx.fillRect(0, 0, 3000, 3000);
+    }
   } else if (cfg.bg.type === 'solid') {
     ctx.fillStyle = cfg.bg.solid;
     ctx.fillRect(0, 0, 3000, 3000);
@@ -103,7 +108,7 @@ export function drawCover(
   }
 
   // 3. Host photo
-  if (images.host) {
+  if (cfg.host.enabled !== false && images.host) {
     const img = images.host;
     const h = HOST_BASE_HEIGHT * cfg.host.zoom;
     const w = h * (img.width / img.height);

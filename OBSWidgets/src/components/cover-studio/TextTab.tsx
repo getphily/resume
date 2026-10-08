@@ -46,12 +46,16 @@ export function TextTab({ layer, onChange, kind }: TextTabProps) {
       </p>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-bold text-foreground">Text</label>
+        <label className="text-xs font-bold text-foreground">Text (From Meta)</label>
         <Input 
           value={layer.text} 
-          onChange={(e) => onChange({ text: e.target.value })} 
-          className="bg-background"
+          disabled
+          readOnly
+          className="bg-muted text-muted-foreground font-medium cursor-not-allowed opacity-100"
         />
+        <p className="text-[10px] text-muted-foreground leading-tight">
+          To change this text, close the studio and edit your show details in Step 1.
+        </p>
       </div>
 
       <TextFormattingToolbar

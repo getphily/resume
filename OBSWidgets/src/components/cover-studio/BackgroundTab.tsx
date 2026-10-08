@@ -161,17 +161,10 @@ export function BackgroundTab({ cfg, setCfg, images, setImages }: BackgroundTabP
                 />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-foreground">Horizontal Offset</label>
+                <label className="text-xs font-bold text-foreground">Dark Overlay ({Math.round((cfg.bg.overlayOpacity || 0) * 100)}%)</label>
                 <Slider 
-                  value={[cfg.bg.imgX]} min={-1500} max={1500} step={10} 
-                  onValueChange={(val) => setCfg(prev => ({ ...prev, bg: { ...prev.bg, imgX: val[0] } }))}
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold text-foreground">Vertical Offset</label>
-                <Slider 
-                  value={[cfg.bg.imgY]} min={-1500} max={1500} step={10} 
-                  onValueChange={(val) => setCfg(prev => ({ ...prev, bg: { ...prev.bg, imgY: val[0] } }))}
+                  value={[cfg.bg.overlayOpacity || 0]} min={0} max={1} step={0.05} 
+                  onValueChange={(val) => setCfg(prev => ({ ...prev, bg: { ...prev.bg, overlayOpacity: val[0] } }))}
                 />
               </div>
               <div className="flex flex-col gap-1.5">

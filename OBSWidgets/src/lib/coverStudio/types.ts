@@ -28,8 +28,9 @@ export interface CoverConfig {
     gradient: { stops: [string, string, string]; angle: number };
     imgX: number; imgY: number; imgZoom: number;   // image offsets in canvas px, zoom >= 1
     blur?: number;
+    overlayOpacity?: number; // 0..1 for a dark gradient overlay over image
   };
-  host: { cx: number; bottom: number; zoom: number };
+  host: { enabled: boolean; cx: number; bottom: number; zoom: number };
   title: TitleLayer;
   withText: TextLayer;
   hostName: TextLayer;

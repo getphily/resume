@@ -12,9 +12,9 @@ export const DEFAULT_CONFIG: CoverConfig = {
     type: 'gradient',
     solid: '#c3d9f6',
     gradient: { stops: ['#e2e5f3', '#c3d9f6', '#e9e6f1'], angle: 160 },
-    imgX: 0, imgY: 0, imgZoom: 1, blur: 0,
+    imgX: 0, imgY: 0, imgZoom: 1, blur: 0, overlayOpacity: 0.2,
   },
-  host: { cx: 1781, bottom: 3000, zoom: 1 },
+  host: { enabled: true, cx: 1781, bottom: 3000, zoom: 1 },
   title: {
     text: 'YOUR PODCAST NAME', font: 'Oswald', bold: true, italic: false, upper: true,
     color: '#000000', bgColor: '#ffffff', bgOpacity: 0, sizeScale: 1, letterSpacing: 0.01,
