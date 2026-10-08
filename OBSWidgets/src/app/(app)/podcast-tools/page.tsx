@@ -671,8 +671,9 @@ export default function YourPodcastLandingPage() {
               
               <div className="flex flex-col sm:flex-row gap-6">
                 {/* Artwork */}
-                <div id="section-artwork" className="flex flex-col gap-2 shrink-0 scroll-mt-6 w-32 md:w-48">
+                <div id="section-artwork" className="flex flex-col shrink-0 scroll-mt-6 w-32 md:w-48">
                   <FieldLabel text="Cover Art" complete={!!data.artworkUrl} />
+                  <div className="flex flex-col gap-2">
                   <div 
                     className={cn("w-32 h-32 md:w-48 md:h-48 rounded-xl shadow-md border bg-muted overflow-hidden flex items-center justify-center relative group cursor-pointer", data.artworkUrl ? "border-emerald-500/50 shadow-emerald-500/20" : "border-destructive shadow-destructive/20")}
                     title="Click to upload artwork"
@@ -716,6 +717,7 @@ export default function YourPodcastLandingPage() {
                   >
                     <Palette className="w-3 h-3" /> Cover Studio
                   </Button>
+                  </div>
                 </div>
 
                 {/* Core Details */}

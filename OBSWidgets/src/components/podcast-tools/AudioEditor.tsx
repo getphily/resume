@@ -4,6 +4,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
+import RecordPlugin from 'wavesurfer.js/dist/plugins/record.esm.js';
 import toast from 'react-hot-toast';
 import {
   Mic, Square, Play, Pause, Scissors, Upload, Download, Undo2, Redo2, SkipBack,
@@ -13,6 +14,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   decodeBlob, encodeWav, formatTime, concatSegments,
 } from '@/lib/audioEditor/buffer';
@@ -107,12 +109,32 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
     transcribe(source);
   };
 
+  const recordRef = useRef<InstanceType<typeof RecordPlugin> | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<string>('default');
+
+  const loadDevices = useCallback(async () => {
+    try {
+      if (devices.length === 0 || !devices[0]?.label) {
+        // Request permission to get labels
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(t => t.stop());
+      }
+      const allDevs = await navigator.mediaDevices.enumerateDevices();
+      setDevices(allDevs.filter(d => d.kind === 'audioinput'));
+    } catch (e) {
+      console.warn('Microphone permission denied or not available.', e);
+    }
+  }, [devices]);
+
+  useEffect(() => {
+    // Attempt to load devices silently (might not have labels yet)
+    navigator.mediaDevices?.enumerateDevices().then(devs => {
+      setDevices(devs.filter(d => d.kind === 'audioinput'));
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -134,9 +156,26 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
     const regions = ws.registerPlugin(RegionsPlugin.create());
     regions.enableDragSelection({ color: 'color-mix(in srgb, var(--primary) 25%, transparent)' });
 
+    const record = ws.registerPlugin(RecordPlugin.create({
+      scrollingWaveform: true,
+      renderRecordedAudio: false
+    }));
+
     const syncRegionCount = () => setRegionCount(regions.getRegions().length);
     regions.on('region-created', syncRegionCount);
     regions.on('region-removed', syncRegionCount);
+
+    record.on('record-progress', (duration) => {
+      setRecordSeconds(duration / 1000);
+    });
+    record.on('record-end', (blob) => {
+      setIsRecording(false);
+      if (blob.size === 0) {
+        toast.error('Nothing was recorded.', { position: 'top-center' });
+        return;
+      }
+      void loadBlobAsAudio(blob, 'the recording');
+    });
 
     ws.on('play', () => setIsPlaying(true));
     ws.on('pause', () => setIsPlaying(false));
@@ -154,10 +193,12 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
     wavesurferRef.current = ws;
     regionsRef.current = regions;
 
+    recordRef.current = record;
     return () => {
       ws.destroy();
       wavesurferRef.current = null;
       regionsRef.current = null;
+      recordRef.current = null;
     };
   }, [kept]); // Re-bind on kept change is not strictly necessary but fine
 
@@ -192,12 +233,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
     if (ws && ws.getDuration() > 0) ws.zoom(ZOOM_LEVELS[zoomIdx]);
   }, [zoomIdx]);
 
-  useEffect(() => {
-    return () => {
-      if (recordTimerRef.current) clearInterval(recordTimerRef.current);
-      mediaStreamRef.current?.getTracks().forEach(t => t.stop());
-    };
-  }, []);
+
 
   const pushKept = useCallback((newKept: Range[]) => {
     setHist(prev => {
@@ -236,48 +272,24 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
   };
 
   const startRecording = async () => {
-    if (typeof MediaRecorder === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-      toast.error("Recording isn't supported in this browser. You can still upload a file.", { position: 'top-center' });
-      return;
-    }
+    if (!recordRef.current) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
-      mediaStreamRef.current = stream;
-      mediaRecorderRef.current = recorder;
-      chunksRef.current = [];
-
-      recorder.ondataavailable = e => {
-        if (e.data.size > 0) chunksRef.current.push(e.data);
-      };
-      recorder.onstop = () => {
-        stream.getTracks().forEach(t => t.stop());
-        mediaStreamRef.current = null;
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-        chunksRef.current = [];
-        if (blob.size === 0) {
-          toast.error('Nothing was recorded.', { position: 'top-center' });
-          return;
-        }
-        void loadBlobAsAudio(blob, 'the recording');
-      };
-
+      await loadDevices(); // ensure permissions
       wavesurferRef.current?.pause();
-      recorder.start();
-      setRecordSeconds(0);
-      recordTimerRef.current = setInterval(() => setRecordSeconds(s => s + 1), 1000);
       setIsRecording(true);
+      setRecordSeconds(0);
+      await recordRef.current.startRecording(
+        selectedDevice && selectedDevice !== 'default' ? { deviceId: selectedDevice } : undefined
+      );
     } catch (err) {
+      setIsRecording(false);
       console.error('[AudioEditor] mic error', err);
       toast.error('Microphone access was denied or is unavailable.', { position: 'top-center' });
     }
   };
 
   const stopRecording = () => {
-    if (recordTimerRef.current) clearInterval(recordTimerRef.current);
-    recordTimerRef.current = null;
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
+    recordRef.current?.stopRecording();
   };
 
   const getSelectedRanges = (): Range[] =>
@@ -470,24 +482,39 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
             <Upload className="w-4 h-4 mr-1.5" aria-hidden="true" />
             Upload Audio
           </Button>
-          {!isRecording ? (
-            <Button
-              className={`${touchBtn} bg-red-500 hover:bg-red-600 active:bg-red-700 text-white`}
-              onClick={startRecording}
-              disabled={isBusy}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-white mr-2" aria-hidden="true" />
-              Record
-            </Button>
-          ) : (
-            <Button
-              className={`${touchBtn} bg-zinc-800 hover:bg-zinc-900 active:bg-black text-white`}
-              onClick={stopRecording}
-            >
-              <Square className="w-4 h-4 mr-1.5 fill-white" aria-hidden="true" />
-              Stop · {formatTime(recordSeconds).replace(/\.\d$/, '')}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {!isRecording && (
+              <Select value={selectedDevice} onValueChange={setSelectedDevice} onOpenChange={(open) => { if (open) loadDevices(); }}>
+                <SelectTrigger className={`${touchBtn} w-40 max-w-full`}>
+                  <SelectValue placeholder="Select Mic" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">Default Mic</SelectItem>
+                  {devices.map(d => (
+                    <SelectItem key={d.deviceId} value={d.deviceId}>{d.label || 'Unknown Device'}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+            {!isRecording ? (
+              <Button
+                className={`${touchBtn} bg-red-500 hover:bg-red-600 active:bg-red-700 text-white`}
+                onClick={startRecording}
+                disabled={isBusy}
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-white mr-1.5" aria-hidden="true" />
+                Record
+              </Button>
+            ) : (
+              <Button
+                className={`${touchBtn} bg-zinc-800 hover:bg-zinc-900 active:bg-black text-white`}
+                onClick={stopRecording}
+              >
+                <Square className="w-4 h-4 mr-1.5 fill-white" aria-hidden="true" />
+                Stop · {formatTime(recordSeconds).replace(/\.\d$/, '')}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
