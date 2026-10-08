@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import { CoverConfig, CoverImages } from '@/lib/coverStudio/types';
 import { CANVAS, DEFAULT_CONFIG, PREVIEW_CSS, PREVIEW_SCALE } from '@/lib/coverStudio/defaults';
@@ -50,7 +50,7 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
   // State (not a ref): the dialog content is portaled and mounts AFTER `open` flips, so a plain ref
   // is still null when the draw effect first runs and the preview would stay blank.
   const [canvasEl, setCanvasEl] = useState<HTMLCanvasElement | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('background');
+  const [dragTarget, setDragTarget] = useState<'background' | 'host'>('host');
 
   // Seed configuration
   const initialConfig = useMemo(() => {
@@ -325,8 +325,8 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
     dragStart.current = {
       x: e.clientX,
       y: e.clientY,
-      initialX: activeTab === 'background' ? cfg.bg.imgX : cfg.host.cx,
-      initialY: activeTab === 'background' ? cfg.bg.imgY : cfg.host.bottom,
+      initialX: dragTarget === 'background' ? cfg.bg.imgX : cfg.host.cx,
+      initialY: dragTarget === 'background' ? cfg.bg.imgY : cfg.host.bottom,
     };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
@@ -338,12 +338,12 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
     // Scale from CSS space (e.g., 300px) to internal space (3000px)
     const ratio = CANVAS / PREVIEW_CSS;
     
-    if (activeTab === 'background' && cfg.bg.type === 'image') {
+    if (dragTarget === 'background' && cfg.bg.type === 'image') {
       setCfg(prev => ({
         ...prev,
         bg: { ...prev.bg, imgX: dragStart.current.initialX + (dx * ratio), imgY: dragStart.current.initialY + (dy * ratio) }
       }));
-    } else if (activeTab === 'host' && cfg.host.enabled !== false) {
+    } else if (dragTarget === 'host' && cfg.host.enabled !== false) {
       setCfg(prev => ({
         ...prev,
         host: { ...prev.host, cx: dragStart.current.initialX + (dx * ratio), bottom: dragStart.current.initialY + (dy * ratio) }
@@ -376,7 +376,7 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                 height={CANVAS * PREVIEW_SCALE}
                 className={cn(
                   "w-[300px] h-[300px]",
-                  (activeTab === 'background' || activeTab === 'host') ? "cursor-grab active:cursor-grabbing" : ""
+                  "cursor-grab active:cursor-grabbing"
                 )}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
@@ -384,7 +384,16 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                 onPointerCancel={handlePointerUp}
               />
             </div>
-            <p className="text-xs text-muted-foreground text-center mt-2">
+
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">Drag to move:</span>
+              <ToggleGroup type="single" value={dragTarget} onValueChange={(v) => v && setDragTarget(v as any)} className="bg-muted/50 p-1 rounded-lg">
+                <ToggleGroupItem value="host" className="h-7 text-xs px-2">Host Photo</ToggleGroupItem>
+                <ToggleGroupItem value="background" className="h-7 text-xs px-2">Background</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground text-center mt-3 max-w-[260px] leading-tight">
               Exports 3000×3000 JPG, ready for Apple Podcasts &amp; Spotify.
             </p>
             <p
@@ -416,30 +425,39 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
             </p>
           </div>
 
-          {/* Right: Tabs Shell */}
-          <div className="min-w-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full justify-start overflow-x-auto">
-                <TabsTrigger value="background" className="flex-1 px-3">Background</TabsTrigger>
-                <TabsTrigger value="host" className="flex-1 px-3">Host photo</TabsTrigger>
-                <TabsTrigger value="title" className="flex-1 px-3">Title</TabsTrigger>
-                <TabsTrigger value="hostname" className="flex-1 px-3">Host name</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="background" className="p-4 border border-border rounded-lg mt-2">
-                <BackgroundTab cfg={cfg} setCfg={setCfg} images={images} setImages={setImages} />
-              </TabsContent>
-              <TabsContent value="host" className="p-4 border border-border rounded-lg mt-2">
-                <HostPhotoTab cfg={cfg} setCfg={setCfg} images={images} setImages={setImages} />
-              </TabsContent>
-              <TabsContent value="title" className="p-4 border border-border rounded-lg mt-2">
-                <TextTab 
-                  layer={cfg.title} 
-                  kind="title" 
-                  onChange={(patch) => setCfg(prev => ({ ...prev, title: { ...prev.title, ...patch } }))} 
-                />
-              </TabsContent>
-              <TabsContent value="hostname" className="p-4 border border-border rounded-lg mt-2 flex flex-col gap-6">
+          {/* Right: Tools Panel */}
+          <div className="min-w-0 max-h-[520px] overflow-y-auto pr-3 space-y-4">
+            
+            <div className="bg-card border rounded-xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary/80" /> Background
+              </h3>
+              <BackgroundTab cfg={cfg} setCfg={setCfg} images={images} setImages={setImages} />
+            </div>
+
+            <div className="bg-card border rounded-xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary/80" /> Host Photo
+              </h3>
+              <HostPhotoTab cfg={cfg} setCfg={setCfg} images={images} setImages={setImages} />
+            </div>
+
+            <div className="bg-card border rounded-xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary/80" /> Title Formatting
+              </h3>
+              <TextTab 
+                layer={cfg.title} 
+                kind="title" 
+                onChange={(patch) => setCfg(prev => ({ ...prev, title: { ...prev.title, ...patch } }))} 
+              />
+            </div>
+
+            <div className="bg-card border rounded-xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary/80" /> Host Name Formatting
+              </h3>
+              <div className="flex flex-col gap-5">
                 <TextTab 
                   layer={cfg.hostName} 
                   kind="single" 
@@ -447,28 +465,28 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                 />
                 
                 {/* Badge Box Controls */}
-                <div className="pt-6 border-t flex flex-col gap-4">
+                <div className="pt-4 border-t flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-bold text-foreground">Badge Box</label>
+                    <label className="text-sm font-bold text-foreground cursor-pointer" htmlFor="badge-toggle">Show Background Box</label>
                     <Switch 
+                      id="badge-toggle"
                       checked={cfg.badge.enabled}
                       onCheckedChange={(c) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, enabled: c } }))}
                     />
                   </div>
                   {cfg.badge.enabled && (
-                    <>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-foreground">Box Color</label>
-                        <ColorInputWithPalette 
-                          value={cfg.badge.color}
-                          onChange={(c) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, color: c } }))}
-                        />
-                      </div>
-                    </>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-foreground">Box Color</label>
+                      <ColorInputWithPalette 
+                        value={cfg.badge.color}
+                        onChange={(c) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, color: c } }))}
+                      />
+                    </div>
                   )}
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            </div>
+
           </div>
         </div>
 
