@@ -278,8 +278,14 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
       wavesurferRef.current?.pause();
       setIsRecording(true);
       setRecordSeconds(0);
+      
+      // Force Wavesurfer RecordPlugin to drop its cached stream so it respects the new device selection
+      if (typeof (recordRef.current as any).stopMic === 'function') {
+        (recordRef.current as any).stopMic();
+      }
+
       await recordRef.current.startRecording(
-        selectedDevice && selectedDevice !== 'default' ? { deviceId: selectedDevice } : undefined
+        selectedDevice && selectedDevice !== 'default' ? { deviceId: { exact: selectedDevice } } : undefined
       );
     } catch (err) {
       setIsRecording(false);
@@ -489,8 +495,8 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                   <SelectValue placeholder="Select Mic" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Default Mic</SelectItem>
-                  {devices.map(d => (
+                  <SelectItem value="default">System Default</SelectItem>
+                  {devices.filter(d => d.deviceId !== 'default').map(d => (
                     <SelectItem key={d.deviceId} value={d.deviceId}>{d.label || 'Unknown Device'}</SelectItem>
                   ))}
                 </SelectContent>
