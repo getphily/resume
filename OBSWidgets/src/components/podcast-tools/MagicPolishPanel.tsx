@@ -10,14 +10,8 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import {
   DEFAULT_MASTER_SETTINGS, masterAudio,
-  type MasterPreset, type MasterSettings, type MasterStage,
+  type MasterSettings, type MasterStage,
 } from '@/lib/audioEditor/master';
-
-const PRESETS: { id: MasterPreset; label: string; blurb: string }[] = [
-  { id: 'gentle', label: 'Gentle', blurb: 'Light touch. Keeps your natural dynamics.' },
-  { id: 'podcast', label: 'Podcast', blurb: 'Balanced and clear. Best for most voices.' },
-  { id: 'broadcast', label: 'Broadcast', blurb: 'Loud, even, radio-style sound.' },
-];
 
 const STAGE_LABEL: Record<MasterStage, string> = {
   prepare: 'Preparing audio…',
@@ -57,8 +51,7 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
   const abortRef = useRef<AbortController | null>(null);
 
   const isRunning = run !== null;
-  const preset = PRESETS.find(p => p.id === settings.preset)!;
-
+  
   useEffect(() => () => abortRef.current?.abort(), []);
 
   // Which side of the A/B are we currently on? Derived from identity, so any later edit hides the toggle.
@@ -113,36 +106,26 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
       </div>
 
       <div className="flex flex-col gap-3">
-        <Label id="polish-style-label" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Style</Label>
+        <div className="flex items-center justify-between">
+          <Label id="polish-style-label" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Polish Intensity</Label>
+          <span className="text-xs text-muted-foreground tabular-nums">{settings.intensity} / 10</span>
+        </div>
         <div className="flex flex-col gap-3 pt-2 pb-1">
           <Slider
             aria-labelledby="polish-style-label"
-            min={0}
-            max={PRESETS.length - 1}
+            min={1}
+            max={10}
             step={1}
-            value={[PRESETS.findIndex(p => p.id === settings.preset)]}
-            onValueChange={([v]) => setSettings(s => ({ ...s, preset: PRESETS[v].id }))}
+            value={[settings.intensity]}
+            onValueChange={([v]) => setSettings(s => ({ ...s, intensity: v }))}
             disabled={isRunning}
             className="cursor-pointer"
           />
-          <div className="flex justify-between px-1">
-            {PRESETS.map((p, i) => {
-              const isActive = settings.preset === p.id;
-              return (
-                <div
-                  key={p.id}
-                  className={`flex flex-col items-center gap-1 cursor-pointer transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                  onClick={() => !isRunning && setSettings(s => ({ ...s, preset: p.id }))}
-                  role="button"
-                  aria-pressed={isActive}
-                >
-                  <span className={`text-xs sm:text-sm font-semibold`}>{p.label}</span>
-                </div>
-              );
-            })}
+          <div className="flex justify-between px-1 text-xs font-medium text-muted-foreground">
+            <span>Gentle</span>
+            <span>Heavy</span>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground text-center">{preset.blurb}</p>
       </div>
 
       {showFineTune && (

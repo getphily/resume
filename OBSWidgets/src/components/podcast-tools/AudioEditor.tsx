@@ -704,13 +704,18 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                 Download WAV
               </Button>
               {transcript && transcript.words.length > 0 && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className={touchBtn} disabled={isBusy}>
-                      <FileText className="w-4 h-4 mr-1.5" aria-hidden="true" />
-                      Transcript
-                    </Button>
-                  </DropdownMenuTrigger>
+                <>
+                  <Button variant="outline" className={touchBtn} onClick={copyTranscript} disabled={isBusy}>
+                    <FileText className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                    Copy Text
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className={touchBtn} disabled={isBusy}>
+                        <Download className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                        Save Transcript
+                      </Button>
+                    </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={copyTranscript}>Copy to clipboard</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => downloadTranscript('txt')}>Download as .txt</DropdownMenuItem>
@@ -718,6 +723,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                     <DropdownMenuItem onClick={() => downloadTranscript('vtt')}>Download as .vtt</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                </>
               )}
             </div>
           </div>

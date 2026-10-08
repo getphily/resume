@@ -9,14 +9,14 @@
  * gain, so normalising before it misses the target (measured −3.3 dBFS instead of −1.0).
  */
 
-export type MasterPreset = 'gentle' | 'podcast' | 'broadcast';
 export type MasterStage = 'prepare' | 'denoise' | 'compress' | 'level' | 'done';
 
 export interface MasterSettings {
   denoise: boolean;
   /** 0..1 wet/dry mix of the noise-reduced signal. */
   denoiseStrength: number;
-  preset: MasterPreset;
+  /** 1 to 10 intensity scale for compression. 1 = gentle, 5 = normal, 10 = heavy broadcast */
+  intensity: number;
   /** Output peak ceiling in dBFS (negative). */
   ceilingDb: number;
 }
@@ -24,16 +24,25 @@ export interface MasterSettings {
 export const DEFAULT_MASTER_SETTINGS: MasterSettings = {
   denoise: true,
   denoiseStrength: 1,
-  preset: 'podcast',
+  intensity: 5,
   ceilingDb: -1,
 };
 
-/** Starting points for spoken word — tune by ear. */
-export const COMPRESSOR_PRESETS: Record<MasterPreset, { threshold: number; ratio: number; knee: number; attack: number; release: number }> = {
-  gentle: { threshold: -20, ratio: 2, knee: 20, attack: 0.015, release: 0.3 },
-  podcast: { threshold: -24, ratio: 3, knee: 12, attack: 0.01, release: 0.25 },
-  broadcast: { threshold: -28, ratio: 4, knee: 6, attack: 0.005, release: 0.2 },
-};
+function lerp(start: number, end: number, t: number) {
+  return start + (end - start) * t;
+}
+
+export function getCompressorSettings(intensity: number) {
+  // Map intensity 1..10 to t 0..1
+  const t = Math.max(0, Math.min(1, (intensity - 1) / 9));
+  return {
+    threshold: lerp(-18, -30, t),
+    ratio: lerp(1.5, 5, t),
+    knee: lerp(24, 4, t),
+    attack: lerp(0.02, 0.002, t),
+    release: lerp(0.35, 0.15, t),
+  };
+}
 
 export const MASTER_SAMPLE_RATE = 48_000; // RNNoise requires 48 kHz
 /** DynamicsCompressorNode look-ahead, measured at 288 samples (6 ms) @ 48 kHz. */
@@ -158,7 +167,7 @@ export async function masterAudio(
   const ctx = new OfflineAudioContext(chCount, n + COMPRESSOR_LOOKAHEAD, MASTER_SAMPLE_RATE);
   const node = new AudioBufferSourceNode(ctx, { buffer: staged });
   const hpf = new BiquadFilterNode(ctx, { type: 'highpass', frequency: 80, Q: 0.707 });
-  const comp = new DynamicsCompressorNode(ctx, COMPRESSOR_PRESETS[settings.preset]);
+  const comp = new DynamicsCompressorNode(ctx, getCompressorSettings(settings.intensity));
   node.connect(hpf).connect(comp).connect(ctx.destination);
   node.start();
   const rendered = await ctx.startRendering();
