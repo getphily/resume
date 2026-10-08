@@ -92,39 +92,36 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
   return (
     <section
       aria-label="Magic Polish"
-      className="flex flex-col gap-4 rounded-lg border border-primary/25 bg-primary/5 p-3 sm:p-4"
+      className="flex flex-col gap-5 rounded-lg border border-primary/20 bg-primary/[0.03] p-4 sm:p-5 shadow-sm"
     >
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1.5">
         <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
           <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
           Magic Polish
         </h3>
-        <p className="text-xs text-muted-foreground">
-          One click removes background noise, evens out loud and quiet parts, and sets a clean final level — tuned for spoken word.
-          Do your cuts first, then polish.
+        <p className="text-sm text-muted-foreground leading-snug">
+          One click removes background noise, evens out loud and quiet parts, and sets a clean final level — tuned for spoken word. Do your cuts first, then polish.
         </p>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <Label id="polish-style-label" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Polish Intensity</Label>
-          <span className="text-xs text-muted-foreground tabular-nums">{settings.intensity} / 10</span>
+          <Label id="polish-style-label" className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Polish Intensity</Label>
+          <span className="text-sm font-medium text-muted-foreground tabular-nums">{settings.intensity} / 10</span>
         </div>
-        <div className="flex flex-col gap-3 pt-2 pb-1">
-          <Slider
-            aria-labelledby="polish-style-label"
-            min={1}
-            max={10}
-            step={1}
-            value={[settings.intensity]}
-            onValueChange={([v]) => setSettings(s => ({ ...s, intensity: v }))}
-            disabled={isRunning}
-            className="cursor-pointer"
-          />
-          <div className="flex justify-between px-1 text-xs font-medium text-muted-foreground">
-            <span>Gentle</span>
-            <span>Heavy</span>
-          </div>
+        <Slider
+          aria-labelledby="polish-style-label"
+          min={1}
+          max={10}
+          step={1}
+          value={[settings.intensity]}
+          onValueChange={([v]) => setSettings(s => ({ ...s, intensity: v }))}
+          disabled={isRunning}
+          className="cursor-pointer py-2"
+        />
+        <div className="flex justify-between text-sm font-medium text-muted-foreground">
+          <span>Gentle</span>
+          <span>Heavy</span>
         </div>
       </div>
 
@@ -192,7 +189,7 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2">
-          <Button className={`${touchBtn} flex-1 sm:flex-none min-w-40`} onClick={handlePolish} disabled={!buffer || disabled}>
+          <Button className={`${touchBtn} flex-1 sm:flex-none`} onClick={handlePolish} disabled={!buffer || disabled}>
             <Sparkles className="w-4 h-4 mr-1.5" aria-hidden="true" />
             Magic Polish
           </Button>

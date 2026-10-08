@@ -703,7 +703,25 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                 <Download className="w-4 h-4 mr-1.5" aria-hidden="true" />
                 Download WAV
               </Button>
-              {transcript && transcript.words.length > 0 && (
+              {!transcript || transcript.words.length === 0 ? (
+                <Button 
+                  variant="outline" 
+                  className={touchBtn} 
+                  onClick={handleTranscribe} 
+                  disabled={isBusy || tState.status === 'loading' || tState.status === 'transcribing'}
+                >
+                  {tState.status === 'loading' || tState.status === 'transcribing' ? (
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <FileText className="w-4 h-4 mr-1.5" aria-hidden="true" />
+                  )}
+                  {tState.status === 'loading' 
+                    ? 'Loading AI Model...' 
+                    : tState.status === 'transcribing' 
+                      ? `Transcribing ${Math.round(tState.progress * 100)}%` 
+                      : 'Generate Transcript'}
+                </Button>
+              ) : (
                 <>
                   <Button variant="outline" className={touchBtn} onClick={copyTranscript} disabled={isBusy}>
                     <FileText className="w-4 h-4 mr-1.5" aria-hidden="true" />
@@ -716,13 +734,13 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                         Save Transcript
                       </Button>
                     </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={copyTranscript}>Copy to clipboard</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadTranscript('txt')}>Download as .txt</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadTranscript('srt')}>Download as .srt</DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => downloadTranscript('vtt')}>Download as .vtt</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={copyTranscript}>Copy to clipboard</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadTranscript('txt')}>Download as .txt</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadTranscript('srt')}>Download as .srt</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => downloadTranscript('vtt')}>Download as .vtt</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               )}
             </div>
