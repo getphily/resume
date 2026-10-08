@@ -24,7 +24,8 @@ import {
   Bookmark,
   ChevronDown,
   BookOpen,
-  AudioLines
+  AudioLines,
+  FileImage
 } from 'lucide-react';
 import { TOOLSETS } from '@/lib/toolsets';
 import { cn } from '@/lib/utils';
@@ -67,6 +68,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
   // 1. StreamTools (OBS Widgets)
   if (
     pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/media') ||
     pathname.startsWith('/crawl') ||
     pathname.startsWith('/chyron') ||
     pathname.startsWith('/clock') ||
@@ -79,6 +81,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
       badge: 'OBS Overlays',
       links: [
         { name: 'Studio Hub', path: '/dashboard', icon: LayoutDashboard, desc: 'All widgets & embeds' },
+        { name: 'Media Library', path: '/media', icon: FileImage, desc: 'Your uploaded files' },
         { name: 'Chyron Builder', path: '/crawl', icon: Tv, desc: 'Animated lower-thirds & tickers' },
         { name: 'Clock Widget', path: '/clock', icon: Clock, desc: 'Broadcast clocks' },
         { name: 'Timer Widget', path: '/timer', icon: Timer, desc: 'Stream countdowns' },
@@ -137,6 +140,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
     badge: 'Tools',
     links: [
       { name: 'Studio Hub', path: '/dashboard', icon: LayoutDashboard, desc: 'Widgets & embeds' },
+      { name: 'Media Library', path: '/media', icon: FileImage, desc: 'Your uploaded files' },
       { name: 'Chyron Builder', path: '/crawl', icon: Tv, desc: 'Lower-third tickers' },
       { name: 'Clock Widget', path: '/clock', icon: Clock, desc: 'Stream broadcast clocks' },
       { name: 'Timer Widget', path: '/timer', icon: Timer, desc: 'Countdowns' },

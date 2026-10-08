@@ -107,3 +107,19 @@ export async function getAssetSignedUrl(asset: MediaAsset): Promise<string> {
   if (error) throw error;
   return data.signedUrl;
 }
+
+export async function updateMediaAsset(id: string, updates: Partial<MediaAsset>): Promise<void> {
+  const { error } = await supabase.from('media_assets').update({
+    ...updates,
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) throw error;
+}
+
+export async function trashMediaAsset(id: string): Promise<void> {
+  const { error } = await supabase.from('media_assets').update({
+    deleted_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  if (error) throw error;
+}
