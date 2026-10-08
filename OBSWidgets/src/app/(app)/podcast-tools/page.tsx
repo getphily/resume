@@ -25,6 +25,10 @@ interface PodcastData {
   artworkUrl: string;
   rssFeedUrl: string;
   substackHandle: string;
+  hasSpotifyAccount?: boolean;
+  hasSubstackMetadata?: boolean;
+  episodeRecorded?: boolean;
+  episodeMastered?: boolean;
   trailerPublished?: boolean;
   firstEpisodePublished?: boolean;
   directoryStatus: {
@@ -415,18 +419,31 @@ export default function YourPodcastLandingPage() {
   }
 
 
-  const isMetaComplete = Boolean(
-    data.title && data.title !== 'Untitled Show' &&
-    data.host && data.host !== 'Unknown Host' &&
-    data.description && data.description !== defaultData.description &&
-    data.primaryCategory
-  );
-  const isCoverComplete = Boolean(data.artworkUrl);
-  const isHostingComplete = Boolean(data.rssFeedUrl && data.rssFeedUrl.trim());
-  const isDirectoriesComplete = Boolean(data.directoryStatus.apple && data.directoryStatus.spotify);
-  const isFirstReleaseComplete = Boolean(data.trailerPublished || data.firstEpisodePublished);
+  // Step 1 Check
+  const s1_metaComplete = Boolean(data.title && data.title !== 'Untitled Show' && data.host && data.host !== 'Unknown Host' && data.description && data.description !== defaultData.description);
+  const s1_catComplete = Boolean(data.primaryCategory && data.explicit);
+  const s1_coverComplete = Boolean(data.artworkUrl);
+  const isStep1Complete = s1_metaComplete && s1_catComplete && s1_coverComplete;
 
-  const activeStepIndex = [isMetaComplete, isCoverComplete, isHostingComplete, isDirectoriesComplete, isFirstReleaseComplete].findIndex(c => !c);
+  // Step 2 Check
+  const s2_spotify = Boolean(data.hasSpotifyAccount);
+  const s2_substackHandle = Boolean(data.substackHandle);
+  const s2_substackMeta = Boolean(data.hasSubstackMetadata);
+  const s2_rss = Boolean(data.rssFeedUrl && data.rssFeedUrl.trim());
+  const isStep2Complete = s2_spotify && s2_substackHandle && s2_substackMeta && s2_rss;
+
+  // Step 3 Check
+  const s3_apple = Boolean(data.directoryStatus.apple);
+  const s3_spotify = Boolean(data.directoryStatus.spotify);
+  const isStep3Complete = s3_apple && s3_spotify;
+
+  // Step 4 Check
+  const s4_record = Boolean(data.episodeRecorded);
+  const s4_master = Boolean(data.episodeMastered);
+  const s4_publish = Boolean(data.firstEpisodePublished);
+  const isStep4Complete = s4_record && s4_master && s4_publish;
+
+  const activeStepIndex = [isStep1Complete, isStep2Complete, isStep3Complete, isStep4Complete].findIndex(c => !c);
 
   return (
     <div className="w-full min-h-screen bg-background overflow-y-auto p-4 sm:p-6 md:p-8">
@@ -439,81 +456,75 @@ export default function YourPodcastLandingPage() {
 
         {/* Podcast Launch Workflow Roadmap */}
         {(() => {
-          const isMetaComplete = Boolean(
-            data.title && data.title !== 'Untitled Show' &&
-            data.host && data.host !== 'Unknown Host' &&
-            data.description && data.description !== defaultData.description &&
-            data.primaryCategory
-          );
-          const isCoverComplete = Boolean(data.artworkUrl);
-          const isHostingComplete = Boolean(data.rssFeedUrl && data.rssFeedUrl.trim());
-          const isDirectoriesComplete = Boolean(data.directoryStatus.apple && data.directoryStatus.spotify);
-          const isFirstReleaseComplete = Boolean(data.trailerPublished || data.firstEpisodePublished);
-
           const steps = [
             {
               id: 'meta',
               stepNum: 1,
-              title: 'Complete Meta Information',
-              desc: 'Show title, host, description & genre',
-              complete: isMetaComplete,
-              actionLabel: isMetaComplete ? 'Review Meta' : 'Fill In Meta',
+              title: 'Meta & Cover Art',
+              desc: 'Basic information and artwork',
+              complete: isStep1Complete,
+              actionLabel: isStep1Complete ? 'Review Meta' : 'Fill In Meta',
               onClick: () => {
                 document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' });
-              }
-            },
-            {
-              id: 'cover',
-              stepNum: 2,
-              title: 'Add Cover Image',
-              desc: 'Upload 1400–3000px square cover art',
-              complete: isCoverComplete,
-              actionLabel: isCoverComplete ? 'Change Cover' : 'Upload Image',
-              onClick: () => {
-                document.getElementById('section-artwork')?.scrollIntoView({ behavior: 'smooth' });
-              }
+              },
+              checklist: [
+                { label: 'Complete Title, Host and Description', completed: s1_metaComplete, tooltip: 'These fields are required before any directory will accept your podcast.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Pick Categories and Rating', completed: s1_catComplete, tooltip: 'Helps listeners find you. Rating marks if you use explicit language.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Add Cover Image', completed: s1_coverComplete, tooltip: 'Must be a 1400–3000px square image.', onClick: () => document.getElementById('section-artwork')?.scrollIntoView({ behavior: 'smooth' }) }
+              ]
             },
             {
               id: 'hosting',
-              stepNum: 3,
-              title: 'Hosting & RSS Feed',
-              desc: 'Connect host and enter your RSS Feed URL',
-              complete: isHostingComplete,
-              actionLabel: isHostingComplete ? 'RSS Connected' : 'Enter RSS Feed',
+              stepNum: 2,
+              title: 'Hosting Setup',
+              desc: 'Substack integration and RSS',
+              complete: isStep2Complete,
+              actionLabel: isStep2Complete ? 'Hosting Connected' : 'Setup Hosting',
               onClick: () => {
                 document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' });
-              }
+              },
+              checklist: [
+                { label: 'Sign Up for a Spotify Account', completed: s2_spotify, tooltip: 'Click to mark as done after creating a free Spotify for Podcasters account.', onClick: () => updateData({ hasSpotifyAccount: !data.hasSpotifyAccount }) },
+                { label: 'Add Substack Handle', completed: s2_substackHandle, tooltip: 'Connect your Substack handle so we can link your newsletter.', onClick: () => document.getElementById('section-substack')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Add Metadata to Substack', completed: s2_substackMeta, tooltip: 'Click to mark as done once you have filled out your Substack podcast settings.', onClick: () => updateData({ hasSubstackMetadata: !data.hasSubstackMetadata }) },
+                { label: 'Add RSS Feed to "Your Podcast"', completed: s2_rss, tooltip: 'Paste your generated RSS feed URL here.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
+              ]
             },
             {
               id: 'directories',
-              stepNum: 4,
-              title: 'Apple & Spotify Submission',
-              desc: 'Submit feed to at least Apple & Spotify',
-              complete: isDirectoriesComplete,
-              actionLabel: isDirectoriesComplete ? 'Submitted' : 'Submit Feed',
+              stepNum: 3,
+              title: 'Directory Syndication',
+              desc: 'Get listed on major platforms',
+              complete: isStep3Complete,
+              actionLabel: isStep3Complete ? 'Submitted' : 'Submit Feed',
               onClick: () => {
                 document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' });
-              }
+              },
+              checklist: [
+                { label: 'Get listed on Apple', completed: s3_apple, tooltip: 'Submit your RSS feed to Apple Podcasts Connect.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Get listed on Spotify', completed: s3_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
+              ]
             },
             {
               id: 'release',
-              stepNum: 5,
-              title: 'Record & Publish Trailer or First Episode',
-              desc: 'Release your trailer or Episode 1 to listeners',
-              complete: isFirstReleaseComplete,
-              actionLabel: isFirstReleaseComplete ? 'Published' : 'Mark Done',
-              isToggle: true,
+              stepNum: 4,
+              title: 'The First Episode',
+              desc: 'Record, edit, and publish',
+              complete: isStep4Complete,
+              actionLabel: isStep4Complete ? 'Published' : 'Open Studio',
               onClick: () => {
-                const next = !isFirstReleaseComplete;
-                updateData({ trailerPublished: next, firstEpisodePublished: next });
-                if (next) toast.success('🎉 Marked as published! Your podcast is live!');
-              }
+                window.location.href = '/podcast-tools/studio';
+              },
+              checklist: [
+                { label: 'Record Episode', completed: s4_record, tooltip: 'Click to toggle once you have recorded audio.', onClick: () => updateData({ episodeRecorded: !data.episodeRecorded }) },
+                { label: 'Edit and Master Episode', completed: s4_master, tooltip: 'Click to toggle once you have edited and Magic Polished your audio.', onClick: () => updateData({ episodeMastered: !data.episodeMastered }) },
+                { label: 'Publish Episode', completed: s4_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } }
+              ]
             }
           ];
 
           const completedCount = steps.filter(s => s.complete).length;
           const progressPercent = Math.round((completedCount / steps.length) * 100);
-          const activeStepIndex = steps.findIndex(s => !s.complete);
 
           return (
             <Card className="border-border bg-card shadow-sm p-6 flex flex-col gap-6">
@@ -524,7 +535,7 @@ export default function YourPodcastLandingPage() {
                     <Rocket className="w-5 h-5 text-primary" />
                     <h2 className="text-lg font-bold text-foreground">Podcast Launch Workflow</h2>
                     <Badge variant="outline" className="text-xs font-semibold px-2 py-0.5 border-primary/30 text-primary bg-primary/5">
-                      5-Step Roadmap
+                      4-Step Roadmap
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -535,7 +546,7 @@ export default function YourPodcastLandingPage() {
                 <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-foreground">
-                      {completedCount} of 5 Completed
+                      {completedCount} of 4 Completed
                     </span>
                     <span className={cn(
                       "text-xs font-black px-2 py-0.5 rounded-full border",
@@ -558,8 +569,8 @@ export default function YourPodcastLandingPage() {
                 </div>
               </div>
 
-              {/* 5 Workflow Step Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {/* 4 Workflow Step Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {steps.map((step, idx) => {
                   const isCurrent = idx === activeStepIndex;
                   return (
@@ -611,43 +622,44 @@ export default function YourPodcastLandingPage() {
                           )}>
                             {step.title}
                           </h3>
-                          <p className="text-[10px] text-muted-foreground leading-normal line-clamp-2">
-                            {step.desc}
-                          </p>
+                        </div>
+
+                        {/* Checklist */}
+                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/40">
+                          {step.checklist.map((item, i) => (
+                            <button 
+                              key={i} 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.onClick) item.onClick();
+                              }}
+                              className="flex items-start gap-2 group/item cursor-pointer text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 rounded-sm" 
+                              title={item.tooltip}
+                            >
+                              <div className={cn("w-3.5 h-3.5 rounded-[4px] border flex items-center justify-center shrink-0 mt-[1px] transition-colors", item.completed ? "bg-emerald-500 border-emerald-500 text-white" : "border-border bg-card group-hover/item:border-primary/50")}>
+                                {item.completed && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                              </div>
+                              <span className={cn("text-[10px] font-medium leading-snug transition-colors", item.completed ? "text-muted-foreground line-through opacity-70" : "text-foreground group-hover/item:text-primary")}>
+                                {item.label}
+                              </span>
+                            </button>
+                          ))}
                         </div>
                       </div>
 
-                      {/* Step Action / Toggle */}
-                      <div className="mt-3 pt-2.5 border-t border-border/40">
-                        {step.isToggle ? (
-                          <Button
-                            size="sm"
-                            variant={step.complete ? "outline" : isCurrent ? "default" : "secondary"}
-                            onClick={step.onClick}
-                            className={cn(
-                              "w-full h-7 text-[11px] font-bold px-2",
-                              step.complete && "border-emerald-500/40 text-emerald-600 hover:bg-emerald-500/10"
-                            )}
-                          >
-                            {step.complete ? (
-                              <span className="flex items-center gap-1"><Check className="w-3 h-3" /> Done</span>
-                            ) : (
-                              <span>Mark Done</span>
-                            )}
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant={step.complete ? "ghost" : isCurrent ? "default" : "outline"}
-                            onClick={step.onClick}
-                            className={cn(
-                              "w-full h-7 text-[11px] font-bold px-2",
-                              step.complete ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10" : ""
-                            )}
-                          >
-                            {step.actionLabel}
-                          </Button>
-                        )}
+                      {/* Step Action */}
+                      <div className="mt-4">
+                        <Button
+                          size="sm"
+                          variant={step.complete ? "ghost" : isCurrent ? "default" : "outline"}
+                          onClick={step.onClick}
+                          className={cn(
+                            "w-full h-8 text-xs font-bold px-2",
+                            step.complete ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10" : ""
+                          )}
+                        >
+                          {step.actionLabel}
+                        </Button>
                       </div>
                     </div>
                   );
@@ -689,15 +701,15 @@ export default function YourPodcastLandingPage() {
                 <div id="section-artwork" className="flex flex-col shrink-0 scroll-mt-6 w-32 md:w-48">
                   <FieldLabel text="Cover Art" complete={!!data.artworkUrl} />
                   <div className="flex flex-col gap-2 relative">
-                  {activeStepIndex === 1 && !data.artworkUrl && <div className="absolute -inset-2 rounded-2xl bg-primary/30 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+                  {activeStepIndex === 0 && !s1_coverComplete && !data.artworkUrl && <div className="absolute -inset-2 rounded-2xl bg-primary/30 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
                   <div 
                     className={cn("w-32 h-32 md:w-48 md:h-48 rounded-xl shadow-md border bg-muted overflow-hidden flex items-center justify-center relative group cursor-pointer transition-colors duration-500", 
                       data.artworkUrl ? "border-emerald-500/50 shadow-emerald-500/20" : 
-                      activeStepIndex === 1 ? "border-primary/60 shadow-primary/20" : "border-destructive shadow-destructive/20"
+                      (activeStepIndex === 0 && !s1_coverComplete) ? "border-primary/60 shadow-primary/20" : "border-destructive shadow-destructive/20"
                     )}
                     title="Click to upload artwork"
                   >
-                    {!data.artworkUrl && activeStepIndex !== 1 && <AlertCircle className="absolute top-2 right-2 w-5 h-5 text-destructive animate-pulse z-20" />}
+                    {!data.artworkUrl && !(activeStepIndex === 0 && !s1_coverComplete) && <AlertCircle className="absolute top-2 right-2 w-5 h-5 text-destructive animate-pulse z-20" />}
 
 
                     <label className="absolute inset-0 w-full h-full cursor-pointer z-10">
@@ -852,8 +864,8 @@ export default function YourPodcastLandingPage() {
 
             {/* Directory Submission Container */}
             <div className="relative">
-              {(activeStepIndex === 2 || activeStepIndex === 3) && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
-              <Card id="section-directories" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", (activeStepIndex === 2 || activeStepIndex === 3) ? "border-primary/50" : "border-border")}>
+              {(activeStepIndex === 1 || activeStepIndex === 2) && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card id="section-directories" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", (activeStepIndex === 1 || activeStepIndex === 2) ? "border-primary/50" : "border-border")}>
               <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 Syndication & Directories
@@ -1223,8 +1235,8 @@ export default function YourPodcastLandingPage() {
 
             {/* Recording Studio now lives at /podcast-tools/studio */}
             <div className="relative">
-              {activeStepIndex === 4 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
-              <Card className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center transition-colors duration-500", activeStepIndex === 4 ? "border-primary/50" : "border-border")}>
+              {activeStepIndex === 3 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center transition-colors duration-500", activeStepIndex === 3 ? "border-primary/50" : "border-border")}>
               <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <AudioLines className="w-5 h-5" aria-hidden="true" />
               </div>
