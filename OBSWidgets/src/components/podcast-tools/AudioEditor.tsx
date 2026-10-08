@@ -536,7 +536,9 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
         </div>
       </div>
 
-      <div className={`relative ${(hasAudio && view === 'transcript') ? 'hidden' : 'block'}`}>
+      <div className="flex flex-col lg:flex-row gap-5 lg:items-start">
+        <div className="flex-1 flex flex-col gap-4 min-w-0">
+          <div className={`relative ${(hasAudio && view === 'transcript') ? 'hidden' : 'block'}`}>
         <div
           ref={containerRef}
           className={`w-full bg-muted/20 border border-border rounded-lg overflow-hidden ${(view === 'split' && hasAudio) ? 'min-h-[96px] h-[96px]' : 'min-h-[128px]'}`}
@@ -665,21 +667,29 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
               </p>
             </div>
           )}
+            </>
+          )}
+        </div>
 
-          {/* Magic Polish */}
-          <MagicPolishPanel
-            buffer={source}
-            fileBase={fileBase}
-            disabled={isBusy || isRecording}
-            layer={layer}
-            onResult={(buf) => {
-              setPolished(buf);
-              setLayer('polished');
-            }}
-            onToggleLayer={setLayer}
-          />
+        {hasAudio && (
+          <div className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-4">
+            <MagicPolishPanel
+              buffer={source}
+              fileBase={fileBase}
+              disabled={isBusy || isRecording}
+              layer={layer}
+              onResult={(buf) => {
+                setPolished(buf);
+                setLayer('polished');
+              }}
+              onToggleLayer={setLayer}
+            />
+          </div>
+        )}
+      </div>
 
-          {/* Export */}
+      {hasAudio && (
+        <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
             <span className="text-xs text-muted-foreground">
               WAV · {current.numberOfChannels === 1 ? 'mono' : 'stereo'} · {(current.sampleRate / 1000).toFixed(1)} kHz · ~{estimatedMb.toFixed(1)} MB
@@ -745,7 +755,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </Card>
   );
