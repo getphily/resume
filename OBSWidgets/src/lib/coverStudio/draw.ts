@@ -24,7 +24,7 @@ export function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: 
 }
 
 export async function ensureFonts(cfg: CoverConfig) {
-  const layers = [cfg.title, cfg.hostName];
+  const layers = [cfg.title, cfg.withText, cfg.hostName];
   await Promise.all(layers.map(l =>
     document.fonts.load(`${l.bold ? '700' : '400'} 100px "${l.font}"`)
   ));
@@ -175,8 +175,16 @@ export function drawCover(
   }
 
   // 5. Badge
+  const wSize = BASE_SIZE.withText * cfg.withText.sizeScale;
   const hSize = BASE_SIZE.hostName * cfg.hostName.sizeScale;
   
+  ctx.font = fontString(cfg.withText, wSize);
+  if ('letterSpacing' in ctx) {
+    (ctx as any).letterSpacing = `${cfg.withText.letterSpacing * wSize}px`;
+  }
+  const withTextStr = cfg.withText.upper ? cfg.withText.text.toUpperCase() : cfg.withText.text;
+  const ww = ctx.measureText(withTextStr).width;
+
   ctx.font = fontString(cfg.hostName, hSize);
   if ('letterSpacing' in ctx) {
     (ctx as any).letterSpacing = `${cfg.hostName.letterSpacing * hSize}px`;
@@ -185,8 +193,9 @@ export function drawCover(
   const hw = ctx.measureText(hostNameStr).width;
   
   const PAD = 120;
-  const rectW = PAD + hw + PAD;
-  const rectH = hSize * 1.85;
+  const GAP = 100;
+  const rectW = PAD + ww + GAP + hw + PAD;
+  const rectH = Math.max(wSize, hSize) * 1.85;
   const rectTop = cfg.badge.baselineY - rectH * 0.667;
   
   if (cfg.badge.enabled) {
@@ -194,13 +203,32 @@ export function drawCover(
     ctx.fillRect(cfg.badge.x, rectTop, rectW, rectH);
   }
   
+  // "With"
+  ctx.font = fontString(cfg.withText, wSize);
+  if ('letterSpacing' in ctx) {
+    (ctx as any).letterSpacing = `${cfg.withText.letterSpacing * wSize}px`;
+  }
+
+  const withX = cfg.badge.x + PAD;
+  const withY = cfg.badge.baselineY;
+
+  if (cfg.withText.bgOpacity > 0) {
+    ctx.save();
+    ctx.globalAlpha = cfg.withText.bgOpacity;
+    ctx.fillStyle = cfg.withText.bgColor;
+    ctx.fillRect(withX - 20, withY - wSize * 0.8, ww + 40, wSize * 1.0);
+    ctx.restore();
+  }
+  ctx.fillStyle = cfg.withText.color;
+  ctx.fillText(withTextStr, withX, withY);
+
   // Host Name
   ctx.font = fontString(cfg.hostName, hSize);
   if ('letterSpacing' in ctx) {
     (ctx as any).letterSpacing = `${cfg.hostName.letterSpacing * hSize}px`;
   }
   
-  const hostX = cfg.badge.x + PAD;
+  const hostX = cfg.badge.x + PAD + ww + GAP;
   const hostY = cfg.badge.baselineY;
   
   if (cfg.hostName.bgOpacity > 0) {

@@ -455,6 +455,17 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
 
             <div className="bg-card border rounded-xl p-4 shadow-sm">
               <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary/80" /> "With" Text Formatting
+              </h3>
+              <TextTab 
+                layer={cfg.withText} 
+                kind="single" 
+                onChange={(patch) => setCfg(prev => ({ ...prev, withText: { ...prev.withText, ...patch } }))} 
+              />
+            </div>
+
+            <div className="bg-card border rounded-xl p-4 shadow-sm">
+              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/80" /> Host Name Formatting
               </h3>
               <div className="flex flex-col gap-5">
@@ -483,6 +494,21 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                       />
                     </div>
                   )}
+
+                  <div className="flex flex-col gap-1.5 pt-2">
+                    <label className="text-xs font-bold text-foreground">Horizontal Position</label>
+                    <Slider 
+                      value={[cfg.badge.x]} min={0} max={2500} step={10} 
+                      onValueChange={(val) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, x: val[0] } }))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-foreground">Vertical Position</label>
+                    <Slider 
+                      value={[cfg.badge.baselineY]} min={900} max={2500} step={10} 
+                      onValueChange={(val) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, baselineY: val[0] } }))}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
