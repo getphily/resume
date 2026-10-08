@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Mic, Play, Plus, Share, MoreHorizontal, Headphones, Info, Edit2, CheckCircle2, ExternalLink, Check, GraduationCap, BookOpen, Upload, Download, AlertCircle, Trash2, Wand2, Rocket, Sparkles, Palette } from 'lucide-react';
+import { Mic, Play, Plus, Share, MoreHorizontal, Headphones, Info, Edit2, CheckCircle2, ExternalLink, Check, GraduationCap, BookOpen, Upload, Download, AlertCircle, Trash2, Wand2, Rocket, Sparkles, Palette, ChevronDown, AudioLines, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -94,7 +94,7 @@ function CategoryDropdown({ value, onSave, label, status = 'none' }: { value: st
       value={value}
       onChange={(e) => onSave(e.target.value)}
       className={cn(
-        "border rounded-md px-2 py-1 text-xs font-semibold text-foreground focus:ring-1 focus:ring-primary outline-none max-w-full",
+        "border rounded-md px-2 h-7 text-xs font-semibold text-foreground focus:ring-1 focus:ring-primary outline-none max-w-full",
         statusClass
       )}
     >
@@ -276,6 +276,7 @@ export default function YourPodcastLandingPage() {
   const [mounted, setMounted] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [studioOpen, setStudioOpen] = useState(false);
+  const [spotifyExpanded, setSpotifyExpanded] = useState(false);
   const [wizardData, setWizardData] = useState({ about: '', for: '', why: '' });
   const [session, setSession] = useState<any>(null);
   const [loadingSession, setLoadingSession] = useState(true);
@@ -696,7 +697,7 @@ export default function YourPodcastLandingPage() {
                   </div>
                   
                   {data.artworkUrl && (
-                    <div className="flex gap-2 w-full">
+                    <div className="flex gap-2 w-full mt-2">
                       <Button variant="outline" size="sm" onClick={handleDownload} className="flex-1 text-xs font-bold gap-2">
                         <Download className="w-3.5 h-3.5" />
                         Download
@@ -711,7 +712,7 @@ export default function YourPodcastLandingPage() {
                     variant="outline" 
                     size="sm" 
                     onClick={() => setStudioOpen(true)} 
-                    className="w-full h-7 mt-1 text-[10px] uppercase font-bold text-primary gap-1 px-2 py-0 border-primary/20 bg-primary/5 hover:bg-primary/10"
+                    className="w-full h-7 mt-2 text-[10px] uppercase font-bold text-primary gap-1 px-2 py-0 border-primary/20 bg-primary/5 hover:bg-primary/10"
                   >
                     <Palette className="w-3 h-3" /> Cover Studio
                   </Button>
@@ -776,7 +777,7 @@ export default function YourPodcastLandingPage() {
                   <EditableField 
                     value={data.language}
                     onSave={(v) => updateData({ language: v })}
-                    className="font-semibold text-xs text-foreground px-2 py-1 !mx-0 rounded-md"
+                    className="font-semibold text-xs text-foreground px-2 h-7 !mx-0 rounded-md flex items-center"
                     placeholder="e.g. English"
                     status={!!data.language ? 'complete' : 'incomplete'}
                   />
@@ -809,14 +810,14 @@ export default function YourPodcastLandingPage() {
                   <div className="flex gap-2">
                     <Badge 
                       variant={(data.explicit === 'Clean' || data.explicit === 'No') ? "secondary" : "outline"} 
-                      className={cn("cursor-pointer px-3 py-0.5 text-[10px]", (data.explicit === 'Clean' || data.explicit === 'No') ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-50 hover:opacity-100")}
+                      className={cn("cursor-pointer px-3 h-7 text-[10px] flex items-center justify-center", (data.explicit === 'Clean' || data.explicit === 'No') ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-50 hover:opacity-100")}
                       onClick={() => updateData({ explicit: 'Clean' })}
                     >
                       Clean
                     </Badge>
                     <Badge 
                       variant={(data.explicit === 'Explicit' || data.explicit === 'Yes') ? "destructive" : "outline"} 
-                      className={cn("cursor-pointer px-3 py-0.5 text-[10px]", (data.explicit === 'Explicit' || data.explicit === 'Yes') ? "" : "opacity-50 hover:opacity-100")}
+                      className={cn("cursor-pointer px-3 h-7 text-[10px] flex items-center justify-center", (data.explicit === 'Explicit' || data.explicit === 'Yes') ? "" : "opacity-50 hover:opacity-100")}
                       onClick={() => updateData({ explicit: 'Explicit' })}
                     >
                       Explicit
@@ -912,99 +913,230 @@ export default function YourPodcastLandingPage() {
               </p>
               
               <div className="flex flex-col gap-3">
-                <div className="flex flex-col p-3 rounded-lg border border-border bg-muted/10 gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-bold text-foreground">Substack (Recommended)</span>
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Best for newsletters & paid subs</span>
+                
+                <div className="flex flex-col p-5 rounded-xl border border-border bg-card shadow-sm gap-4 transition-all hover:border-[#ff6719]/40 hover:shadow-md hover:shadow-[#ff6719]/5">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-[#ff6719]/10 flex items-center justify-center shrink-0 border border-[#ff6719]/20">
+                        <svg viewBox="0 0 448 512" fill="#ff6719" className="w-6 h-6">
+                          <path d="M448 107.1L0 107.1 0 0 448 0 448 107.1zM448 249.1L0 249.1 0 142 448 142 448 249.1zM0 283.9L448 283.9 448 512 224 388.9 0 512 0 283.9z" />
+                        </svg>
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-base font-bold text-foreground leading-tight">Substack</span>
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#ff6719]/10 text-[#ff6719] border border-[#ff6719]/20 uppercase tracking-widest">Recommended</span>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Newsletters & Paid Subs</span>
+                      </div>
                     </div>
                   </div>
                   
                   {(() => {
                     const substackValidation = validateSubstackHandle(data.substackHandle);
                     const isSubstackComplete = Boolean(data.substackHandle && substackValidation.isValid);
+                    const handle = isSubstackComplete ? substackValidation.cleaned : null;
                     return (
-                      <div className="flex flex-col gap-1.5 mt-1">
-                        <div className="flex items-center justify-between">
-                          <FieldLabel text="Substack Handle" complete={isSubstackComplete} />
-                          {isSubstackComplete && (
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
-                              <Check className="w-3 h-3" /> Valid
-                            </span>
+                      <>
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between">
+                            <FieldLabel text="Substack Handle" complete={isSubstackComplete} />
+                            {isSubstackComplete && (
+                              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                                <Check className="w-3 h-3" /> Valid
+                              </span>
+                            )}
+                          </div>
+                          <EditableField 
+                            value={data.substackHandle}
+                            onSave={(v) => {
+                              if (!v.trim()) {
+                                updateData({ substackHandle: '' });
+                                return;
+                              }
+                              const res = validateSubstackHandle(v);
+                              if (res.isValid) {
+                                updateData({ substackHandle: res.cleaned });
+                                toast.success(`Substack handle saved: @${res.cleaned}`, { position: 'top-center' });
+                              } else {
+                                updateData({ substackHandle: v.trim() });
+                                toast.error(res.error || 'Invalid Substack handle', { position: 'top-center' });
+                              }
+                            }}
+                            validate={(v) => {
+                              if (!v.trim()) return null;
+                              const res = validateSubstackHandle(v);
+                              return res.isValid ? null : res.error;
+                            }}
+                            status={isSubstackComplete ? 'complete' : 'incomplete'}
+                            className="font-mono text-sm"
+                            placeholder="e.g. yourhandle or @yourhandle"
+                          />
+                          {data.substackHandle && !substackValidation.isValid ? (
+                            <p className="text-[11px] text-destructive flex items-center gap-1 font-medium mt-0.5">
+                              <AlertCircle className="w-3 h-3 shrink-0" />
+                              {substackValidation.error}
+                            </p>
+                          ) : isSubstackComplete ? (
+                            <div className="flex items-center text-[11px] mt-0.5 text-muted-foreground">
+                              <span>Publication URL:&nbsp;</span>
+                              <a 
+                                href={`https://${substackValidation.cleaned}.substack.com`} 
+                                target="_blank" 
+                                rel="noreferrer" 
+                                className="text-[#ff6719] hover:underline font-semibold flex items-center gap-0.5"
+                              >
+                                {substackValidation.cleaned}.substack.com
+                                <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            </div>
+                          ) : (
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              Use letters, numbers, and hyphens (e.g. <code>my-podcast</code>).
+                            </p>
                           )}
                         </div>
-                        <EditableField 
-                          value={data.substackHandle}
-                          onSave={(v) => {
-                            if (!v.trim()) {
-                              updateData({ substackHandle: '' });
-                              return;
-                            }
-                            const res = validateSubstackHandle(v);
-                            if (res.isValid) {
-                              updateData({ substackHandle: res.cleaned });
-                              toast.success(`Substack handle saved: @${res.cleaned}`, { position: 'top-center' });
-                            } else {
-                              updateData({ substackHandle: v.trim() });
-                              toast.error(res.error || 'Invalid Substack handle', { position: 'top-center' });
-                            }
-                          }}
-                          validate={(v) => {
-                            if (!v.trim()) return null;
-                            const res = validateSubstackHandle(v);
-                            return res.isValid ? null : res.error;
-                          }}
-                          status={isSubstackComplete ? 'complete' : 'incomplete'}
-                          className="font-mono text-sm"
-                          placeholder="e.g. yourhandle or @yourhandle"
-                        />
-                        {data.substackHandle && !substackValidation.isValid ? (
-                          <p className="text-[11px] text-destructive flex items-center gap-1 font-medium mt-0.5">
-                            <AlertCircle className="w-3 h-3 shrink-0" />
-                            {substackValidation.error}
-                          </p>
-                        ) : isSubstackComplete ? (
-                          <div className="flex items-center text-[11px] mt-0.5 text-muted-foreground">
-                            <span>Publication URL:&nbsp;</span>
-                            <a 
-                              href={`https://${substackValidation.cleaned}.substack.com`} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              className="text-primary hover:underline font-semibold flex items-center gap-0.5"
-                            >
-                              {substackValidation.cleaned}.substack.com
-                              <ExternalLink className="w-2.5 h-2.5" />
-                            </a>
-                          </div>
-                        ) : (
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            Use letters, numbers, and hyphens (e.g. <code>my-podcast</code>).
-                          </p>
-                        )}
-                      </div>
+
+                        <div className="flex flex-col gap-4 border-t border-border/50 pt-4 mt-2">
+                          {isSubstackComplete ? (
+                            <>
+                              <div className="flex flex-col gap-3">
+                                <div>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Substack Account</span>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Button variant="outline" size="sm" asChild className="h-8 text-xs font-semibold">
+                                      <a href={`https://${handle}.substack.com/publish/home`} target="_blank" rel="noreferrer">
+                                        Dashboard <ExternalLink className="w-3 h-3 ml-1.5 opacity-50" />
+                                      </a>
+                                    </Button>
+                                    <Button variant="outline" size="sm" asChild className="h-8 text-xs font-semibold">
+                                      <a href={`https://${handle}.substack.com/publish/podcasting`} target="_blank" rel="noreferrer">
+                                        Podcast <ExternalLink className="w-3 h-3 ml-1.5 opacity-50" />
+                                      </a>
+                                    </Button>
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Help & Resources</span>
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground px-2">
+                                      <a href="https://substack.com/podcasts" target="_blank" rel="noreferrer">About Substack Podcast</a>
+                                    </Button>
+                                    <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground px-2">
+                                      <a href="https://on.substack.com/p/introducing-the-substack-recording" target="_blank" rel="noreferrer">Recording Studio</a>
+                                    </Button>
+                                    <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground px-2">
+                                      <a href="https://support.substack.com/hc/en-us/articles/360037462092-How-do-I-create-and-publish-a-podcast-on-Substack" target="_blank" rel="noreferrer">How To Podcast on Substack</a>
+                                    </Button>
+                                    <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground px-2">
+                                      <a href="https://substack.com/resources" target="_blank" rel="noreferrer">Resource Center</a>
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div className="pt-2 border-t border-border/30 mt-1">
+                                <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-semibold text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/50 px-2 -ml-2">
+                                  <a href="https://substack.com/signup" target="_blank" rel="noreferrer">
+                                    Sign Up <ExternalLink className="w-3 h-3 ml-1.5 opacity-40" />
+                                  </a>
+                                </Button>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <div className="flex flex-wrap items-center gap-2">
+                                <Button variant="default" size="sm" asChild className="h-8 text-xs font-semibold bg-[#ff6719] hover:bg-[#ff6719]/90 text-white border-0 shadow-sm">
+                                  <a href="https://substack.com/signup" target="_blank" rel="noreferrer">
+                                    Sign Up <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
+                                  </a>
+                                </Button>
+                                <Button variant="outline" size="sm" disabled className="h-8 text-xs font-semibold opacity-40 cursor-not-allowed border-dashed">
+                                  Dashboard <ExternalLink className="w-3 h-3 ml-1.5 opacity-50" />
+                                </Button>
+                                <Button variant="outline" size="sm" disabled className="h-8 text-xs font-semibold opacity-40 cursor-not-allowed border-dashed">
+                                  Podcast <ExternalLink className="w-3 h-3 ml-1.5 opacity-50" />
+                                </Button>
+                              </div>
+                              
+                              <div className="mt-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/50 mb-2 block">Help & Resources</span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <Button variant="ghost" size="sm" disabled className="h-8 text-xs font-semibold text-muted-foreground/40 px-2 -ml-2">
+                                    About Substack Podcast
+                                  </Button>
+                                  <Button variant="ghost" size="sm" disabled className="h-8 text-xs font-semibold text-muted-foreground/40 px-2">
+                                    Recording Studio
+                                  </Button>
+                                  <Button variant="ghost" size="sm" disabled className="h-8 text-xs font-semibold text-muted-foreground/40 px-2">
+                                    How To Podcast on Substack
+                                  </Button>
+                                  <Button variant="ghost" size="sm" disabled className="h-8 text-xs font-semibold text-muted-foreground/40 px-2">
+                                    Resource Center
+                                  </Button>
+                                </div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </>
                     );
                   })()}
-
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-1 pt-3 border-t border-border/50">
-                    <a href="https://substack.com/signup" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-primary hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Sign Up</a>
-                    <a href="https://substack.com/podcasts" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-muted-foreground hover:text-primary transition-colors hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Dashboard</a>
-                    <a href="https://substack.com/studio" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-muted-foreground hover:text-primary transition-colors hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Studio</a>
-                    <a href="https://support.substack.com/hc/en-us/articles/360037489572-How-do-I-start-a-podcast-on-Substack-" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-muted-foreground hover:text-primary transition-colors hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Setup Guide</a>
-                  </div>
                 </div>
                 
-                <div className="flex flex-col p-3 rounded-lg border border-border bg-muted/10 gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-sm font-bold text-foreground">Spotify for Creators</span>
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Best for video & Q&A features</span>
+                <div className="flex flex-col rounded-xl border border-border bg-card shadow-sm transition-all overflow-hidden group hover:border-[#1db954]/40 hover:shadow-md hover:shadow-[#1db954]/5">
+                  <button 
+                    onClick={() => setSpotifyExpanded(!spotifyExpanded)}
+                    className="flex items-center justify-between p-5 w-full text-left transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-[#1db954]/10 flex items-center justify-center shrink-0 border border-[#1db954]/20">
+                        <svg viewBox="0 0 496 512" fill="#1db954" className="w-7 h-7">
+                           <path d="M248 8C111.1 8 0 119.1 0 256s111.1 248 248 248 248-111.1 248-248S384.9 8 248 8zM362.6 353.4c-4.2 6.8-13.4 9.1-20.2 4.9-55.6-33.9-125.4-41.6-207.6-22.8-7.7 1.8-15.4-3-17.2-10.7-1.8-7.7 3-15.4 10.7-17.2 89.8-20.6 166.7-11.8 229.4 26.5 6.7 4.1 9 13.3 4.9 20.3zm29.8-66.7c-5.3 8.5-16.5 11.2-25 5.9-63.5-39.1-160.8-51.2-223.3-28.1-9.7 3.6-20.4-1.3-24-11-3.6-9.7 1.3-20.4 11-24 71.3-26.3 178.6-12.7 250.7 31.7 8.5 5.3 11.2 16.5 5.6 25.5zm1.5-69.7c-75.9-45-201-49.2-273.8-27.2-11.6 3.5-24-3-27.5-14.6-3.5-11.6 3-24 14.6-27.5 83.2-25.2 222.1-20.3 309.5 31.6 10.5 6.2 13.9 19.8 7.7 30.3-6.1 10.4-19.6 13.8-30.5 7.4z"/>
+                        </svg>
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-base font-bold text-foreground leading-tight">Spotify for Creators</span>
+                          <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border uppercase tracking-widest">Alternative</span>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">Video Podcasts & Q&A features</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-1 pt-2 border-t border-border/50">
-                    <a href="https://creators.spotify.com/signup" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-primary hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Sign Up</a>
-                    <a href="https://creators.spotify.com/" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-muted-foreground hover:text-primary transition-colors hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Dashboard</a>
-                    <a href="https://support.spotify.com/us/creators/" target="_blank" rel="noreferrer" className="whitespace-nowrap text-xs font-semibold text-muted-foreground hover:text-primary transition-colors hover:underline flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Help Center</a>
-                  </div>
+                    <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform duration-200", spotifyExpanded && "rotate-180")} />
+                  </button>
+
+                  {spotifyExpanded && (
+                    <div className="px-5 pb-5 pt-0 mt-1 flex flex-col gap-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                      
+                      <div className="flex flex-col gap-4 border-t border-border/50 pt-4 mt-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Button variant="default" size="sm" asChild className="h-8 text-xs font-semibold bg-[#1db954] hover:bg-[#1db954]/90 text-white border-0 shadow-sm">
+                            <a href="https://creators.spotify.com/signup" target="_blank" rel="noreferrer">
+                              Sign Up <ExternalLink className="w-3 h-3 ml-1.5 opacity-70" />
+                            </a>
+                          </Button>
+                          <Button variant="outline" size="sm" asChild className="h-8 text-xs font-semibold">
+                            <a href="https://creators.spotify.com/" target="_blank" rel="noreferrer">
+                              Dashboard <ExternalLink className="w-3 h-3 ml-1.5 opacity-50" />
+                            </a>
+                          </Button>
+                        </div>
+                        
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 mb-2 block">Help & Resources</span>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Button variant="ghost" size="sm" asChild className="h-8 text-xs font-semibold text-muted-foreground hover:text-foreground px-2 -ml-2">
+                              <a href="https://support.spotify.com/us/creators/" target="_blank" rel="noreferrer">
+                                Help Center
+                              </a>
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
@@ -1064,6 +1196,24 @@ export default function YourPodcastLandingPage() {
               </div>
             </Card>
 
+            {/* Recording Studio now lives at /podcast-tools/studio */}
+            <Card className="border-border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <AudioLines className="w-5 h-5" aria-hidden="true" />
+              </div>
+              <div className="flex flex-col gap-1 flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-foreground">Recording Studio</h2>
+                <p className="text-sm text-muted-foreground">
+                  Record or upload an episode, cut out mistakes, and Magic Polish the sound before you publish.
+                </p>
+              </div>
+              <Button asChild className="min-h-11 sm:min-h-9 gap-1.5 shrink-0">
+                <Link href="/podcast-tools/studio">
+                  Open Studio
+                  <ArrowRight className="w-4 h-4" aria-hidden="true" />
+                </Link>
+              </Button>
+            </Card>
           </div>
         </div>
       </div>

@@ -58,7 +58,29 @@ export function drawCover(
     const maxY = (dh - 3000) / 2;
     const ox = clamp(cfg.bg.imgX, -maxX, maxX);
     const oy = clamp(cfg.bg.imgY, -maxY, maxY);
-    ctx.drawImage(img, 1500 - dw / 2 + ox, 1500 - dh / 2 + oy, dw, dh);
+    
+    const blurVal = cfg.bg.blur || 0;
+    if (blurVal > 0) {
+      ctx.filter = `blur(${blurVal}px)`;
+    }
+    
+    // Fill a fallback color behind to prevent transparent edge bleed on heavy blur
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, 3000, 3000);
+    
+    // Slight overdraw to hide edge bleed when blurred
+    const bleed = blurVal > 0 ? blurVal * 2 : 0;
+    ctx.drawImage(
+      img, 
+      1500 - (dw + bleed) / 2 + ox, 
+      1500 - (dh + bleed) / 2 + oy, 
+      dw + bleed, 
+      dh + bleed
+    );
+    
+    if (blurVal > 0) {
+      ctx.filter = "none";
+    }
   } else if (cfg.bg.type === 'solid') {
     ctx.fillStyle = cfg.bg.solid;
     ctx.fillRect(0, 0, 3000, 3000);

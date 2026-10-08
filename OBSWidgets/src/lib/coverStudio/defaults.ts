@@ -12,7 +12,7 @@ export const DEFAULT_CONFIG: CoverConfig = {
     type: 'gradient',
     solid: '#c3d9f6',
     gradient: { stops: ['#e2e5f3', '#c3d9f6', '#e9e6f1'], angle: 160 },
-    imgX: 0, imgY: 0, imgZoom: 1,
+    imgX: 0, imgY: 0, imgZoom: 1, blur: 0,
   },
   host: { cx: 1781, bottom: 3000, zoom: 1 },
   title: {

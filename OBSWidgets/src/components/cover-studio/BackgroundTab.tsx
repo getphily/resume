@@ -174,6 +174,13 @@ export function BackgroundTab({ cfg, setCfg, images, setImages }: BackgroundTabP
                   onValueChange={(val) => setCfg(prev => ({ ...prev, bg: { ...prev.bg, imgY: val[0] } }))}
                 />
               </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-foreground">Blur ({(cfg.bg.blur || 0)}px)</label>
+                <Slider 
+                  value={[cfg.bg.blur || 0]} min={0} max={100} step={2} 
+                  onValueChange={(val) => setCfg(prev => ({ ...prev, bg: { ...prev.bg, blur: val[0] } }))}
+                />
+              </div>
             </div>
           )}
         </div>

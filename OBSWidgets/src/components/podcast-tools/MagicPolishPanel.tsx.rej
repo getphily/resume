@@ -1,0 +1,24 @@
+@@ -46,19 +46,19 @@
+ }
+ 
+ interface MagicPolishPanelProps {
+-  /** The editor's current (already-cut) audio. */
++  /** The full source buffer. Polish runs on this entire buffer, so cuts remain editable. */
+   buffer: AudioBuffer | null;
+   /** Used to name saved copies. */
+   fileBase: string;
+   disabled?: boolean;
+-  /** Push the rendered result onto the editor's undo stack. */
++  layer: 'original' | 'polished';
+   onResult: (polished: AudioBuffer) => void;
+-  onUndo: () => void;
+-  onRedo: () => void;
++  onToggleLayer: (layer: 'original' | 'polished') => void;
+ }
+ 
+ export function MagicPolishPanel({
+   buffer,
+   fileBase,
+   disabled,
++  layer,
+   onResult,

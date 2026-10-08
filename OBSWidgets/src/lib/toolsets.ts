@@ -9,6 +9,7 @@ import {
   Users,
   Radio,
   BookOpen,
+  AudioLines,
 } from 'lucide-react';
 
 export interface ToolsetTool {
@@ -60,6 +61,7 @@ export const TOOLSETS: Toolset[] = [
     tools: [
       { id: 'podcast', name: 'Your Podcast', path: '/podcast-tools', icon: Mic, desc: 'Public Directory Profile' },
       { id: 'courses', name: 'Short Courses', path: '/podcast-tools/courses', icon: BookOpen, desc: 'Podcast mini-courses' },
+      { id: 'studio', name: 'Recording Studio', path: '/podcast-tools/studio', icon: AudioLines, desc: 'Record, edit & polish episodes' },
     ],
   },
   {

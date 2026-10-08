@@ -27,6 +27,7 @@ export interface CoverConfig {
     solid: string;
     gradient: { stops: [string, string, string]; angle: number };
     imgX: number; imgY: number; imgZoom: number;   // image offsets in canvas px, zoom >= 1
+    blur?: number;
   };
   host: { cx: number; bottom: number; zoom: number };
   title: TitleLayer;

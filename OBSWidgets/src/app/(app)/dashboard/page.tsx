@@ -39,7 +39,6 @@ import { TimerPreview } from '@/components/TimerPreview';
 import ChyronPreview from '@/components/ChyronPreview';
 import { ScreenPreview } from '@/components/ScreenPreview';
 import { ObsExportCard } from '@/components/ObsExportCard';
-import YourPodcastLandingPage from '../podcast-tools/page';
 
 function WidgetMiniThumbnail({ item, time }: { item: any; time: Date | null }) {
   const type = item.widget_type;
@@ -246,9 +245,7 @@ function DashboardContent() {
   const [time, setTime] = useState<Date | null>(null);
   const router = useRouter();
 
-  if (toolset?.id === 'podcast' && (!toolId || toolId === 'podcast')) {
-    return <YourPodcastLandingPage />;
-  }
+
 
   const visibleTypes = toolset
     ? (activeTool ? activeTool.widgetTypes : toolset.tools.flatMap((t) => t.widgetTypes ?? [])) ?? []
@@ -445,7 +442,7 @@ function DashboardContent() {
         {!session && !loading && (
           <div className="flex items-center gap-2">
             <Button asChild size="sm" className="font-semibold shadow-xs">
-              <Link href="/auth">Sign In to Save Overlays</Link>
+              <Link href="/auth">{toolset && toolset.id !== 'broadcast' ? 'Sign In' : 'Sign In to Save Overlays'}</Link>
             </Button>
           </div>
         )}
@@ -485,25 +482,37 @@ function DashboardContent() {
         </div>
       )}
 
-      {/* Single-tool / in-development toolsets (no saved widgets yet) */}
+      {/* Toolsets without saved widgets: launch cards for every tool */}
       {toolset && !showSaved && (
-        <Card className="border-border bg-card shadow-xs p-6 flex flex-col gap-3 max-w-2xl">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">About this toolset</h2>
-          <p className="text-sm text-foreground m-0">{toolset.tagline}</p>
-          <p className="text-xs text-muted-foreground m-0">
-            {toolset.status === 'dev'
-              ? 'This toolset is still in development. Saved projects will appear here once it launches.'
-              : 'This toolset runs entirely in the browser, so there is nothing to save here yet.'}
-          </p>
-          <div>
-            <Button asChild size="sm" className="gap-1.5">
-              <Link href={toolset.tools[0].path}>
-                Open {toolset.tools[0].name}
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">Tools</h2>
+            {toolset.status === 'dev' && (
+              <p className="text-xs text-muted-foreground m-0">
+                This toolset is still in development. Saved projects will appear here once it launches.
+              </p>
+            )}
           </div>
-        </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {toolset.tools.map((tool) => {
+              const ToolIcon = tool.icon;
+              return (
+                <Link key={tool.id} href={tool.path} className="no-underline group rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <Card className="border-border bg-card shadow-xs group-hover:border-primary/50 transition-all p-5 flex flex-row items-start gap-4 h-full">
+                    <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <ToolIcon className="w-5 h-5" />
+                    </div>
+                    <div className="flex flex-col gap-1 min-w-0 flex-1">
+                      <h3 className="font-bold text-sm text-foreground m-0">{tool.name}</h3>
+                      <p className="text-xs text-muted-foreground leading-relaxed m-0">{tool.desc}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" aria-hidden="true" />
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* Quick Launch / Create New Widgets Section (StreamTools hub only) */}

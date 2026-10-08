@@ -23,7 +23,8 @@ import {
   Tag,
   Bookmark,
   ChevronDown,
-  BookOpen
+  BookOpen,
+  AudioLines
 } from 'lucide-react';
 import { TOOLSETS } from '@/lib/toolsets';
 import { cn } from '@/lib/utils';
@@ -48,6 +49,18 @@ interface ToolSectionConfig {
   title: string;
   badge?: string;
   links: NavItem[];
+}
+
+/** The most specific link matching the route, e.g. /podcast-tools/studio beats /podcast-tools. */
+function activeLinkPath(links: NavItem[], pathname: string): string | undefined {
+  const current = pathname.replace(/\/$/, '') || '/';
+  let best: string | undefined;
+  for (const { path } of links) {
+    if (path.includes('#')) continue;
+    const matches = current === path || (path !== '/dashboard' && current.startsWith(`${path}/`));
+    if (matches && (!best || path.length > best.length)) best = path;
+  }
+  return best;
 }
 
 function getToolSection(pathname: string): ToolSectionConfig {
@@ -82,9 +95,9 @@ function getToolSection(pathname: string): ToolSectionConfig {
       title: 'PodcastTools',
       badge: 'Publishing',
       links: [
-        { name: 'Tools Overview', path: '/podcast-tools', icon: Mic, desc: 'Audio automation suite' },
-        { name: 'Your Podcast', path: '/podcast-tools/your-podcast', icon: BookOpen, desc: 'Interactive startup guide', badge: 'New' },
+        { name: 'Your Podcast', path: '/podcast-tools', icon: Mic, desc: 'Interactive startup guide', badge: 'New' },
         { name: 'Short Courses', path: '/podcast-tools/courses', icon: BookOpen, desc: 'Podcast mini-courses', badge: 'New' },
+        { name: 'Recording Studio', path: '/podcast-tools/studio', icon: AudioLines, desc: 'Record, edit & polish', badge: 'New' },
         { name: 'Chapter Markers', path: '/podcast-tools#chapters', icon: Bookmark, desc: 'YouTube & Spotify', badge: 'Dev' },
         { name: 'ID3v2 Metadata', path: '/podcast-tools#id3', icon: Tag, desc: 'Tag chunking utility', badge: 'Dev' },
         { name: 'Show Notes RSS', path: '/podcast-tools#rss', icon: Radio, desc: 'Syndicated notes feed', badge: 'Dev' },
@@ -200,7 +213,7 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
               ts.name,
               ts.id,
               <Link
-                href={`/dashboard?set=${ts.id}`}
+                href={ts.id === 'broadcast' ? `/dashboard?set=${ts.id}` : ts.tools[0].path}
                 aria-current={setActive && !activeTool ? 'page' : undefined}
                 className={itemClass(setActive && !activeTool)}
               >
@@ -228,7 +241,7 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
                   return (
                     <Link
                       key={tool.id}
-                      href={`/dashboard?set=${ts.id}&tool=${tool.id}`}
+                      href={ts.id === 'broadcast' ? `/dashboard?set=${ts.id}&tool=${tool.id}` : tool.path}
                       aria-current={toolActive ? 'page' : undefined}
                       className={cn(
                         "flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-colors",
@@ -339,7 +352,7 @@ function SidebarInner() {
           aria-label={`${section.title} Navigation`}
         >
           {section.links.map((link) => {
-            const isActive = pathname === link.path || (link.path !== '/dashboard' && pathname.startsWith(link.path));
+            const isActive = activeLinkPath(section.links, pathname) === link.path;
             const IconComponent = link.icon;
 
             const linkContent = (
