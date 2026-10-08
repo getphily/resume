@@ -274,7 +274,6 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
   const startRecording = async () => {
     if (!recordRef.current) return;
     try {
-      await loadDevices(); // ensure permissions
       wavesurferRef.current?.pause();
       setIsRecording(true);
       setRecordSeconds(0);
@@ -285,12 +284,12 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
       }
 
       await recordRef.current.startRecording(
-        selectedDevice && selectedDevice !== 'default' ? { deviceId: { exact: selectedDevice } } : undefined
+        selectedDevice && selectedDevice !== 'default' ? { deviceId: selectedDevice } : undefined
       );
-    } catch (err) {
+    } catch (err: any) {
       setIsRecording(false);
       console.error('[AudioEditor] mic error', err);
-      toast.error('Microphone access was denied or is unavailable.', { position: 'top-center' });
+      toast.error(`Mic error: ${err?.message || String(err)}`, { position: 'top-center' });
     }
   };
 
