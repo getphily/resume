@@ -434,16 +434,16 @@ export default function YourPodcastLandingPage() {
   const s2_rss = Boolean(data.rssFeedUrl && data.rssFeedUrl.trim());
   const isStep2Complete = s2_spotify && s2_substackHandle && s2_substackMeta && s2_rss;
 
-  // Step 3 Check
-  const s3_apple = Boolean(data.directoryStatus.apple);
-  const s3_spotify = Boolean(data.directoryStatus.spotify);
-  const isStep3Complete = s3_apple && s3_spotify;
+  // Step 3 Check (The First Episode)
+  const s3_record = Boolean(data.episodeRecorded);
+  const s3_master = Boolean(data.episodeMastered);
+  const s3_publish = Boolean(data.firstEpisodePublished);
+  const isStep3Complete = s3_record && s3_master && s3_publish;
 
-  // Step 4 Check
-  const s4_record = Boolean(data.episodeRecorded);
-  const s4_master = Boolean(data.episodeMastered);
-  const s4_publish = Boolean(data.firstEpisodePublished);
-  const isStep4Complete = s4_record && s4_master && s4_publish;
+  // Step 4 Check (Directory Syndication)
+  const s4_apple = Boolean(data.directoryStatus.apple);
+  const s4_spotify = Boolean(data.directoryStatus.spotify);
+  const isStep4Complete = s4_apple && s4_spotify;
 
   const activeStepIndex = [isStep1Complete, isStep2Complete, isStep3Complete, isStep4Complete].findIndex(c => !c);
 
@@ -520,42 +520,17 @@ export default function YourPodcastLandingPage() {
               ]
             },
             {
-              id: 'directories',
-              stepNum: 3,
-              title: 'Directory Syndication',
-              desc: 'Get listed on major platforms',
-              complete: isStep3Complete,
-              actionLabel: isStep3Complete ? 'Submitted' : 'Submit Feed',
-              onClick: () => {
-                document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' });
-              },
-              helpArticle: {
-                title: 'Step 3: Directory Syndication',
-                content: (
-                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
-                    <p>Once your RSS feed is ready and has at least one published audio file (like a trailer), you need to tell Apple and Spotify about it.</p>
-                    <p>Submit your RSS feed link to <strong>Apple Podcasts Connect</strong>. Apple acts as the master directory for almost all other smaller podcast apps (Overcast, Pocket Casts, etc.).</p>
-                    <p>Approval usually takes a few days. Once approved, every time you publish an episode to your host, it will automatically appear in all apps!</p>
-                  </div>
-                )
-              },
-              checklist: [
-                { label: 'Get listed on Apple', completed: s3_apple, tooltip: 'Submit your RSS feed to Apple Podcasts Connect.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Get listed on Spotify', completed: s3_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
-              ]
-            },
-            {
               id: 'release',
-              stepNum: 4,
+              stepNum: 3,
               title: 'The First Episode',
               desc: 'Record, edit, and publish',
-              complete: isStep4Complete,
-              actionLabel: isStep4Complete ? 'Published' : 'Open Studio',
+              complete: isStep3Complete,
+              actionLabel: isStep3Complete ? 'Published' : 'Open Studio',
               onClick: () => {
                 window.location.href = '/podcast-tools/studio';
               },
               helpArticle: {
-                title: 'Step 4: The First Episode',
+                title: 'Step 3: The First Episode',
                 content: (
                   <div className="flex flex-col gap-3 text-sm text-muted-foreground">
                     <p>It's time to record! You can record a short 1-minute trailer, or dive straight into Episode 1.</p>
@@ -565,9 +540,34 @@ export default function YourPodcastLandingPage() {
                 )
               },
               checklist: [
-                { label: 'Record Episode', completed: s4_record, tooltip: 'Click to toggle once you have recorded audio.', onClick: () => updateData({ episodeRecorded: !data.episodeRecorded }) },
-                { label: 'Edit and Master Episode', completed: s4_master, tooltip: 'Click to toggle once you have edited and Magic Polished your audio.', onClick: () => updateData({ episodeMastered: !data.episodeMastered }) },
-                { label: 'Publish Episode', completed: s4_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } }
+                { label: 'Record Episode', completed: s3_record, tooltip: 'Click to toggle once you have recorded audio.', onClick: () => updateData({ episodeRecorded: !data.episodeRecorded }) },
+                { label: 'Edit and Master Episode', completed: s3_master, tooltip: 'Click to toggle once you have edited and Magic Polished your audio.', onClick: () => updateData({ episodeMastered: !data.episodeMastered }) },
+                { label: 'Publish Episode', completed: s3_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } }
+              ]
+            },
+            {
+              id: 'directories',
+              stepNum: 4,
+              title: 'Directory Syndication',
+              desc: 'Get listed on major platforms',
+              complete: isStep4Complete,
+              actionLabel: isStep4Complete ? 'Submitted' : 'Submit Feed',
+              onClick: () => {
+                document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' });
+              },
+              helpArticle: {
+                title: 'Step 4: Directory Syndication',
+                content: (
+                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                    <p>Once your RSS feed is ready and has at least one published audio file (like a trailer), you need to tell Apple and Spotify about it.</p>
+                    <p>Submit your RSS feed link to <strong>Apple Podcasts Connect</strong>. Apple acts as the master directory for almost all other smaller podcast apps (Overcast, Pocket Casts, etc.).</p>
+                    <p>Approval usually takes a few days. Once approved, every time you publish an episode to your host, it will automatically appear in all apps!</p>
+                  </div>
+                )
+              },
+              checklist: [
+                { label: 'Get listed on Apple', completed: s4_apple, tooltip: 'Submit your RSS feed to Apple Podcasts Connect.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Get listed on Spotify', completed: s4_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
               ]
             }
           ];
@@ -922,8 +922,8 @@ export default function YourPodcastLandingPage() {
 
             {/* Directory Submission Container */}
             <div className="relative">
-              {(activeStepIndex === 1 || activeStepIndex === 2) && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
-              <Card id="section-directories" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", (activeStepIndex === 1 || activeStepIndex === 2) ? "border-primary/50" : "border-border")}>
+              {(activeStepIndex === 1 || activeStepIndex === 3) && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card id="section-directories" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", (activeStepIndex === 1 || activeStepIndex === 3) ? "border-primary/50" : "border-border")}>
               <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 Syndication & Directories
@@ -1293,8 +1293,8 @@ export default function YourPodcastLandingPage() {
 
             {/* Recording Studio now lives at /podcast-tools/studio */}
             <div className="relative">
-              {activeStepIndex === 3 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
-              <Card className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center transition-colors duration-500", activeStepIndex === 3 ? "border-primary/50" : "border-border")}>
+              {activeStepIndex === 2 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
+              <Card className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-4 sm:flex-row sm:items-center transition-colors duration-500", activeStepIndex === 2 ? "border-primary/50" : "border-border")}>
               <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <AudioLines className="w-5 h-5" aria-hidden="true" />
               </div>
