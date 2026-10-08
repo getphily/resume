@@ -77,13 +77,6 @@ export function TextTab({ layer, onChange, kind }: TextTabProps) {
       {isTitle && (
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-foreground">Horizontal Position</label>
-            <Slider 
-              value={[tLayer.x]} min={150} max={1000} step={10} 
-              onValueChange={(val) => onChange({ x: val[0] })}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-foreground">Vertical Position</label>
             <Slider 
               value={[tLayer.y]} min={900} max={2300} step={10} 

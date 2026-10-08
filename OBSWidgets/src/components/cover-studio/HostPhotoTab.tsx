@@ -157,7 +157,7 @@ export function HostPhotoTab({ cfg, setCfg, images, setImages }: HostPhotoTabPro
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-foreground">Zoom ({cfg.host.zoom.toFixed(2)}x)</label>
             <Slider 
-              value={[cfg.host.zoom]} min={0.7} max={1.4} step={0.05} 
+              value={[cfg.host.zoom]} min={0.5} max={2.5} step={0.05} 
               onValueChange={(val) => setCfg(prev => ({ ...prev, host: { ...prev.host, zoom: val[0] } }))}
               disabled={!cfg.host.enabled}
             />

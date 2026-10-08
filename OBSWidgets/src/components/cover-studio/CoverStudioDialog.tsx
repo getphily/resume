@@ -102,7 +102,14 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
   useEffect(() => {
     try {
       const saved = localStorage.getItem(LOCAL_CONFIG_KEY);
-      if (saved) setCfg(prev => mergeCoverConfig(prev, JSON.parse(saved)));
+      if (saved) {
+        setCfg(prev => {
+          const merged = mergeCoverConfig(prev, JSON.parse(saved));
+          if (showTitle && showTitle.toLowerCase() !== 'untitled show') merged.title.text = showTitle;
+          if (showHost && showHost.toLowerCase() !== 'unknown host') merged.hostName.text = showHost;
+          return merged;
+        });
+      }
     } catch {}
   }, []); // Run only on mount
 
@@ -114,6 +121,23 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
     }, 300);
     return () => clearTimeout(t);
   }, [cfg]);
+
+  // Sync props to cfg whenever they change
+  useEffect(() => {
+    setCfg(prev => {
+      const next = { ...prev };
+      let changed = false;
+      if (showTitle && showTitle.toLowerCase() !== 'untitled show' && next.title.text !== showTitle) {
+        next.title = { ...next.title, text: showTitle };
+        changed = true;
+      }
+      if (showHost && showHost.toLowerCase() !== 'unknown host' && next.hostName.text !== showHost) {
+        next.hostName = { ...next.hostName, text: showHost };
+        changed = true;
+      }
+      return changed ? next : prev;
+    });
+  }, [showTitle, showHost]);
 
   // Signed out, or switched to a different account: drop the previous user's cloud state
   // so it can never be saved into someone else's row.
@@ -137,7 +161,12 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
         const design = await loadCoverDesign(userId);
         if (cancelled) return;
         if (design) {
-          setCfg(prev => mergeCoverConfig(prev, design.config));
+          setCfg(prev => {
+            const merged = mergeCoverConfig(prev, design.config);
+            if (showTitle && showTitle.toLowerCase() !== 'untitled show') merged.title.text = showTitle;
+            if (showHost && showHost.toLowerCase() !== 'unknown host') merged.hostName.text = showHost;
+            return merged;
+          });
           setAssetUrls({ bg: design.bg_image_url, host: design.host_image_url });
           // A missing/broken photo resolves to null and is cleaned up by the asset sync below.
           const [bg, host] = await Promise.all([
@@ -394,7 +423,6 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                 <TabsTrigger value="background" className="flex-1 px-3">Background</TabsTrigger>
                 <TabsTrigger value="host" className="flex-1 px-3">Host photo</TabsTrigger>
                 <TabsTrigger value="title" className="flex-1 px-3">Title</TabsTrigger>
-                <TabsTrigger value="with" className="flex-1 px-3">"With"</TabsTrigger>
                 <TabsTrigger value="hostname" className="flex-1 px-3">Host name</TabsTrigger>
               </TabsList>
               
@@ -409,13 +437,6 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                   layer={cfg.title} 
                   kind="title" 
                   onChange={(patch) => setCfg(prev => ({ ...prev, title: { ...prev.title, ...patch } }))} 
-                />
-              </TabsContent>
-              <TabsContent value="with" className="p-4 border border-border rounded-lg mt-2">
-                <TextTab 
-                  layer={cfg.withText} 
-                  kind="single" 
-                  onChange={(patch) => setCfg(prev => ({ ...prev, withText: { ...prev.withText, ...patch } }))} 
                 />
               </TabsContent>
               <TabsContent value="hostname" className="p-4 border border-border rounded-lg mt-2 flex flex-col gap-6">
@@ -441,20 +462,6 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
                         <ColorInputWithPalette 
                           value={cfg.badge.color}
                           onChange={(c) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, color: c } }))}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-foreground">Horizontal Position</label>
-                        <Slider 
-                          value={[cfg.badge.x]} min={150} max={1000} step={10} 
-                          onValueChange={(val) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, x: val[0] } }))}
-                        />
-                      </div>
-                      <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-foreground">Vertical Position</label>
-                        <Slider 
-                          value={[cfg.badge.baselineY]} min={2300} max={2850} step={10} 
-                          onValueChange={(val) => setCfg(prev => ({ ...prev, badge: { ...prev.badge, baselineY: val[0] } }))}
                         />
                       </div>
                     </>

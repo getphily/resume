@@ -156,7 +156,7 @@ export function BackgroundTab({ cfg, setCfg, images, setImages }: BackgroundTabP
               <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-bold text-foreground">Zoom ({cfg.bg.imgZoom.toFixed(2)}x)</label>
                 <Slider 
-                  value={[cfg.bg.imgZoom]} min={1} max={2.5} step={0.05} 
+                  value={[cfg.bg.imgZoom]} min={0.5} max={2.5} step={0.05} 
                   onValueChange={(val) => setCfg(prev => ({ ...prev, bg: { ...prev.bg, imgZoom: val[0] } }))}
                 />
               </div>
