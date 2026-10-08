@@ -501,10 +501,10 @@ export default function YourPodcastLandingPage() {
                 )
               },
               checklist: [
+                { label: 'Complete Course', completed: s1_course, tooltip: s1_course ? 'Course completed!' : 'Click to go to the course and complete it.', onClick: () => { if (!s1_course) window.location.href = '/podcast-tools/courses?courseId=course_step1'; } },
                 { label: 'Complete Title, Host and Description', completed: s1_metaComplete, tooltip: 'These fields are required before any directory will accept your podcast.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
                 { label: 'Pick Categories and Rating', completed: s1_catComplete, tooltip: 'Helps listeners find you. Rating marks if you use explicit language.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Add Cover Image', completed: s1_coverComplete, tooltip: 'Must be a 1400–3000px square image.', onClick: () => document.getElementById('section-artwork')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Complete Course', completed: s1_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step1') }
+                { label: 'Add Cover Image', completed: s1_coverComplete, tooltip: 'Must be a 1400–3000px square image.', onClick: () => document.getElementById('section-artwork')?.scrollIntoView({ behavior: 'smooth' }) }
               ]
             },
             {
@@ -533,11 +533,11 @@ export default function YourPodcastLandingPage() {
                 )
               },
               checklist: [
+                { label: 'Complete Course', completed: s2_course, tooltip: s2_course ? 'Course completed!' : 'Click to go to the course and complete it.', onClick: () => { if (!s2_course) window.location.href = '/podcast-tools/courses?courseId=course_step2'; } },
                 { label: 'Sign Up for a Spotify Account', completed: s2_spotify, tooltip: 'Click to mark as done after creating a free Spotify for Podcasters account.', onClick: () => updateData({ hasSpotifyAccount: !data.hasSpotifyAccount }) },
                 { label: 'Add Substack Handle', completed: s2_substackHandle, tooltip: 'Connect your Substack handle so we can link your newsletter.', onClick: () => document.getElementById('section-substack')?.scrollIntoView({ behavior: 'smooth' }) },
                 { label: 'Add Metadata to Substack', completed: s2_substackMeta, tooltip: 'Click to mark as done once you have filled out your Substack podcast settings.', onClick: () => updateData({ hasSubstackMetadata: !data.hasSubstackMetadata }) },
-                { label: 'Add RSS Feed to "Your Podcast"', completed: s2_rss, tooltip: 'Paste your generated RSS feed URL here.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Complete Course', completed: s2_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step2') }
+                { label: 'Add RSS Feed to "Your Podcast"', completed: s2_rss, tooltip: 'Paste your generated RSS feed URL here.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
               ]
             },
             {
@@ -562,10 +562,10 @@ export default function YourPodcastLandingPage() {
                 )
               },
               checklist: [
+                { label: 'Complete Course', completed: s3_course, tooltip: s3_course ? 'Course completed!' : 'Click to go to the course and complete it.', onClick: () => { if (!s3_course) window.location.href = '/podcast-tools/courses?courseId=course_step3'; } },
                 { label: 'Record Episode', completed: s3_record, tooltip: 'Click to toggle once you have recorded audio.', onClick: () => updateData({ episodeRecorded: !data.episodeRecorded }) },
                 { label: 'Edit and Master Episode', completed: s3_master, tooltip: 'Click to toggle once you have edited and Magic Polished your audio.', onClick: () => updateData({ episodeMastered: !data.episodeMastered }) },
-                { label: 'Publish Episode', completed: s3_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } },
-                { label: 'Complete Course', completed: s3_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step3') }
+                { label: 'Publish Episode', completed: s3_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } }
               ]
             },
             {
@@ -590,9 +590,9 @@ export default function YourPodcastLandingPage() {
                 )
               },
               checklist: [
+                { label: 'Complete Course', completed: s4_course, tooltip: s4_course ? 'Course completed!' : 'Click to go to the course and complete it.', onClick: () => { if (!s4_course) window.location.href = '/podcast-tools/courses?courseId=course_step4'; } },
                 { label: 'Get listed on Apple', completed: s4_apple, tooltip: 'Submit your RSS feed to Apple Podcasts Connect.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Get listed on Spotify', completed: s4_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Complete Course', completed: s4_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step4') }
+                { label: 'Get listed on Spotify', completed: s4_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
               ]
             }
           ];
