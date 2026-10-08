@@ -112,13 +112,26 @@ function CategoryDropdown({ value, onSave, label, status = 'none' }: { value: st
 }
 
 const coursesList = [
-  { id: 'concept', title: "Concept & Niche", lesson: "A strong podcast starts with a clear niche. Who is your audience? What unique perspective do you bring?" },
-  { id: 'format', title: "Format & Description", lesson: "Will your show be solo, interview-based, or a co-hosted banter? Write a compelling show description." },
-  { id: 'artwork', title: "Cover Art", lesson: "Cover art must be a square JPG or PNG, between 1400x1400 and 3000x3000 pixels. Use large, legible text." },
-  { id: 'recording', title: "Recording Your First Episode", lesson: "Use a dynamic microphone. Record a 'Trailer' (1-3 minutes) introducing the show to get your RSS feed approved." },
-  { id: 'hosting', title: "Hosting & RSS", lesson: "You need a podcast host to store your audio files. They will generate an 'RSS Feed URL'." },
-  { id: 'distribution', title: "Distribution", lesson: "Submit your RSS Feed URL to the major directories. Approval can take a few days." },
-  { id: 'live', title: "Live-to-Tape Recording", lesson: "Record exactly as if broadcasting live. Trigger sound effects and segments in real-time." }
+  {
+    id: 'course_step1',
+    title: "Meta & Cover Art",
+    lesson: "Before you do anything, you need to define your show's concept and create cover art. Cover art must be a square JPG or PNG, between 1400x1400 and 3000x3000 pixels. The title should be memorable, legible on mobile screens, and communicate exactly what your show is about.",
+  },
+  {
+    id: 'course_step2',
+    title: "Hosting & Architecture",
+    lesson: "You need a podcast host to store your audio files. We recommend Spotify for Podcasters because it's completely free and reliable. Once you set up your host, they will give you an RSS feed URL—this is the master link that distributes your audio everywhere. We also recommend linking it to Substack so you can own your audience via an email newsletter.",
+  },
+  {
+    id: 'course_step3',
+    title: "The Perfect First Episode",
+    lesson: "Before you can syndicate, you must have at least one episode (or trailer) published to your RSS feed. A trailer should be 1-3 minutes long, hooking listeners by explaining who you are and what to expect. Use the Recording Studio to lay down your audio, Magic Polish it to achieve broadcast-quality sound, and upload it to your host.",
+  },
+  {
+    id: 'course_step4',
+    title: "Launch & Syndication",
+    lesson: "With your first episode published to your host, it's time to submit your RSS feed to Apple Podcasts Connect and Spotify. Apple acts as the master directory for almost all other smaller apps (Overcast, Pocket Casts, etc.). Approval can take a few days, but once approved, every future episode you publish to your host will automatically appear everywhere.",
+  }
 ];
 
 function validateSubstackHandle(raw: string): { isValid: boolean; error: string | null; cleaned: string } {
@@ -425,25 +438,29 @@ export default function YourPodcastLandingPage() {
   const s1_metaComplete = Boolean(data.title && data.title !== 'Untitled Show' && data.host && data.host !== 'Unknown Host' && data.description && data.description !== defaultData.description);
   const s1_catComplete = Boolean(data.primaryCategory && data.explicit);
   const s1_coverComplete = Boolean(data.artworkUrl);
-  const isStep1Complete = s1_metaComplete && s1_catComplete && s1_coverComplete;
+  const s1_course = completedCourses.includes('course_step1');
+  const isStep1Complete = s1_metaComplete && s1_catComplete && s1_coverComplete && s1_course;
 
   // Step 2 Check
   const s2_spotify = Boolean(data.hasSpotifyAccount);
   const s2_substackHandle = Boolean(data.substackHandle);
   const s2_substackMeta = Boolean(data.hasSubstackMetadata);
   const s2_rss = Boolean(data.rssFeedUrl && data.rssFeedUrl.trim());
-  const isStep2Complete = s2_spotify && s2_substackHandle && s2_substackMeta && s2_rss;
+  const s2_course = completedCourses.includes('course_step2');
+  const isStep2Complete = s2_spotify && s2_substackHandle && s2_substackMeta && s2_rss && s2_course;
 
   // Step 3 Check (The First Episode)
   const s3_record = Boolean(data.episodeRecorded);
   const s3_master = Boolean(data.episodeMastered);
   const s3_publish = Boolean(data.firstEpisodePublished);
-  const isStep3Complete = s3_record && s3_master && s3_publish;
+  const s3_course = completedCourses.includes('course_step3');
+  const isStep3Complete = s3_record && s3_master && s3_publish && s3_course;
 
   // Step 4 Check (Directory Syndication)
   const s4_apple = Boolean(data.directoryStatus.apple);
   const s4_spotify = Boolean(data.directoryStatus.spotify);
-  const isStep4Complete = s4_apple && s4_spotify;
+  const s4_course = completedCourses.includes('course_step4');
+  const isStep4Complete = s4_apple && s4_spotify && s4_course;
 
   const activeStepIndex = [isStep1Complete, isStep2Complete, isStep3Complete, isStep4Complete].findIndex(c => !c);
 
@@ -462,6 +479,7 @@ export default function YourPodcastLandingPage() {
             {
               id: 'meta',
               stepNum: 1,
+              courseId: 'course_step1',
               title: 'Meta & Cover Art',
               desc: 'Basic information and artwork',
               complete: isStep1Complete,
@@ -485,12 +503,14 @@ export default function YourPodcastLandingPage() {
               checklist: [
                 { label: 'Complete Title, Host and Description', completed: s1_metaComplete, tooltip: 'These fields are required before any directory will accept your podcast.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
                 { label: 'Pick Categories and Rating', completed: s1_catComplete, tooltip: 'Helps listeners find you. Rating marks if you use explicit language.', onClick: () => document.getElementById('section-metadata')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Add Cover Image', completed: s1_coverComplete, tooltip: 'Must be a 1400–3000px square image.', onClick: () => document.getElementById('section-artwork')?.scrollIntoView({ behavior: 'smooth' }) }
+                { label: 'Add Cover Image', completed: s1_coverComplete, tooltip: 'Must be a 1400–3000px square image.', onClick: () => document.getElementById('section-artwork')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Complete Course', completed: s1_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step1') }
               ]
             },
             {
               id: 'hosting',
               stepNum: 2,
+              courseId: 'course_step2',
               title: 'Hosting Setup',
               desc: 'Substack integration and RSS',
               complete: isStep2Complete,
@@ -516,12 +536,14 @@ export default function YourPodcastLandingPage() {
                 { label: 'Sign Up for a Spotify Account', completed: s2_spotify, tooltip: 'Click to mark as done after creating a free Spotify for Podcasters account.', onClick: () => updateData({ hasSpotifyAccount: !data.hasSpotifyAccount }) },
                 { label: 'Add Substack Handle', completed: s2_substackHandle, tooltip: 'Connect your Substack handle so we can link your newsletter.', onClick: () => document.getElementById('section-substack')?.scrollIntoView({ behavior: 'smooth' }) },
                 { label: 'Add Metadata to Substack', completed: s2_substackMeta, tooltip: 'Click to mark as done once you have filled out your Substack podcast settings.', onClick: () => updateData({ hasSubstackMetadata: !data.hasSubstackMetadata }) },
-                { label: 'Add RSS Feed to "Your Podcast"', completed: s2_rss, tooltip: 'Paste your generated RSS feed URL here.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
+                { label: 'Add RSS Feed to "Your Podcast"', completed: s2_rss, tooltip: 'Paste your generated RSS feed URL here.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Complete Course', completed: s2_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step2') }
               ]
             },
             {
               id: 'release',
               stepNum: 3,
+              courseId: 'course_step3',
               title: 'The First Episode',
               desc: 'Record, edit, and publish',
               complete: isStep3Complete,
@@ -542,12 +564,14 @@ export default function YourPodcastLandingPage() {
               checklist: [
                 { label: 'Record Episode', completed: s3_record, tooltip: 'Click to toggle once you have recorded audio.', onClick: () => updateData({ episodeRecorded: !data.episodeRecorded }) },
                 { label: 'Edit and Master Episode', completed: s3_master, tooltip: 'Click to toggle once you have edited and Magic Polished your audio.', onClick: () => updateData({ episodeMastered: !data.episodeMastered }) },
-                { label: 'Publish Episode', completed: s3_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } }
+                { label: 'Publish Episode', completed: s3_publish, tooltip: 'Click to toggle once you have published to your RSS feed!', onClick: () => { const next = !data.firstEpisodePublished; updateData({ firstEpisodePublished: next, trailerPublished: next }); if (next) toast.success('🎉 Marked as published! Your podcast is live!'); } },
+                { label: 'Complete Course', completed: s3_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step3') }
               ]
             },
             {
               id: 'directories',
               stepNum: 4,
+              courseId: 'course_step4',
               title: 'Directory Syndication',
               desc: 'Get listed on major platforms',
               complete: isStep4Complete,
@@ -567,7 +591,8 @@ export default function YourPodcastLandingPage() {
               },
               checklist: [
                 { label: 'Get listed on Apple', completed: s4_apple, tooltip: 'Submit your RSS feed to Apple Podcasts Connect.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
-                { label: 'Get listed on Spotify', completed: s4_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) }
+                { label: 'Get listed on Spotify', completed: s4_spotify, tooltip: 'Submit your RSS feed to Spotify.', onClick: () => document.getElementById('section-directories')?.scrollIntoView({ behavior: 'smooth' }) },
+                { label: 'Complete Course', completed: s4_course, tooltip: 'Read and complete the course for this step.', onClick: () => toggleCourseComplete('course_step4') }
               ]
             }
           ];
@@ -679,6 +704,13 @@ export default function YourPodcastLandingPage() {
                             >
                               <HelpCircle className="w-3.5 h-3.5" />
                             </button>
+                            <Link
+                              href={`/podcast-tools/courses?courseId=${step.courseId}`}
+                              className="text-muted-foreground hover:text-primary transition-colors focus:outline-none focus-visible:ring-2 ring-primary rounded-full p-0.5"
+                              title="Open course for this step"
+                            >
+                              <GraduationCap className="w-3.5 h-3.5" />
+                            </Link>
                           </div>
                         </div>
 

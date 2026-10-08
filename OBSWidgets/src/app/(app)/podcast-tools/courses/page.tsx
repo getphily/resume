@@ -12,54 +12,46 @@ import { Badge } from '@/components/ui/badge';
 
 const coursesList = [
   {
-    id: 'concept',
-    title: "Concept & Niche",
-    lesson: "A strong podcast starts with a clear niche. Who is your audience? What unique perspective do you bring? Choose a name that is memorable and clearly communicates your topic.",
+    id: 'course_step1',
+    title: "Meta & Cover Art",
+    lesson: "Before you do anything, you need to define your show's concept and create cover art. Cover art must be a square JPG or PNG, between 1400x1400 and 3000x3000 pixels. The title should be memorable, legible on mobile screens, and communicate exactly what your show is about.",
   },
   {
-    id: 'format',
-    title: "Format & Description",
-    lesson: "Will your show be solo, interview-based, or a co-hosted banter? Write a compelling show description. This is your pitch to potential listeners browsing Apple Podcasts.",
+    id: 'course_step2',
+    title: "Hosting & Architecture",
+    lesson: "You need a podcast host to store your audio files. We recommend Spotify for Podcasters because it's completely free and reliable. Once you set up your host, they will give you an RSS feed URL—this is the master link that distributes your audio everywhere. We also recommend linking it to Substack so you can own your audience via an email newsletter.",
   },
   {
-    id: 'artwork',
-    title: "Cover Art",
-    lesson: "Cover art must be a square JPG or PNG, between 1400x1400 and 3000x3000 pixels. Use large, legible text and high-contrast colors so it stands out on mobile screens.",
+    id: 'course_step3',
+    title: "The Perfect First Episode",
+    lesson: "Before you can syndicate, you must have at least one episode (or trailer) published to your RSS feed. A trailer should be 1-3 minutes long, hooking listeners by explaining who you are and what to expect. Use the Recording Studio to lay down your audio, Magic Polish it to achieve broadcast-quality sound, and upload it to your host.",
   },
   {
-    id: 'recording',
-    title: "Recording Your First Episode",
-    lesson: "Use a dynamic microphone if you are in an untreated room. Record a 'Trailer' (1-3 minutes) introducing the show to get your RSS feed approved before launching full episodes.",
-  },
-  {
-    id: 'hosting',
-    title: "Hosting & RSS",
-    lesson: "You need a podcast host (like Spotify for Podcasters, Buzzsprout, or Transistor) to store your audio files. They will generate an 'RSS Feed URL' which is the master link you submit to directories.",
-  },
-  {
-    id: 'distribution',
-    title: "Distribution",
-    lesson: "Once you have your RSS Feed URL with at least one published episode (or trailer), submit it to the major directories. Approval can take a few days.",
-  },
-  {
-    id: 'live',
-    title: "Live-to-Tape Recording",
-    lesson: "The 'Live-to-Tape' methodology means recording your podcast exactly as if you were broadcasting live on the radio. Instead of stopping to edit out mistakes or mixing in intro music during post-production, you trigger all sound effects, music beds, and segments in real-time while you record. This approach forces you to embrace minor imperfections, keeping the energy authentic and conversational, while saving you hours of tedious editing work later.",
+    id: 'course_step4',
+    title: "Launch & Syndication",
+    lesson: "With your first episode published to your host, it's time to submit your RSS feed to Apple Podcasts Connect and Spotify. Apple acts as the master directory for almost all other smaller apps (Overcast, Pocket Casts, etc.). Approval can take a few days, but once approved, every future episode you publish to your host will automatically appear everywhere.",
   }
 ];
 
-  export default function PodcastCoursesPage() {
-    const [activeCourseId, setActiveCourseId] = useState<string>(coursesList[0].id);
-    const [completedCourses, setCompletedCourses] = useState<string[]>([]);
-  
-    React.useEffect(() => {
-      const saved = localStorage.getItem('podcast_courses_completed');
-      if (saved) {
-        try {
-          setCompletedCourses(JSON.parse(saved));
-        } catch(e) {}
-      }
-    }, []);
+export default function PodcastCoursesPage() {
+  const [activeCourseId, setActiveCourseId] = useState<string>(coursesList[0].id);
+  const [completedCourses, setCompletedCourses] = useState<string[]>([]);
+
+  React.useEffect(() => {
+    // Read URL params
+    const params = new URLSearchParams(window.location.search);
+    const cId = params.get('courseId');
+    if (cId && coursesList.some(c => c.id === cId)) {
+      setActiveCourseId(cId);
+    }
+
+    const saved = localStorage.getItem('podcast_courses_completed');
+    if (saved) {
+      try {
+        setCompletedCourses(JSON.parse(saved));
+      } catch(e) {}
+    }
+  }, []);
   
     const toggleComplete = (id: string) => {
       const next = completedCourses.includes(id) 
