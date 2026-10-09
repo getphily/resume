@@ -126,6 +126,12 @@ export default function Navbar() {
       'autoblog': 'Autoblog',
       'alpine': 'Alpine',
       'light-green': 'Light Green',
+      'japan-blues': 'Japan Blues',
+      'astrovista': 'Astrovista',
+      'porfolio': 'Portfolio',
+      'vescrow': 'Vescrow',
+      'polaris': 'Polaris',
+      'claude': 'Claude',
       'dark': 'Dark mode',
       'light': 'Light mode',
     };

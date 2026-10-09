@@ -3,13 +3,19 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export type ThemeMode = 'modern-minimal' | 'autoblog' | 'alpine' | 'light-green' | 'dark' | 'light';
+export type ThemeMode = 'modern-minimal' | 'autoblog' | 'alpine' | 'light-green' | 'japan-blues' | 'astrovista' | 'porfolio' | 'vescrow' | 'polaris' | 'claude' | 'dark' | 'light';
 
 export const VALID_THEMES: ThemeMode[] = [
   'modern-minimal',
   'autoblog',
   'alpine',
   'light-green',
+  'japan-blues',
+  'astrovista',
+  'porfolio',
+  'vescrow',
+  'polaris',
+  'claude',
   'dark',
   'light',
 ];
