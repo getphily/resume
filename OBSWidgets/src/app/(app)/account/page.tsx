@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter,  } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -81,9 +81,7 @@ function AccountContent() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  const searchParams = useSearchParams();
-  const defaultTab = (searchParams.get('tab')?.toUpperCase() as 'PREFS' | 'PROFILE' | 'MEDIA') || 'PREFS';
-  const [activeTab, setActiveTab] = useState<'PREFS' | 'PROFILE' | 'MEDIA'>(defaultTab);
+  // searchParams and activeTab removed to consolidate preferences
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -188,279 +186,61 @@ function AccountContent() {
     <div className="p-6 md:p-10 max-w-6xl mx-auto w-full flex flex-col">
       
       {/* Top Header */}
-      <div className="mb-6">
-        <Link 
-          href="/" 
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-3 transition-colors"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Back to Dashboard</span>
-        </Link>
-        <div className="flex justify-between items-start flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
-              Account & Preferences
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Customize your studio appearance, color theme, and public DJ broadcast identity.
-            </p>
-          </div>
+      <div className="mb-8 flex justify-between items-start md:items-center flex-col md:flex-row gap-4">
+        <div>
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground mb-3 transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Dashboard</span>
+          </Link>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            Account & Media
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your public profile, theme preferences, and media assets.
+          </p>
         </div>
+        <Button 
+          onClick={handleUpdate} 
+          disabled={saving} 
+          className="h-10 px-6 font-bold text-xs uppercase tracking-wider gap-2 shadow-xs shrink-0"
+        >
+          {saving ? 'Saving...' : 'Save Profile & Theme'}
+        </Button>
       </div>
 
-      {/* Top Navigation Tabs */}
-      <div className="flex border-b border-border gap-8 mb-8">
-        <button
-          type="button"
-          onClick={() => setActiveTab('PREFS')}
-          className={cn(
-            "pb-3.5 text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer border-b-2",
-            activeTab === 'PREFS'
-              ? "text-primary border-primary font-bold"
-              : "text-muted-foreground hover:text-foreground border-transparent"
-          )}
-        >
-          <Sliders className="w-4 h-4" />
-          <span>Appearance & Themes</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('PROFILE')}
-          className={cn(
-            "pb-3.5 text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer border-b-2",
-            activeTab === 'PROFILE'
-              ? "text-primary border-primary font-bold"
-              : "text-muted-foreground hover:text-foreground border-transparent"
-          )}
-        >
-          <User className="w-4 h-4" />
-          <span>Public Profile</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('MEDIA')}
-          className={cn(
-            "pb-3.5 text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer border-b-2",
-            activeTab === 'MEDIA'
-              ? "text-primary border-primary font-bold"
-              : "text-muted-foreground hover:text-foreground border-transparent"
-          )}
-        >
-          <FileImage className="w-4 h-4" />
-          <span>Media Library</span>
-        </button>
-      </div>
-
-      {/* TAB 1: Preferences & Themes */}
-      {activeTab === 'PREFS' && (
-        <div className="flex flex-col gap-8">
-          
-          <Card className="border-border bg-card shadow-xs p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-6 pb-5 border-b border-border">
-              <div>
-                <h2 className="text-base font-bold text-foreground">
-                  Studio Interface Theme
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Select a curated design specification for your workspace. Theme applies live on selection.
-                </p>
-              </div>
-              <span className="text-sm font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md w-fit">
-                Instant Live Preview
-              </span>
-            </div>
-
-            {/* Responsive 2x2 Grid of Themes with Visual Mini Mockups */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {THEME_OPTIONS.map((opt) => {
-                const isSelected = theme === opt.id;
-
-                return (
-                  <div
-                    key={opt.id}
-                    onClick={() => {
-                      const nextTheme = opt.id;
-                      setTheme(nextTheme);
-                      document.documentElement.setAttribute('data-theme', nextTheme);
-                      localStorage.setItem('theme', nextTheme);
-                      window.dispatchEvent(new Event('theme-updated'));
-                    }}
-                    className={cn(
-                      "cursor-pointer rounded-xl border transition-all flex flex-col overflow-hidden select-none group",
-                      isSelected
-                        ? "border-primary ring-2 ring-primary/25 bg-card shadow-sm"
-                        : "border-border bg-card hover:border-primary/40 hover:shadow-xs"
-                    )}
-                  >
-                    {/* Visual Miniature Dashboard Mockup */}
-                    <div 
-                      className="w-full h-28 overflow-hidden flex flex-col border-b border-border relative transition-transform duration-300 group-hover:scale-[1.01]"
-                      style={{ backgroundColor: opt.canvasBg }}
-                    >
-                      {/* Mini Navbar */}
-                      <div 
-                        className="h-6 px-3 flex items-center justify-between shrink-0 border-b border-black/10 dark:border-white/10"
-                        style={{ backgroundColor: opt.headerBg }}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: opt.accentColor }} />
-                          <div className="w-10 h-1.5 rounded-full bg-white/40" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <div className="w-2.5 h-2.5 rounded-full bg-white/20" />
-                          <div className="w-2.5 h-2.5 rounded-full bg-white/30" />
-                        </div>
-                      </div>
-
-                      {/* Mini Content Area */}
-                      <div className="flex-1 p-2.5 flex gap-2">
-                        {/* Mini sidebar */}
-                        <div className="w-10 rounded-xs bg-black/10 dark:bg-white/10 flex flex-col gap-1.5 p-1 shrink-0">
-                          <div className="w-full h-1.5 rounded-xs" style={{ backgroundColor: opt.accentColor }} />
-                          <div className="w-full h-1.5 rounded-xs bg-white/20" />
-                          <div className="w-full h-1.5 rounded-xs bg-white/20" />
-                        </div>
-                        
-                        {/* Mini panels */}
-                        <div className="flex-1 flex gap-2">
-                          <div 
-                            className="flex-1 rounded-xs p-2 flex flex-col justify-between shadow-2xs border border-black/5 dark:border-white/5"
-                            style={{ backgroundColor: opt.cardBg }}
-                          >
-                            <div className="w-12 h-2 rounded-xs" style={{ backgroundColor: opt.accentColor }} />
-                            <div className="w-full h-1.5 rounded-xs bg-black/10 dark:bg-white/10" />
-                            <div className="w-16 h-1.5 rounded-xs bg-black/10 dark:bg-white/10" />
-                          </div>
-                          <div 
-                            className="w-14 rounded-xs p-2 flex flex-col justify-between shadow-2xs border border-black/5 dark:border-white/5"
-                            style={{ backgroundColor: opt.cardBg }}
-                          >
-                            <div className="w-6 h-2 rounded-xs bg-black/15 dark:bg-white/15" />
-                            <div className="w-full h-1.5 rounded-xs" style={{ backgroundColor: opt.accentColor }} />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Active Checkmark Pill in Mockup */}
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-sm font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
-                          <Check className="w-3 h-3" /> Selected
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Theme Details Footer */}
-                    <div className="p-4 flex flex-col gap-2 flex-1">
-                      <div className="flex items-start sm:items-center justify-between gap-2 flex-wrap">
-                        <span className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">
-                          {opt.name}
-                        </span>
-                        <Badge variant={isSelected ? "default" : "secondary"} className="text-sm px-2 py-1 font-semibold text-center">
-                          {opt.badge}
-                        </Badge>
-                      </div>
-                      
-                      <p className="text-xs text-muted-foreground leading-relaxed flex-1">
-                        {opt.description}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-3 border-t border-border mt-2">
-                        <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                          Key Colors:
-                        </span>
-                        <div className="flex gap-1.5 items-center">
-                          {opt.palette.map((c, i) => (
-                            <div
-                              key={i}
-                              title={c}
-                              className="w-4 h-4 rounded-full border border-black/15 dark:border-white/15 shadow-2xs"
-                              style={{ backgroundColor: c }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Bottom Actions */}
-            <div className="mt-8 pt-6 border-t border-border flex justify-end">
-              <Button 
-                onClick={handleUpdate} 
-                disabled={saving} 
-                className="h-10 px-6 font-bold text-xs uppercase tracking-wider gap-2 shadow-xs"
-              >
-                {saving ? 'Saving...' : 'Save Theme Preferences'}
-              </Button>
-            </div>
-          </Card>
-
-        </div>
-      )}
-
-      {/* TAB 2: Public Profile */}
-      {activeTab === 'PROFILE' && (
-        <Card className="border-border bg-card shadow-xs p-6 md:p-8">
-          <div className="mb-6 pb-5 border-b border-border">
-            <h2 className="text-base font-bold text-foreground">
-              Public Profile Information
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Manage your display identity and avatar across your stream widgets.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-6 max-w-xl">
-            <div className="flex items-center gap-5">
-              <Avatar className="w-20 h-20 border-2 border-border shadow-xs">
+      {/* Settings Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+        {/* Left Column: Profile */}
+        <Card className="col-span-1 lg:col-span-4 border-border bg-card shadow-xs p-6 flex flex-col">
+          <h2 className="text-sm font-bold text-foreground mb-5 uppercase tracking-wider">
+            Public Profile
+          </h2>
+          <div className="flex flex-col gap-5 flex-1">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-16 h-16 border-2 border-border shadow-xs">
                 <AvatarImage src={avatarUrl} alt={username || 'User'} />
-                <AvatarFallback className="font-bold text-xl bg-primary/10 text-primary">
+                <AvatarFallback className="font-bold text-lg bg-primary/10 text-primary">
                   {username ? username.substring(0, 2).toUpperCase() : 'DJ'}
                 </AvatarFallback>
               </Avatar>
-              
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Upload Avatar Photo
+                  Avatar
                 </label>
                 <input 
                   type="file" 
                   accept="image/*" 
                   onChange={uploadAvatar} 
                   disabled={saving} 
-                  className="text-xs text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80 cursor-pointer"
+                  className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80 cursor-pointer w-full max-w-[200px]"
                 />
-                <span className="text-sm text-muted-foreground">
-                  Recommended: Square JPG or PNG, at least 256×256px.
-                </span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 mt-2">
-              <div className="flex items-center justify-between max-w-md">
-                <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Registered Account Email
-                </label>
-                <Badge variant="outline" className="text-xs font-semibold border-border text-muted-foreground gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
-                  Verified
-                </Badge>
-              </div>
-              <Input 
-                id="email"
-                value={email || 'No email associated'} 
-                readOnly
-                disabled
-                className="h-10 text-sm max-w-md bg-muted/30 text-muted-foreground cursor-not-allowed select-all"
-              />
-              <span className="text-xs text-muted-foreground">
-                Managed via your authentication provider.
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2 mt-2">
+            <div className="flex flex-col gap-1.5 mt-2">
               <label htmlFor="username" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Username
               </label>
@@ -469,33 +249,88 @@ function AccountContent() {
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
                 placeholder="Username" 
-                className="h-10 text-sm max-w-md bg-background"
+                className="h-9 text-sm bg-background"
               />
-              <span className="text-sm text-muted-foreground">
-                Displayed in broadcast headers and widget credit overlays.
-              </span>
             </div>
 
-            <div className="pt-6 border-t border-border mt-4">
-              <Button 
-                onClick={handleUpdate} 
-                disabled={saving} 
-                className="h-10 px-6 font-bold text-xs uppercase tracking-wider gap-2 shadow-xs"
-              >
-                {saving ? 'Saving...' : 'Save Profile Changes'}
-              </Button>
+            <div className="flex flex-col gap-1.5 mt-2">
+              <div className="flex items-center justify-between">
+                <label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Email
+                </label>
+                <Badge variant="outline" className="text-[10px] font-semibold border-border text-muted-foreground gap-1 py-0 px-1">
+                  <ShieldCheck className="w-3 h-3 text-green-600 dark:text-green-400" />
+                  Verified
+                </Badge>
+              </div>
+              <Input 
+                id="email"
+                value={email || 'No email associated'} 
+                readOnly
+                disabled
+                className="h-9 text-sm bg-muted/30 text-muted-foreground cursor-not-allowed select-all"
+              />
             </div>
           </div>
         </Card>
-      )}
 
-      {/* TAB 3: Media Library */}
-      {activeTab === 'MEDIA' && (
-        <div className="flex-1 min-h-[70vh] flex flex-col border border-border rounded-xl shadow-xs overflow-hidden bg-background">
-          <MediaLibrary />
-        </div>
-      )}
+        {/* Right Column: Themes */}
+        <Card className="col-span-1 lg:col-span-8 border-border bg-card shadow-xs p-6 flex flex-col">
+          <h2 className="text-sm font-bold text-foreground mb-5 uppercase tracking-wider">
+            Appearance & Theme
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {THEME_OPTIONS.map((opt) => {
+              const isSelected = theme === opt.id;
+              return (
+                <div
+                  key={opt.id}
+                  onClick={() => {
+                    const nextTheme = opt.id;
+                    setTheme(nextTheme);
+                    document.documentElement.setAttribute('data-theme', nextTheme);
+                    localStorage.setItem('theme', nextTheme);
+                    window.dispatchEvent(new Event('theme-updated'));
+                  }}
+                  className={cn(
+                    "cursor-pointer rounded-lg border transition-all flex flex-col overflow-hidden select-none group relative",
+                    isSelected
+                      ? "border-primary ring-2 ring-primary/25 bg-card shadow-sm"
+                      : "border-border bg-card hover:border-primary/40 hover:shadow-xs"
+                  )}
+                >
+                  {/* Minimal Header Mockup */}
+                  <div 
+                    className="w-full h-12 flex items-center px-3 border-b border-black/10 dark:border-white/10"
+                    style={{ backgroundColor: opt.headerBg }}
+                  >
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: opt.accentColor }} />
+                  </div>
+                  {/* Info */}
+                  <div className="p-3 flex flex-col flex-1" style={{ backgroundColor: opt.canvasBg }}>
+                    <span className="font-bold text-sm" style={{ color: opt.headerBg }}>
+                      {opt.name}
+                    </span>
+                    <span className="text-[10px] uppercase font-bold mt-1 opacity-70" style={{ color: opt.headerBg }}>
+                      {opt.badge}
+                    </span>
+                  </div>
+                  {isSelected && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-sm flex items-center shadow-md">
+                      <Check className="w-3 h-3" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      </div>
 
+      {/* Media Library */}
+      <div className="flex-1 min-h-[600px] flex flex-col border border-border rounded-xl shadow-xs overflow-hidden bg-background">
+        <MediaLibrary />
+      </div>
     </div>
   );
 }
