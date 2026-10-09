@@ -81,11 +81,17 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     }
   };
 
-  const isDark = theme === 'dark';
-
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', isDark);
-  }, [isDark]);
+    const handleModeUpdated = () => {
+      const mode = localStorage.getItem('mode');
+      document.documentElement.classList.toggle('dark', mode === 'dark');
+    };
+    handleModeUpdated(); // Run once on mount
+    window.addEventListener('mode-updated', handleModeUpdated);
+    return () => {
+      window.removeEventListener('mode-updated', handleModeUpdated);
+    };
+  }, []);
 
   return <>{children}</>;
 }

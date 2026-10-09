@@ -32,9 +32,9 @@ function TopNavLinks() {
   const searchParams = useSearchParams();
   const activeSet = searchParams.get('set');
 
-  const base = "px-3 py-2 rounded-md transition-colors whitespace-nowrap";
+  const base = "px-3 py-1.5 rounded-md transition-colors whitespace-nowrap";
   const cls = (active: boolean) =>
-    cn(base, active ? "text-white bg-white/10 " : "text-slate-300 hover:text-white hover:bg-white/10");
+    cn(base, active ? "text-primary bg-primary/10 font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-muted");
 
   const toolsetActive = (ts: (typeof TOOLSETS)[number]) =>
     (pathname === '/dashboard' && activeSet === ts.id) ||
@@ -42,10 +42,7 @@ function TopNavLinks() {
     (ts.id === 'broadcast' && ['/chyron', '/stream-studio'].some((p) => pathname.startsWith(p)));
 
   return (
-    <nav className="hidden lg:flex items-center gap-2 ml-4 text-[15px] font-heading tracking-wide" aria-label="Main">
-      <Link href="/" className={cls(pathname === '/')} aria-current={pathname === '/' ? 'page' : undefined}>
-        Home
-      </Link>
+    <nav className="hidden lg:flex items-center gap-1 ml-4 text-sm font-sans font-normal" aria-label="Main">
       <Link
         href="/dashboard"
         className={cls(pathname === '/dashboard' && !activeSet)}
@@ -53,14 +50,7 @@ function TopNavLinks() {
       >
         Dashboard
       </Link>
-      <Link
-        href="/dashboard"
-        className={cls(pathname.startsWith('/dashboard'))}
-        aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined}
-      >
-        Account & Media
-      </Link>
-      <span className="w-px h-5 bg-white/15 mx-2" aria-hidden="true" />
+      <span className="w-px h-5 bg-border mx-2" aria-hidden="true" />
       {TOOLSETS.map((ts) => {
         const active = toolsetActive(ts);
         return (
@@ -81,6 +71,8 @@ function TopNavLinks() {
 export default function Navbar() {
   const [session, setSession] = useState<any>(null);
   const [currentTheme, setCurrentTheme] = useState<ThemeMode>('light');
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [menuIsDark, setMenuIsDark] = useState(false);
   const { isOpen, setIsOpen } = useMobileNav();
 
   useEffect(() => {
@@ -100,55 +92,48 @@ export default function Navbar() {
     };
     window.addEventListener('theme-updated', onThemeUpdated);
 
+        const onModeUpdated = () => {
+      setIsDarkMode(document.documentElement.classList.contains('dark') || localStorage.getItem('mode') === 'dark');
+      setMenuIsDark(localStorage.getItem('topMenuMode') === 'dark');
+    };
+    onModeUpdated();
+    window.addEventListener('mode-updated', onModeUpdated);
+    window.addEventListener('menu-mode-updated', onModeUpdated);
+
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('theme-updated', onThemeUpdated);
+      window.removeEventListener('mode-updated', onModeUpdated);
+      window.removeEventListener('menu-mode-updated', onModeUpdated);
     };
   }, []);
 
-  const toggleTheme = async () => {
-    let nextTheme: ThemeMode = 'modern-minimal';
-    if (currentTheme === 'dark') nextTheme = 'modern-minimal';
-    else nextTheme = 'dark';
-
-    setCurrentTheme(nextTheme);
-    document.documentElement.setAttribute('data-theme', nextTheme);
-    localStorage.setItem('theme', nextTheme);
-    window.dispatchEvent(new Event('theme-updated'));
-
-    if (session) {
-      await supabase
-        .from('profiles')
-        .upsert({ id: session.user.id, theme: nextTheme, updated_at: new Date().toISOString() });
+  const toggleDarkMode = () => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const nextMode = isDark ? 'light' : 'dark';
+    
+    if (nextMode === 'dark') {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('mode', 'dark');
+      setIsDarkMode(true);
+      toast.success('Dark mode enabled', { id: 'mode-toast', duration: 1500 });
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('mode', 'light');
+      setIsDarkMode(false);
+      toast.success('Light mode enabled', { id: 'mode-toast', duration: 1500 });
     }
-    const THEME_LABELS: Record<ThemeMode, string> = {
-      'modern-minimal': 'Modern Minimal (Default)',
-      'autoblog': 'Autoblog',
-      'alpine': 'Alpine',
-      'light-green': 'Light Green',
-      'japan-blues': 'Japan Blues',
-      'astrovista': 'Astrovista',
-      'porfolio': 'Portfolio',
-      'vescrow': 'Vescrow',
-      'polaris': 'Polaris',
-      'claude': 'Claude',
-      'dark': 'Dark mode',
-      'light': 'Light mode',
-    };
-    const label = THEME_LABELS[nextTheme] || 'Theme';
-    toast.success(`${label} enabled`, { id: 'theme-toast', duration: 1500 });
+    window.dispatchEvent(new Event('mode-updated'));
   };
-
-  const isDark = currentTheme === 'dark';
-  const tooltipContent = isDark ? 'Switch to Modern Minimal' : 'Switch to Dark mode';
+  
 
   return (
-    <header className="h-[72px] bg-[#0f172a] text-white border-b border-white/10 px-4 flex items-center justify-between shrink-0 z-20">
+    <header className={cn("h-[72px] bg-card text-card-foreground border-b border-border px-4 flex items-center justify-between shrink-0 z-20 shadow-sm", menuIsDark && "dark")}>
       <div className="flex items-center gap-4">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="lg:hidden text-slate-300 hover:text-white hover:bg-white/10 h-11 w-11"
+          className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-muted h-11 w-11"
           onClick={() => setIsOpen(prev => !prev)}
           aria-expanded={isOpen}
           aria-controls="main-menu"
@@ -169,25 +154,26 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        {/* Quick Theme Switcher */}
+        
+
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              className="text-slate-300 hover:text-white hover:bg-white/10 h-11 w-11"
-              aria-label="Toggle Theme"
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleDarkMode}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted w-10 h-10 transition-colors"
+              aria-label="Toggle Light/Dark Mode"
             >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom">
-            <p>{tooltipContent}</p>
+            <p>{isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</p>
           </TooltipContent>
         </Tooltip>
 
-        <div className="hidden sm:block w-px h-6 bg-white/15 mx-2" aria-hidden="true" />
+        <div className="hidden sm:block w-px h-6 bg-border mx-2" aria-hidden="true" />
 
         {session ? (
           <div className="flex items-center gap-2">
@@ -195,7 +181,7 @@ export default function Navbar() {
               variant="ghost" 
               size="sm" 
               asChild 
-              className="text-slate-200 hover:text-white hover:bg-white/10 text-sm font-medium h-11 px-3 gap-2 hidden sm:flex"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-medium h-11 px-3 gap-2 hidden sm:flex"
             >
               <Link href="/dashboard">
                 <User className="w-4 h-4" />
@@ -209,7 +195,7 @@ export default function Navbar() {
                 supabase.auth.signOut();
                 toast.success('Signed out');
               }}
-              className="text-slate-400 hover:text-red-400 hover:bg-white/10 text-sm font-medium h-11 px-3 gap-2"
+              className="text-muted-foreground hover:text-red-500 hover:bg-muted text-sm font-medium h-11 px-3 gap-2"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">Sign Out</span>

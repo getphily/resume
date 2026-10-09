@@ -66,8 +66,8 @@ const defaultFeatures: FeatureItem[] = [
 ];
 
 export function Feature43({
-  heading = "Crafted for Broadcasters, DJs & Organizers",
-  subheading = "An expanding ecosystem of purpose-built open web utilities hosted at code.getphily.io to streamline your workflow.",
+  heading = "What each toolset does",
+  subheading = "StreamTools is available now. PodcastTools and UnionTools are in development and may change.",
   features = defaultFeatures,
   className,
 }: Feature43Props) {

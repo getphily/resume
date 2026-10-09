@@ -98,12 +98,12 @@ function getToolSection(pathname: string): ToolSectionConfig {
       title: 'PodcastTools',
       badge: 'Publishing',
       links: [
-        { name: 'Your Podcast', path: '/podcast-tools', icon: Mic, desc: 'Interactive startup guide', badge: 'New' },
-        { name: 'Short Courses', path: '/podcast-tools/courses', icon: BookOpen, desc: 'Podcast mini-courses', badge: 'New' },
-        { name: 'Recording Studio', path: '/podcast-tools/studio', icon: AudioLines, desc: 'Record, edit & polish', badge: 'New' },
-        { name: 'Chapter Markers', path: '/podcast-tools#chapters', icon: Bookmark, desc: 'YouTube & Spotify', badge: 'Dev' },
-        { name: 'ID3v2 Metadata', path: '/podcast-tools#id3', icon: Tag, desc: 'Tag chunking utility', badge: 'Dev' },
-        { name: 'Show Notes RSS', path: '/podcast-tools#rss', icon: Radio, desc: 'Syndicated notes feed', badge: 'Dev' },
+        { name: 'Your Podcast', path: '/podcast-tools', icon: Mic, desc: 'Interactive startup guide',  },
+        { name: 'Short Courses', path: '/podcast-tools/courses', icon: BookOpen, desc: 'Podcast mini-courses',  },
+        { name: 'Recording Studio', path: '/podcast-tools/studio', icon: AudioLines, desc: 'Record, edit & polish',  },
+        { name: 'Chapter Markers', path: '/podcast-tools#chapters', icon: Bookmark, desc: 'YouTube & Spotify',  },
+        { name: 'ID3v2 Metadata', path: '/podcast-tools#id3', icon: Tag, desc: 'Tag chunking utility',  },
+        { name: 'Show Notes RSS', path: '/podcast-tools#rss', icon: Radio, desc: 'Syndicated notes feed',  },
       ],
     };
   }
@@ -115,9 +115,9 @@ function getToolSection(pathname: string): ToolSectionConfig {
       badge: 'Labor Tech',
       links: [
         { name: 'Suite Overview', path: '/union-tools', icon: Users, desc: 'Digital organizer utilities' },
-        { name: 'CBA Diff Tool', path: '/union-tools#cba', icon: FileText, desc: 'Contract comparison', badge: 'Dev' },
-        { name: 'Grievance Tracker', path: '/union-tools#grievances', icon: Calendar, desc: 'Deadline monitoring', badge: 'Dev' },
-        { name: 'Wage Modeler', path: '/union-tools#wages', icon: TrendingUp, desc: 'Step scale projections', badge: 'Dev' },
+        { name: 'CBA Diff Tool', path: '/union-tools#cba', icon: FileText, desc: 'Contract comparison',  },
+        { name: 'Grievance Tracker', path: '/union-tools#grievances', icon: Calendar, desc: 'Deadline monitoring',  },
+        { name: 'Wage Modeler', path: '/union-tools#wages', icon: TrendingUp, desc: 'Step scale projections',  },
       ],
     };
   }
@@ -212,9 +212,7 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
                 {!isCollapsed && (
                   <>
                     <span className="truncate flex-1">{ts.name}</span>
-                    {ts.status === 'dev' && (
-                      <span className="text-[10px]  px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground uppercase">Dev</span>
-                    )}
+                    
                     {multi && (
                       <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", setActive ? "rotate-0" : "-rotate-90")} aria-hidden="true" />
                     )}
@@ -257,9 +255,10 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
 
 function SidebarInner() {
   const pathname = usePathname();
-  const { isOpen } = useMobileNav();
+  const { isOpen, setIsOpen } = useMobileNav();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [sideMenuDark, setSideMenuDark] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -267,7 +266,18 @@ function SidebarInner() {
     if (saved !== null) {
       setIsCollapsed(saved === 'true');
     }
+    const onMenuModeUpdated = () => setSideMenuDark(localStorage.getItem('sideMenuMode') === 'dark');
+    onMenuModeUpdated();
+    window.addEventListener('menu-mode-updated', onMenuModeUpdated);
+    return () => window.removeEventListener('menu-mode-updated', onMenuModeUpdated);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, setIsOpen]);
 
   const toggleCollapsed = () => {
     const next = !isCollapsed;
@@ -289,7 +299,7 @@ function SidebarInner() {
     <TooltipProvider delayDuration={150}>
       <aside 
         className={cn(
-          "bg-sidebar lg:border-r border-b lg:border-b-0 border-border shrink-0 z-20 select-none transition-[width] duration-200 ease-in-out", 
+          "bg-card lg:border-r border-b lg:border-b-0 border-border shrink-0 z-20 select-none transition-[width] duration-200 ease-in-out", sideMenuDark && "dark", 
           // Responsive & Collapsible width
           isCollapsed ? "lg:w-16 w-full" : "lg:w-60 w-full",
           isOpen ? "flex flex-col" : "hidden lg:flex lg:flex-col"
@@ -321,6 +331,7 @@ function SidebarInner() {
                   isCollapsed && "mx-auto"
                 )}
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-expanded={!isCollapsed}
               >
                 {isCollapsed ? (
                   <PanelLeftOpen className="w-4 h-4" />
@@ -342,7 +353,7 @@ function SidebarInner() {
           className="flex flex-col gap-1 p-2 flex-1 overflow-y-auto" 
           aria-label={`${section.title} Navigation`}
         >
-          {section.links.map((link) => {
+          {section.links.filter((l) => !l.path.includes('#')).map((link) => {
             const isActive = activeLinkPath(section.links, pathname) === link.path;
             const IconComponent = link.icon;
 
@@ -407,6 +418,23 @@ function SidebarInner() {
 
             return linkContent;
           })}
+          {section.links.some((l) => l.path.includes('#')) && !isCollapsed && (
+            <div className="mt-3 pt-3 border-t border-border" role="group" aria-label="Planned tools">
+              <p className="px-3 pb-1 text-xs uppercase tracking-wider text-muted-foreground">Planned</p>
+              <ul className="flex flex-col gap-0.5 m-0 p-0 list-none">
+                {section.links.filter((l) => l.path.includes('#')).map((l) => {
+                  const PIcon = l.icon;
+                  return (
+                    <li key={l.path} className="flex items-center gap-3 px-3 py-1.5 text-sm text-muted-foreground" aria-disabled="true">
+                      <PIcon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span className="truncate">{l.name}</span>
+                      <span className="ml-auto text-xs">Soon</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </nav>
         )}
       </aside>

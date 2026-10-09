@@ -19,9 +19,9 @@ interface Footer2Props {
 
 const defaultSections: FooterSection[] = [
   {
-    title: "Stream Studio",
+    title: "StreamTools",
     links: [
-      { name: "Live Chyron & Crawl", href: "/crawl" },
+      { name: "Chyron Builder", href: "/crawl" },
       { name: "Stream Clocks", href: "/clock" },
       { name: "Event Timers", href: "/timer" },
       { name: "Scene Overlays", href: "/screen" },
@@ -33,17 +33,15 @@ const defaultSections: FooterSection[] = [
     links: [
       { name: "PodcastTools", href: "/podcast-tools" },
       { name: "UnionTools", href: "/union-tools" },
-      { name: "Platform Toolsets", href: "/#toolsets" },
-      { name: "Broadcast Dashboard", href: "/#broadcast-studio" },
+      { name: "All Toolsets", href: "/#toolsets" },
     ],
   },
   {
     title: "Account & Themes",
     links: [
-      { name: "Modern Minimal Theme", href: "/dashboard" },
-      { name: "Alpine Cobalt Theme", href: "/dashboard" },
-      { name: "Autoblog Orange Theme", href: "/dashboard" },
-      { name: "Public Profile", href: "/dashboard" },
+      { name: "Dashboard", href: "/dashboard" },
+      { name: "Themes & Appearance", href: "/dashboard" },
+      { name: "Sign in", href: "/auth" },
     ],
   },
 ];
@@ -67,11 +65,11 @@ export function Footer2({ className }: Footer2Props) {
               </span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-              Specialized, handcrafted web toolsets for live broadcasters, DJs, audio creators, and organizers. Hosted at code.getphily.io.
+              Browser-based tools for live shows, podcasts, and workplace organizing.
             </p>
             <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
               <span className="inline-block size-2 rounded-full bg-emerald-500" />
-              <span>Platform Engine: Active & Synchronized</span>
+              <span>StreamTools is live</span>
             </div>
           </div>
 

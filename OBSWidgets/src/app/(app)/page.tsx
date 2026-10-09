@@ -27,13 +27,13 @@ export default function Home() {
       {/* 1. Shadcnblocks Hero Section */}
       <Hero1 
         badgeText="code.getphily.io"
-        badgeLabel="Handcrafted Creator & Developer Toolsets"
-        heading="GetPhily's Codebox"
-        description="Specialized web toolsets for live broadcasters, DJs, audio creators, and labor organizers. Built on modern web standards with zero-latency transparent OBS integration."
-        primaryButtonText="Explore Toolsets"
-        primaryButtonUrl="#toolsets"
-        secondaryButtonText="Open Studio Dashboard"
-        secondaryButtonUrl="/dashboard"
+        badgeLabel="Browser-based creator tools"
+        heading="Tools for live shows, podcasts, and workplace organizing"
+        description="GetPhily's Codebox is a growing set of browser-based tools. Build broadcast overlays for OBS today; podcast and union tools are in development."
+        primaryButtonText="Open StreamTools"
+        primaryButtonUrl="/dashboard?set=broadcast"
+        secondaryButtonText="Sign in"
+        secondaryButtonUrl="/auth"
       />
 
       {/* 2. Platform Toolsets Showcase Grid */}
@@ -42,14 +42,14 @@ export default function Home() {
           <div className="inline-flex items-center gap-2 mb-3">
             <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-xs font-semibold px-3 py-1">
               <Sparkles className="w-3.5 h-3.5 mr-1" />
-              Three Handcrafted Suites
+              Available now & coming soon
             </Badge>
           </div>
           <h2 className="text-3xl sm:text-4xl   text-foreground">
-            Platform Toolsets
+            Toolsets
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2 leading-relaxed">
-            Welcome to <strong>GetPhily&apos;s Codebox</strong> at <code>code.getphily.io</code>. Select a toolset below to launch active production studios or preview upcoming creator utilities.
+            StreamTools is live. PodcastTools and UnionTools are still in development — preview what's planned.
           </p>
         </div>
 
@@ -61,25 +61,25 @@ export default function Home() {
                 <Radio className="w-6 h-6" />
               </div>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
-                Ready • Live
+                Live
               </Badge>
             </div>
             <h3 className=" text-xl text-foreground mb-2">
-              OBS Stream Studio
+              StreamTools
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
-              Real-time broadcast graphics, animated lower thirds, news tickers, stream clocks, countdown timers, and multi-page scene sets with transparent OBS browser embeds.
+              Design lower thirds, tickers, clocks, timers and scene screens, then add one URL to OBS as a transparent browser source.
             </p>
             <div className="flex flex-col gap-2 pt-3 border-t border-border mt-auto">
               <Button asChild size="default" className="w-full h-auto py-2.5 whitespace-normal flex-wrap font-bold text-xs uppercase tracking-wide gap-1.5 shadow-xs">
                 <Link href="/dashboard">
-                  <span>Studio Dashboard</span>
+                  <span>Open StreamTools</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </Button>
               <div className="grid grid-cols-2 gap-1.5 text-center mt-1">
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs px-1">
-                  <Link href="/crawl">Chyron</Link>
+                  <Link href="/crawl">Chyron Builder</Link>
                 </Button>
                 <Button asChild variant="outline" size="sm" className="h-8 text-xs px-1">
                   <Link href="/clock">Clock</Link>
@@ -124,7 +124,7 @@ export default function Home() {
                 <Users className="w-6 h-6" />
               </div>
               <Badge variant="outline" className="border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold">
-                Solidarity Suite
+                In Development
               </Badge>
             </div>
             <h3 className=" text-xl text-foreground mb-2">
@@ -140,9 +140,7 @@ export default function Home() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </Button>
-              <div className="text-xs text-center text-muted-foreground mt-1">
-                Open source & pro-labor
-              </div>
+              
             </div>
           </Card>
         </div>

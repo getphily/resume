@@ -5,14 +5,16 @@ import Link from 'next/link';
 import MediaLibrary from '@/components/media/MediaLibrary';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { User, ShieldCheck } from 'lucide-react';
 import { ThemeMode, VALID_THEMES, DEFAULT_THEME } from '@/app/ThemeProvider';
+import { cn } from '@/lib/utils';
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TOOLSETS, getToolset } from '@/lib/toolsets';
 import { supabase } from '@/lib/supabase';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
@@ -237,10 +239,188 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
   );
 }
 
+interface ThemeOption {
+  id: ThemeMode;
+  name: string;
+  badge: string;
+  description: string;
+  headerBg: string;
+  canvasBg: string;
+  cardBg: string;
+  accentColor: string;
+  palette: string[];
+}
 
+const THEME_OPTIONS: ThemeOption[] = [
+  {
+    id: 'modern-minimal',
+    name: 'Modern Minimal',
+    badge: 'Default Theme',
+    description: 'Stripped-back minimal aesthetic with razor-sharp contrast and vibrant indigo focus accents.',
+    headerBg: '#0f172a',
+    canvasBg: '#ffffff',
+    cardBg: '#ffffff',
+    accentColor: '#4f46e5',
+    palette: ['#4f46e5', '#f3f4f6', '#e0f2fe', '#f4f5f7', '#0f172a'],
+  },
+  {
+    id: 'autoblog',
+    name: 'Autoblog',
+    badge: 'Publishing',
+    description: 'Vivid orange primary, warm accent wash, and clean white background for high-energy broadcasts.',
+    headerBg: '#1c1917',
+    canvasBg: '#fefefe',
+    cardBg: '#ffffff',
+    accentColor: '#ea580c',
+    palette: ['#da3e05', '#edf0f4', '#fff0eb', '#fdfdfd', '#000000'],
+  },
+  {
+    id: 'alpine',
+    name: 'Alpine',
+    badge: 'Cobalt & Coral',
+    description: 'Cobalt structure, coral heat accent, and a warm blush canvas (#fcf5f7) inspired by night ski lodges.',
+    headerBg: '#1e293b',
+    canvasBg: '#fcf5f7',
+    cardBg: '#ffffff',
+    accentColor: '#1d4ed8',
+    palette: ['#0047ab', '#ff4d6d', '#ffb3c1', '#fcf5f7', '#0a1931'],
+  },
+  {
+    id: 'light-green',
+    name: 'Light Green',
+    badge: 'Fresh & Clean',
+    description: 'High-contrast neon green primary, deep indigo-slate text, and crisp modern cards.',
+    headerBg: '#0f172a',
+    canvasBg: '#fbfdf8',
+    cardBg: '#ffffff',
+    accentColor: '#22c55e',
+    palette: ['#aff33e', '#334155', '#f0fdf4', '#fbfcf8', '#0f172a'],
+  },
+  {
+    id: 'japan-blues',
+    name: 'Japan Blues',
+    badge: 'Cool & Calm',
+    description: 'Soft blue accents with a warm off-white canvas.',
+    headerBg: '#1e293b',
+    canvasBg: '#faf9f5',
+    cardBg: '#faf9f5',
+    accentColor: '#3b82f6',
+    palette: ['#90a1b9', '#cad5e2', '#e9e6dc', '#faf9f5', '#0a0a0a'],
+  },
+  {
+    id: 'astrovista',
+    name: 'Astrovista',
+    badge: 'Space',
+    description: 'Crisp layout with cosmic magenta accents.',
+    headerBg: '#0f172a',
+    canvasBg: '#f0f0f5',
+    cardBg: '#ffffff',
+    accentColor: '#e11d48',
+    palette: ['#ca4d1f', '#2f4b79', '#d6e4f0', '#e8ebed', '#333333'],
+  },
+  {
+    id: 'porfolio',
+    name: 'Portfolio',
+    badge: 'Elegant',
+    description: 'Refined golden accents perfect for showcases.',
+    headerBg: '#18181b',
+    canvasBg: '#fafafa',
+    cardBg: '#ffffff',
+    accentColor: '#ca8a04',
+    palette: ['#c1a875', '#e5e1d5', '#c1a875', '#f8f7f2', '#1a1a1a'],
+  },
+  {
+    id: 'vescrow',
+    name: 'Vescrow',
+    badge: 'Corporate',
+    description: 'Deep royal blue trust-building aesthetic.',
+    headerBg: '#172554',
+    canvasBg: '#fefefe',
+    cardBg: '#ffffff',
+    accentColor: '#1d4ed8',
+    palette: ['#03035e', '#e2ebfd', '#e5e8ff', '#fdfcfe', '#0a050d'],
+  },
+  {
+    id: 'polaris',
+    name: 'Polaris',
+    badge: 'SaaS',
+    description: 'Cool slate blues for a modern software feel.',
+    headerBg: '#0f172a',
+    canvasBg: '#f8fafc',
+    cardBg: '#ffffff',
+    accentColor: '#0ea5e9',
+    palette: ['#02677f', '#ffb500', '#03a2bc', '#f5fafb', '#081e24'],
+  },
+  {
+    id: 'claude',
+    name: 'Claude',
+    badge: 'AI',
+    description: 'Warm peach and cream tones inspired by Claude.',
+    headerBg: '#27272a',
+    canvasBg: '#fdfcfb',
+    cardBg: '#ffffff',
+    accentColor: '#d97757',
+    palette: ['#bd5835', '#e7e4dd', '#f4997b', '#faf8f1', '#3d3826'],
+  },
+];
+
+
+
+
+function ThemeCard({ opt, theme, setTheme }: { opt: ThemeOption, theme: ThemeMode, setTheme: (t: ThemeMode) => void }) {
+  const isSelected = theme === opt.id;
+  return (
+    <div 
+      onClick={() => {
+        setTheme(opt.id);
+        document.documentElement.setAttribute('data-theme', opt.id);
+        localStorage.setItem('theme', opt.id);
+        window.dispatchEvent(new Event('theme-updated'));
+      }}
+      className={cn(
+        "group cursor-pointer flex items-center justify-between p-2.5 rounded-lg border transition-all duration-200",
+        isSelected 
+          ? "border-primary bg-primary/5" 
+          : "border-transparent hover:border-border hover:bg-muted/50"
+      )}
+    >
+      <div className="flex items-center gap-3">
+        {/* Row of chips in a subtle container */}
+        {/* Row of 5 chips */}
+        <div className="flex items-center gap-1 p-1 rounded-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 shadow-inner">
+          {opt.palette.map((color, i) => (
+            <div key={i} className="w-3.5 h-3.5 rounded-full border border-black/10 dark:border-white/10 shadow-xs" style={{ backgroundColor: color }}></div>
+          ))}
+        </div>
+        <div className="flex flex-col">
+          <span className={cn(
+            "text-xs font-semibold tracking-wide transition-colors leading-none",
+            isSelected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
+          )}>
+            {opt.name}
+          </span>
+        </div>
+      </div>
+      {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+    </div>
+  );
+}
 
 function DashboardContent() {
   const searchParams = useSearchParams();
+  const [topMenuDark, setTopMenuDark] = useState(false);
+  const [sideMenuDark, setSideMenuDark] = useState(false);
+
+  useEffect(() => {
+    const onMenuModeUpdated = () => {
+      setTopMenuDark(localStorage.getItem('topMenuMode') === 'dark');
+      setSideMenuDark(localStorage.getItem('sideMenuMode') === 'dark');
+    };
+    onMenuModeUpdated();
+    window.addEventListener('menu-mode-updated', onMenuModeUpdated);
+    return () => window.removeEventListener('menu-mode-updated', onMenuModeUpdated);
+  }, []);
+  
   const setId = searchParams.get('set');
   const toolId = searchParams.get('tool');
   const toolset = getToolset(setId);
@@ -256,6 +436,7 @@ function DashboardContent() {
   const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
   const [userId, setUserId] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const [identities, setIdentities] = useState<any[]>([]);
   const [time, setTime] = useState<Date | null>(null);
   const router = useRouter();
 
@@ -287,6 +468,7 @@ function DashboardContent() {
       if (session) {
         setUserId(session.user.id);
         setEmail(session.user.email || '');
+        setIdentities(session.user.identities || []);
         supabase.from('profiles').select('username, avatar_url, theme').eq('id', session.user.id).single().then(({data}) => {
           if (data) {
             setUsername(data.username || '');
@@ -313,6 +495,7 @@ function DashboardContent() {
       if (session) {
         setUserId(session.user.id);
         setEmail(session.user.email || '');
+        setIdentities(session.user.identities || []);
         supabase.from('profiles').select('username, avatar_url, theme').eq('id', session.user.id).single().then(({data}) => {
           if (data) {
             setUsername(data.username || '');
@@ -341,44 +524,58 @@ function DashboardContent() {
   const handleUpdateProfile = async () => {
     if (!userId) return;
     setSavingProfile(true);
-    
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({
-        id: userId,
-        username,
-        avatar_url: avatarUrl,
-        theme,
-        updated_at: new Date().toISOString()
-      });
-
-    if (error) {
-      toast.error("Error saving profile: " + error.message);
-    } else {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      window.dispatchEvent(new Event('theme-updated'));
-      toast.success("Preferences saved successfully!");
+    let errorMsg = null;
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentEmail = sessionData?.session?.user?.email;
+    if (email && email !== currentEmail) {
+      const { error: authError } = await supabase.auth.updateUser({ email });
+      if (authError) errorMsg = authError.message;
     }
+    if (!errorMsg) {
+      const { error } = await supabase.from('profiles').upsert({ id: userId, username, avatar_url: avatarUrl, theme, updated_at: new Date().toISOString() });
+      if (error) { errorMsg = error.message; }
+    }
+    if (errorMsg) { toast.error("Error saving profile: " + errorMsg); } 
+    else { document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('theme', theme); window.dispatchEvent(new Event('theme-updated')); toast.success("Preferences saved successfully! If you changed your email, check both inboxes."); }
     setSavingProfile(false);
   };
 
+  const handleLinkIdentity = async (provider: 'google' | 'azure' | 'facebook' | 'twitch') => {
+    try {
+      const { data, error } = await supabase.auth.linkIdentity({ provider });
+      if (error) throw error;
+      toast.success(`Redirecting to connect ${provider}...`);
+    } catch (e: any) {
+      toast.error(`Error connecting ${provider}: ` + e.message);
+    }
+  };
+
+  const handleUnlinkIdentity = async (identity: any) => {
+    try {
+      if (identities.length <= 1) {
+        toast.error('Cannot disconnect your only sign-in method.');
+        return;
+      }
+      const { error } = await supabase.auth.unlinkIdentity(identity);
+      if (error) throw error;
+      setIdentities(identities.filter(id => id.id !== identity.id && id.identity_id !== identity.identity_id));
+      toast.success('Account disconnected');
+    } catch (e: any) {
+      toast.error('Error disconnecting account: ' + e.message);
+    }
+  };
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setSavingProfile(true);
       if (!event.target.files || event.target.files.length === 0) return;
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const filePath = `${userId}-${Math.random()}.${fileExt}`;
+      const filePath = `${userId}-${Math.random()}.${file.name.split('.').pop()}`;
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
       if (uploadError) throw uploadError;
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
       setAvatarUrl(publicUrl);
-    } catch (error: any) {
-      toast.error('Error uploading avatar: ' + error.message);
-    } finally {
-      setSavingProfile(false);
-    }
+    } catch (error: any) { toast.error('Error uploading avatar: ' + error.message); } 
+    finally { setSavingProfile(false); }
   };
 
   const fetchConfigs = async (userId: string) => {
@@ -520,7 +717,13 @@ function DashboardContent() {
                 ? toolset.tagline
                 : 'Pick a toolset to open its dashboard, or review everything you have saved across the platform.'}
           </p>
-        </div>
+        
+        {!toolset && userId && (
+          <Button onClick={handleUpdateProfile} disabled={savingProfile} className="h-9 px-6 font-bold text-xs uppercase tracking-wider shadow-xs shrink-0 mt-4 md:mt-0">
+            {savingProfile ? 'Saving...' : 'Save Profile & Theme'}
+          </Button>
+        )}
+      </div>
 
         {toolset && (activeTool || toolset.tools.length === 1) && (
           <Button asChild size="sm" className="font-semibold gap-1.5 shadow-xs">
@@ -540,39 +743,181 @@ function DashboardContent() {
         )}
       </div>
 
-      {/* Overview: one card per toolset */}
+      
+      
+      {/* 
+        ====================================================
+        BENTO BOX DASHBOARD OVERVIEW 
+        ====================================================
+      */}
       {!toolset && (
-        <div className="mb-10">
-          <h2 className="text-sm  uppercase tracking-wider text-muted-foreground mb-4 m-0">Your Toolsets</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {TOOLSETS.map((ts) => {
-              const SetIcon = ts.icon;
-              return (
-                <Link key={ts.id} href={`/dashboard?set=${ts.id}`} className="no-underline group">
-                  <Card className="border-border bg-card shadow-xs hover:border-primary/50 transition-all p-5 flex flex-row items-start gap-4 h-full">
-                    <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <SetIcon className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className=" text-sm text-foreground m-0">{ts.name}</h3>
-                        {ts.status === 'dev' && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">In Development</Badge>
-                        )}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-10">
+          
+          {/* --- BENTO ITEM: PROFILE (col-span-3) --- */}
+          <Card className="md:col-span-5 lg:col-span-3 border-border bg-card shadow-xs p-6 flex flex-col gap-6 relative overflow-hidden group">
+            <h3 className="text-base font-bold text-foreground m-0 leading-tight absolute top-6 left-6 z-10">Profile</h3>
+            
+            <div className="flex flex-col items-center gap-4 text-center mt-6">
+              <div className="relative group/avatar">
+                <Avatar className="w-24 h-24 border-4 border-background shadow-sm transition-transform group-hover/avatar:scale-105">
+                  <AvatarImage src={avatarUrl} alt={username || 'User'} className="object-cover" />
+                  <AvatarFallback className="font-bold text-3xl bg-primary/10 text-primary">
+                    {username ? username.substring(0, 2).toUpperCase() : 'DJ'}
+                  </AvatarFallback>
+                </Avatar>
+                <label className="absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
+                  <span className="font-sans text-[10px] font-bold uppercase tracking-wider">Upload</span>
+                  <input type="file" accept="image/*" onChange={uploadAvatar} disabled={savingProfile} className="hidden" />
+                </label>
+              </div>
+              <div>
+                <div className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-md border border-border inline-block">
+                  ID: {userId?.substring(0, 8) || 'GUEST'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-4 mt-auto">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="username" className="font-sans text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pl-1">
+                  <User className="w-3.5 h-3.5" /> Username
+                </label>
+                <Input 
+                  id="username"
+                  value={username} 
+                  onChange={(e) => setUsername(e.target.value)} 
+                  placeholder="DJ Name" 
+                  className="h-9 text-sm bg-background/50 focus:bg-background font-medium"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="font-sans text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 pl-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-500" /> Email
+                </label>
+                <Input 
+                  value={email || ''} 
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="h-9 text-sm bg-background/50 focus:bg-background font-medium"
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* --- BENTO ITEM: THEMES (col-span-6) --- */}
+          <Card className="md:col-span-7 lg:col-span-6 border-border bg-card shadow-xs p-6 flex flex-col gap-4 relative overflow-hidden">
+             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-3">
+               <div className="flex items-center gap-3">
+                 <h3 className="text-base font-bold text-foreground m-0 leading-tight">Platform Theme</h3>
+                 <Badge variant="outline" className="text-[10px] font-normal border-primary/20 bg-primary/5 text-primary">{THEME_OPTIONS.length} Themes</Badge>
+               </div>
+               <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-1.5">
+                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Top Bar Dark</span>
+                   <Switch 
+                     checked={topMenuDark}
+                     onCheckedChange={(checked) => {
+                       localStorage.setItem('topMenuMode', checked ? 'dark' : 'light');
+                       window.dispatchEvent(new Event('menu-mode-updated'));
+                     }}
+                   />
+                 </div>
+                 <div className="flex items-center gap-1.5">
+                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Sidebar Dark</span>
+                   <Switch 
+                     checked={sideMenuDark}
+                     onCheckedChange={(checked) => {
+                       localStorage.setItem('sideMenuMode', checked ? 'dark' : 'light');
+                       window.dispatchEvent(new Event('menu-mode-updated'));
+                     }}
+                   />
+                 </div>
+               </div>
+             </div>
+             
+             {/* Condensed List of Themes */}
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1 overflow-y-auto max-h-[380px] pr-2 custom-scrollbar -mr-2 pb-2">
+                {THEME_OPTIONS.map(opt => (
+                  <ThemeCard key={opt.id} opt={opt} theme={theme} setTheme={setTheme} />
+                ))}
+             </div>
+          </Card>
+
+          {/* --- BENTO ITEM: LINKED ACCOUNTS (col-span-3) --- */}
+          <Card className="md:col-span-12 lg:col-span-3 border-border bg-card shadow-xs p-6 flex flex-col gap-5">
+             <h3 className="text-base font-bold text-foreground m-0 leading-tight mb-2">Connected Services</h3>
+             
+             <div className="flex flex-col gap-3 flex-1 justify-center">
+                {[
+                  { name: 'Google', id: 'google', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.16v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.16C1.43 8.55 1 10.22 1 12s.43 3.45 1.16 4.93l2.85-2.22.83-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.16 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.18-4.53z" fill="#EA4335"/></svg>, bg: 'bg-[#DB4437]/10' },
+                  { name: 'Microsoft', id: 'azure', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z" fill="#00A4EF"/></svg>, bg: 'bg-[#00A4EF]/10' },
+                  { name: 'Twitch', id: 'twitch', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="#9146FF"><path d="M2.149 0 0 5.373v14.328h5.373V24h3.582l4.298-4.299h3.582L24 12.537V0H2.149zm19.701 11.463-3.582 3.582H13.25L9.668 18.63v-3.585H4.298V2.149h17.552v9.314z"/><path d="M16.119 5.373h-2.149v5.373h2.149V5.373zm-4.298 0H9.672v5.373h2.149V5.373z"/></svg>, bg: 'bg-[#9146FF]/10' },
+                  { name: 'Facebook', id: 'facebook', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.04V9.41c0-3.02 1.8-4.7 4.54-4.7 1.31 0 2.68.24 2.68.24v2.97h-1.5c-1.5 0-1.96.93-1.96 1.89v2.26h3.32l-.53 3.5h-2.8V24C19.62 23.1 24 18.1 24 12.07z"/></svg>, bg: 'bg-[#1877F2]/10' }
+                ].map((provider) => {
+                  const linkedIdentity = identities.find(id => id.provider === provider.id);
+                  return (
+                    <div key={provider.id} className="flex items-center justify-between group/conn p-2 rounded-lg hover:bg-muted/50 transition-colors -mx-2">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-full ${provider.bg} flex items-center justify-center shrink-0`}>
+                          {provider.icon}
+                        </div>
+                        <span className="text-sm font-semibold">{provider.name}</span>
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed m-0">{ts.tagline}</p>
-                      <span className="text-[11px] text-muted-foreground mt-1">
-                        {ts.tools.length === 1 ? '1 tool' : `${ts.tools.length} tools`}
-                      </span>
+                      {linkedIdentity ? (
+                        <Button variant="ghost" size="sm" onClick={() => handleUnlinkIdentity(linkedIdentity)} className="h-7 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:text-red-600 hover:bg-red-500/10 opacity-0 group-hover/conn:opacity-100 transition-opacity">Disconnect</Button>
+                      ) : (
+                        <Button variant="outline" size="sm" onClick={() => handleLinkIdentity(provider.id as any)} className="h-7 px-3 text-[10px] font-bold uppercase tracking-wider">Connect</Button>
+                      )}
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" />
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
+                  );
+                })}
+             </div>
+          </Card>
+
+          {/* --- BENTO ITEMS: TOOLSETS (col-span-4 each) --- */}
+          {TOOLSETS.map((ts) => {
+            const SetIcon = ts.icon;
+            return (
+              <Link key={ts.id} href={`/dashboard?set=${ts.id}`} className="md:col-span-4 no-underline group block">
+                <Card className="h-full border-border bg-card shadow-xs hover:border-primary/50 transition-all p-6 flex flex-col relative overflow-hidden">
+                  <div className="absolute -right-8 -top-8 w-32 h-32 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors pointer-events-none" />
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <SetIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-bold text-foreground m-0 leading-tight">{ts.name}</h3>
+                      {ts.status === 'dev' && (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 mt-1 uppercase tracking-widest border-amber-500/30 text-amber-500">In Development</Badge>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed m-0 flex-1">{ts.tagline}</p>
+                  <div className="mt-5 pt-4 border-t border-border flex items-center justify-between">
+                    <span className="font-sans text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{ts.tools.length} Sub-tools</span>
+                    <div className="w-6 h-6 rounded-full bg-primary/5 flex items-center justify-center group-hover:bg-primary/10 group-hover:translate-x-1 transition-all">
+                      <ArrowRight className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            )
+          })}
+
+          {/* --- BENTO ITEM: MEDIA LIBRARY (col-span-12) --- */}
+          <Card className="md:col-span-12 border-border bg-card shadow-xs p-0 overflow-hidden flex flex-col min-h-[500px]">
+            <div className="px-6 py-4 border-b border-border bg-card flex justify-between items-center">
+              <h3 className="text-base font-bold text-foreground m-0 leading-tight mb-2">Global Media Library</h3>
+              <Badge variant="outline" className="text-[10px] font-normal">Cross-Platform Sync</Badge>
+            </div>
+            <div className="flex-1 relative bg-background/50">
+              <MediaLibrary />
+            </div>
+          </Card>
+          
         </div>
       )}
+
 
       {/* Toolsets without saved widgets: launch cards for every tool */}
       {toolset && !showSaved && (

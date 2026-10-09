@@ -41,7 +41,7 @@ export function Hero1({
   return (
     <section className={cn("py-12 md:py-20 lg:py-24 border-b border-border bg-card/40", className)}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-14">
+        <div className="grid grid-cols-1 items-center gap-8 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-14">
           
           {/* Left Column: Headline, Copy, Action Buttons */}
           <div className="flex flex-col items-start text-left gap-5">

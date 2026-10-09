@@ -66,8 +66,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
   const [polished, setPolished] = useState<AudioBuffer | null>(null);
   const [layer, setLayer] = useState<'original' | 'polished'>('original');
   const [transcript, setTranscript] = useState<Transcript | null>(null);
-  const [view, setView] = useState<'waveform' | 'split' | 'transcript'>('waveform');
-
+  
   const [hist, setHist] = useState<{ stack: Range[][]; cursor: number }>({ stack: [], cursor: -1 });
   const kept = hist.cursor >= 0 ? hist.stack[hist.cursor] ?? [] : [];
   const keptRef = useRef(kept);
@@ -335,7 +334,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
   const handleCutWords = (startIdx: number, endIdx: number) => {
     if (!transcript || !source) return;
     const state: StudioState = {
-      source, polished, layer, transcript, view, history: hist
+      source, polished, layer, transcript,  history: hist
     };
     const c = cutWords(state, startIdx, endIdx);
     const nextKept = subtract(kept, c);
@@ -461,25 +460,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
           <h2 className="text-lg  text-foreground">Episode Editor</h2>
         </div>
         
-        {hasAudio && (
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            value={view}
-            onValueChange={v => v && setView(v as typeof view)}
-            className="flex self-center"
-          >
-            <ToggleGroupItem value="waveform" aria-label="Waveform view" className="h-9 px-3">
-              <Activity className="w-4 h-4 mr-1.5" /> Waveform
-            </ToggleGroupItem>
-            <ToggleGroupItem value="split" aria-label="Split view" className="h-9 px-3 hidden sm:flex">
-              <Layout className="w-4 h-4 mr-1.5" /> Split
-            </ToggleGroupItem>
-            <ToggleGroupItem value="transcript" aria-label="Transcript view" className="h-9 px-3">
-              <AlignLeft className="w-4 h-4 mr-1.5" /> Transcript
-            </ToggleGroupItem>
-          </ToggleGroup>
-        )}
+        
 
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -537,11 +518,11 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-5 lg:items-start">
-        <div className="flex-1 flex flex-col gap-4 min-w-0">
-          <div className={`relative ${(hasAudio && view === 'transcript') ? 'hidden' : 'block'}`}>
+        <div className="w-full lg:w-3/4 flex flex-col gap-4 min-w-0">
+          <div className="relative block">
         <div
           ref={containerRef}
-          className={`w-full bg-muted/20 border border-border rounded-lg overflow-hidden ${(view === 'split' && hasAudio) ? 'min-h-[96px] h-[96px]' : 'min-h-[128px]'}`}
+          className="w-full bg-muted/20 border border-border rounded-lg overflow-hidden min-h-[128px]"
           aria-label="Audio waveform"
         />
         
@@ -599,8 +580,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
             </div>
 
             <div className="flex items-center gap-1">
-              {view !== 'transcript' && (
-                <>
+              <>
                   <Button variant="ghost" size="icon" className={touchIconBtn} aria-label="Zoom out" disabled={zoomIdx === 0} onClick={() => setZoomIdx(i => Math.max(0, i - 1))}>
                     <ZoomOut className="w-4 h-4" aria-hidden="true" />
                   </Button>
@@ -608,7 +588,6 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                     <ZoomIn className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </>
-              )}
               <Button variant="ghost" size="icon" className={touchIconBtn} aria-label="Undo" disabled={!canUndo} onClick={undo}>
                 <Undo2 className="w-4 h-4" aria-hidden="true" />
               </Button>
@@ -618,31 +597,8 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
             </div>
           </div>
 
-          {/* Transcript View Container */}
-          {(view === 'transcript' || view === 'split') && (
-            <div className="flex-1 min-h-[300px] border border-border bg-card rounded-lg overflow-hidden flex flex-col">
-              {transcript && transcript.words.length > 0 ? (
-                <TranscriptView
-                  ref={transcriptRef}
-                  transcript={transcript}
-                  kept={kept}
-                  onWordClick={(start) => {
-                    const t = sourceToTimeline(kept, start);
-                    if (t !== null && wavesurferRef.current) wavesurferRef.current.setTime(t);
-                  }}
-                  onCutWords={handleCutWords}
-                />
-              ) : (
-                <div className="p-4 sm:p-8 flex items-center justify-center h-full bg-muted/10">
-                  <TranscribeCard state={tState} onTranscribe={handleTranscribe} />
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Editing Toolbar */}
-          {(view === 'waveform' || view === 'split') && (
-            <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/20 p-3">
+                      <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/20 p-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Button variant="outline" className={touchBtn} onClick={addRegionAtPlayhead}>
                   <BoxSelect className="w-4 h-4 mr-1.5" aria-hidden="true" />
@@ -666,13 +622,12 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
                 Edits are non-destructive — use Undo to step back.
               </p>
             </div>
-          )}
             </>
           )}
         </div>
 
         {hasAudio && (
-          <div className="w-full lg:w-[320px] flex-shrink-0 flex flex-col gap-4">
+          <div className="w-full lg:w-1/4 flex-shrink-0 flex flex-col gap-4">
             <MagicPolishPanel
               buffer={source}
               fileBase={fileBase}

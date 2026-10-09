@@ -25,5 +25,4 @@ export interface StudioState {
   layer: 'original' | 'polished';
   history: { stack: Range[][]; cursor: number };   // kept = stack[cursor]
   transcript: Transcript | null;
-  view: 'waveform' | 'split' | 'transcript';
 }
