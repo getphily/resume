@@ -150,17 +150,9 @@ export default function Navbar() {
           {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </Button>
 
-        {/* Brand Logo & Title */}
-        <Link href="/" className="flex items-center gap-4 no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
-          <Image src="/logo.png" alt="GetPhily's Codebox" width={48} height={48} className="w-12 h-12 object-contain drop-shadow-md group-hover:opacity-90 transition-opacity" priority />
-          <div className="flex flex-col justify-center -space-y-0.5">
-            <span className="font-bold text-lg tracking-tight text-white">
-              GetPhily&apos;s Codebox
-            </span>
-            <span className="text-[11px] font-bold text-slate-400 tracking-widest uppercase mt-1">
-              code.getphily.io
-            </span>
-          </div>
+        {/* Brand Logo */}
+        <Link href="/" className="flex items-center no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
+          <Image src="/logo-gp-white.png" alt="GetPhily Logo" width={48} height={48} className="h-10 w-auto object-contain drop-shadow-sm group-hover:opacity-90 transition-opacity" priority />
         </Link>
 
         {/* Desktop Nav: Home, Dashboard, one item per toolset */}
