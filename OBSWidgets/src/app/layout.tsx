@@ -16,9 +16,15 @@ export const metadata: Metadata = {
 import ThemeProvider from "./ThemeProvider";
 import { Toaster } from 'react-hot-toast';
 import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const coolvetica = localFont({
+  src: './fonts/coolvetica-rg.otf',
+  variable: '--font-heading',
+  display: 'swap',
+});
 
 
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="modern-minimal" className={cn("font-sans", geist.variable)}>
+    <html lang="en" data-theme="modern-minimal" className={cn("font-sans", geist.variable, coolvetica.variable)}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

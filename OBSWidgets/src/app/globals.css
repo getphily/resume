@@ -6,6 +6,7 @@
 
 @theme inline {
   --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-heading: var(--font-heading);
   --font-mono: 'Roboto Mono', monospace;
 
   /* Typography scale */

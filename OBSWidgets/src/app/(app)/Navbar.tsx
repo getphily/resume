@@ -41,7 +41,7 @@ function TopNavLinks() {
     (ts.id === 'broadcast' && ['/chyron', '/stream-studio'].some((p) => pathname.startsWith(p)));
 
   return (
-    <nav className="hidden lg:flex items-center gap-1 ml-4 text-sm font-medium" aria-label="Main">
+    <nav className="hidden lg:flex items-center gap-2 ml-4 text-[15px] font-heading tracking-wide" aria-label="Main">
       <Link href="/" className={cls(pathname === '/')} aria-current={pathname === '/' ? 'page' : undefined}>
         Home
       </Link>

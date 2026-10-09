@@ -189,7 +189,7 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
       )}
 
       {!isCollapsed && (
-        <span className="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="px-3 pt-4 pb-1 text-[11px] font-heading uppercase tracking-widest text-muted-foreground">
           Toolsets
         </span>
       )}
