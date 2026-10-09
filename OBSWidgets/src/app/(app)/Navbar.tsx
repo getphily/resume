@@ -54,9 +54,9 @@ function TopNavLinks() {
         Dashboard
       </Link>
       <Link
-        href="/account"
-        className={cls(pathname.startsWith('/account'))}
-        aria-current={pathname.startsWith('/account') ? 'page' : undefined}
+        href="/dashboard"
+        className={cls(pathname.startsWith('/dashboard'))}
+        aria-current={pathname.startsWith('/dashboard') ? 'page' : undefined}
       >
         Account & Media
       </Link>
@@ -197,7 +197,7 @@ export default function Navbar() {
               asChild 
               className="text-slate-200 hover:text-white hover:bg-white/10 text-sm font-medium h-11 px-3 gap-2 hidden sm:flex"
             >
-              <Link href="/account">
+              <Link href="/dashboard">
                 <User className="w-4 h-4" />
                 <span>Account</span>
               </Link>

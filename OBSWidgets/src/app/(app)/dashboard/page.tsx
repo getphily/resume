@@ -2,6 +2,12 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import MediaLibrary from '@/components/media/MediaLibrary';
+import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { User, ShieldCheck, LayoutDashboard } from 'lucide-react';
+import { ThemeMode, VALID_THEMES, DEFAULT_THEME } from '@/app/ThemeProvider';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TOOLSETS, getToolset } from '@/lib/toolsets';
 import { supabase } from '@/lib/supabase';
@@ -231,6 +237,8 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
   );
 }
 
+
+
 function DashboardContent() {
   const searchParams = useSearchParams();
   const setId = searchParams.get('set');
@@ -242,6 +250,12 @@ function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [theme, setTheme] = useState<ThemeMode>(DEFAULT_THEME);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [time, setTime] = useState<Date | null>(null);
   const router = useRouter();
 
@@ -269,6 +283,23 @@ function DashboardContent() {
       if (session) {
         setSession(session);
         fetchConfigs(session.user.id);
+
+      if (session) {
+        setUserId(session.user.id);
+        setEmail(session.user.email || '');
+        supabase.from('profiles').select('username, avatar_url, theme').eq('id', session.user.id).single().then(({data}) => {
+          if (data) {
+            setUsername(data.username || '');
+            setAvatarUrl(data.avatar_url || '');
+            if (data.theme && VALID_THEMES.includes(data.theme as ThemeMode)) {
+              setTheme(data.theme as ThemeMode);
+            } else {
+              setTheme(DEFAULT_THEME);
+            }
+          }
+        });
+      }
+
       } else {
         setLoading(false);
       }
@@ -278,6 +309,23 @@ function DashboardContent() {
       setSession(session);
       if (session) {
         fetchConfigs(session.user.id);
+
+      if (session) {
+        setUserId(session.user.id);
+        setEmail(session.user.email || '');
+        supabase.from('profiles').select('username, avatar_url, theme').eq('id', session.user.id).single().then(({data}) => {
+          if (data) {
+            setUsername(data.username || '');
+            setAvatarUrl(data.avatar_url || '');
+            if (data.theme && VALID_THEMES.includes(data.theme as ThemeMode)) {
+              setTheme(data.theme as ThemeMode);
+            } else {
+              setTheme(DEFAULT_THEME);
+            }
+          }
+        });
+      }
+
       } else {
         setConfigsList([]);
         setLoading(false);
@@ -288,6 +336,50 @@ function DashboardContent() {
       subscription.unsubscribe();
     };
   }, []);
+
+  
+  const handleUpdateProfile = async () => {
+    if (!userId) return;
+    setSavingProfile(true);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: userId,
+        username,
+        avatar_url: avatarUrl,
+        theme,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      toast.error("Error saving profile: " + error.message);
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      window.dispatchEvent(new Event('theme-updated'));
+      toast.success("Preferences saved successfully!");
+    }
+    setSavingProfile(false);
+  };
+
+  const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setSavingProfile(true);
+      if (!event.target.files || event.target.files.length === 0) return;
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${userId}-${Math.random()}.${fileExt}`;
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      if (uploadError) throw uploadError;
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      setAvatarUrl(publicUrl);
+    } catch (error: any) {
+      toast.error('Error uploading avatar: ' + error.message);
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const fetchConfigs = async (userId: string) => {
     setLoading(true);

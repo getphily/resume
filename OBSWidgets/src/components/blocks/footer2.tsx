@@ -40,10 +40,10 @@ const defaultSections: FooterSection[] = [
   {
     title: "Account & Themes",
     links: [
-      { name: "Modern Minimal Theme", href: "/account" },
-      { name: "Alpine Cobalt Theme", href: "/account" },
-      { name: "Autoblog Orange Theme", href: "/account" },
-      { name: "Public Profile", href: "/account" },
+      { name: "Modern Minimal Theme", href: "/dashboard" },
+      { name: "Alpine Cobalt Theme", href: "/dashboard" },
+      { name: "Autoblog Orange Theme", href: "/dashboard" },
+      { name: "Public Profile", href: "/dashboard" },
     ],
   },
 ];
@@ -102,7 +102,7 @@ export function Footer2({ className }: Footer2Props) {
         <div className="pt-8 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} getphily&apos;s Codebox (code.getphily.io). Built with Shadcn UI & Tailwind CSS.</p>
           <div className="flex items-center gap-4">
-            <Link href="/account" className="hover:text-foreground hover:underline">
+            <Link href="/dashboard" className="hover:text-foreground hover:underline">
               Theme Settings
             </Link>
             <span>•</span>
