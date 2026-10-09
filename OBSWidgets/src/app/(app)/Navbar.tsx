@@ -152,7 +152,7 @@ export default function Navbar() {
 
         {/* Brand Logo */}
         <Link href="/" className="flex items-center no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
-          <Image src="/logo-gp-white.png" alt="GetPhily Logo" width={48} height={48} className="h-10 w-auto object-contain drop-shadow-sm group-hover:opacity-90 transition-opacity" priority />
+          <Image src="/logo-gp-black.png" alt="GetPhily Logo" width={48} height={48} className="h-10 w-auto object-contain drop-shadow-sm group-hover:opacity-90 transition-opacity" priority />
         </Link>
 
         {/* Desktop Nav: Home, Dashboard, one item per toolset */}
