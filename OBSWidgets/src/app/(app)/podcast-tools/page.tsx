@@ -417,7 +417,7 @@ export default function YourPodcastLandingPage() {
             <Mic className="w-8 h-8" />
           </div>
           <div className="flex flex-col gap-2">
-            <h1 className="text-2xl font-black text-foreground tracking-tight">Podcast Tools</h1>
+            <h1 className="text-2xl  text-foreground ">Podcast Tools</h1>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Plan, organize, and launch your podcast. Our toolset helps you build out your show's metadata, complete our interactive setup curriculum, and track your directory syndications—all in one place.
             </p>
@@ -472,7 +472,7 @@ export default function YourPodcastLandingPage() {
         
         <div className="flex items-center gap-3 border-b border-border pb-4">
           <Mic className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Your Podcast</h1>
+          <h1 className="text-3xl  text-foreground ">Your Podcast</h1>
         </div>
 
         {/* Podcast Launch Workflow Roadmap */}
@@ -609,7 +609,7 @@ export default function YourPodcastLandingPage() {
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <Rocket className="w-5 h-5 text-primary" />
-                    <h2 className="text-lg font-bold text-foreground">Podcast Launch Workflow</h2>
+                    <h2 className="text-lg  text-foreground">Podcast Launch Workflow</h2>
                     <Badge variant="outline" className="text-xs font-semibold px-2 py-0.5 border-primary/30 text-primary bg-primary/5">
                       4-Step Roadmap
                     </Badge>
@@ -783,7 +783,7 @@ export default function YourPodcastLandingPage() {
             <div className="relative">
               {activeStepIndex === 0 && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
               <Card id="section-metadata" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", activeStepIndex === 0 ? "border-primary/50" : "border-border")}>
-              <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
+              <h2 className="text-lg  flex items-center gap-2 border-b border-border/60 pb-3">
                 <Info className="w-5 h-5 text-primary" />
                 Podcast Metadata
               </h2>
@@ -960,7 +960,7 @@ export default function YourPodcastLandingPage() {
             <div className="relative">
               {(activeStepIndex === 1 || activeStepIndex === 3) && <div className="absolute -inset-1 rounded-2xl bg-primary/20 animate-[pulse_3s_cubic-bezier(0.4,0,0.6,1)_infinite] blur-md -z-10" />}
               <Card id="section-directories" className={cn("relative border bg-card shadow-sm p-6 flex flex-col gap-6 scroll-mt-6 transition-colors duration-500", (activeStepIndex === 1 || activeStepIndex === 3) ? "border-primary/50" : "border-border")}>
-              <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
+              <h2 className="text-lg  flex items-center gap-2 border-b border-border/60 pb-3">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
                 Syndication & Directories
               </h2>
@@ -1035,7 +1035,7 @@ export default function YourPodcastLandingPage() {
             
             {/* Hosting & Setup Links Container */}
             <Card id="section-hosting" className="border-border bg-card shadow-sm p-6 flex flex-col gap-4 scroll-mt-6">
-              <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
+              <h2 className="text-lg  flex items-center gap-2 border-b border-border/60 pb-3">
                 <Share className="w-5 h-5 text-primary" />
                 Hosting Providers
               </h2>
@@ -1274,7 +1274,7 @@ export default function YourPodcastLandingPage() {
 
             {/* Course List & Checkoff Container */}
             <Card className="border-border bg-card shadow-sm p-6 flex flex-col gap-4">
-              <h2 className="text-lg font-bold flex items-center gap-2 border-b border-border/60 pb-3">
+              <h2 className="text-lg  flex items-center gap-2 border-b border-border/60 pb-3">
                 <BookOpen className="w-5 h-5 text-primary" />
                 Podcast Setup Guide
               </h2>
@@ -1335,7 +1335,7 @@ export default function YourPodcastLandingPage() {
                 <AudioLines className="w-5 h-5" aria-hidden="true" />
               </div>
               <div className="flex flex-col gap-1 flex-1 min-w-0">
-                <h2 className="text-lg font-bold text-foreground">Recording Studio</h2>
+                <h2 className="text-lg  text-foreground">Recording Studio</h2>
                 <p className="text-sm text-muted-foreground">
                   Record or upload an episode, cut out mistakes, and Magic Polish the sound before you publish.
                 </p>
@@ -1363,7 +1363,7 @@ export default function YourPodcastLandingPage() {
                   <Wand2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-foreground">Podcast Description Wizard</h3>
+                  <h3 className=" text-base text-foreground">Podcast Description Wizard</h3>
                   <p className="text-xs text-muted-foreground">Follow the 3-question formula: what it's about, who it's for, and what you will talk about.</p>
                 </div>
               </div>

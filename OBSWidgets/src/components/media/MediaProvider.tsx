@@ -115,7 +115,7 @@ export function MediaProvider({ children }: { children: ReactNode }) {
       {queue.length > 0 && (
         <div className="fixed bottom-4 right-4 w-80 bg-background border border-border shadow-lg rounded-xl overflow-hidden z-50 flex flex-col">
           <div className="flex items-center justify-between p-3 border-b bg-muted/30">
-            <h4 className="text-sm font-bold text-foreground">Uploads ({queue.filter(q => q.status === 'uploading' || q.status === 'processing').length} active)</h4>
+            <h4 className="text-sm  text-foreground">Uploads ({queue.filter(q => q.status === 'uploading' || q.status === 'processing').length} active)</h4>
             <button onClick={clearDone} className="text-xs text-muted-foreground hover:text-foreground">Clear Done</button>
           </div>
           <div className="max-h-64 overflow-y-auto p-2 flex flex-col gap-2">

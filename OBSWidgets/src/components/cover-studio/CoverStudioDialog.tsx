@@ -429,21 +429,21 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
           <div className="min-w-0 max-h-[520px] overflow-y-auto pr-3 space-y-4">
             
             <div className="bg-card border rounded-xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+              <h3 className="text-sm  mb-4 text-foreground flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/80" /> Background
               </h3>
               <BackgroundTab cfg={cfg} setCfg={setCfg} images={images} setImages={setImages} />
             </div>
 
             <div className="bg-card border rounded-xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+              <h3 className="text-sm  mb-4 text-foreground flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/80" /> Host Photo
               </h3>
               <HostPhotoTab cfg={cfg} setCfg={setCfg} images={images} setImages={setImages} />
             </div>
 
             <div className="bg-card border rounded-xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+              <h3 className="text-sm  mb-4 text-foreground flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/80" /> Title Formatting
               </h3>
               <TextTab 
@@ -454,7 +454,7 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
             </div>
 
             <div className="bg-card border rounded-xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+              <h3 className="text-sm  mb-4 text-foreground flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/80" /> "With" Text Formatting
               </h3>
               <TextTab 
@@ -465,7 +465,7 @@ export function CoverStudioDialog({ open, onOpenChange, showTitle, showHost, use
             </div>
 
             <div className="bg-card border rounded-xl p-4 shadow-sm">
-              <h3 className="text-sm font-bold mb-4 text-foreground flex items-center gap-2">
+              <h3 className="text-sm  mb-4 text-foreground flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary/80" /> Host Name Formatting
               </h3>
               <div className="flex flex-col gap-5">

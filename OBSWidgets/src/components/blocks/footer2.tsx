@@ -62,7 +62,7 @@ export function Footer2({ className }: Footer2Props) {
               <div className="w-8 h-8 rounded-lg bg-primary text-primary-foreground flex items-center justify-center font-bold">
                 <Radio className="w-4 h-4" />
               </div>
-              <span className="font-extrabold text-base tracking-tight text-foreground">
+              <span className="font-extrabold text-base  text-foreground">
                 getphily&apos;s Codebox
               </span>
             </Link>
@@ -78,7 +78,7 @@ export function Footer2({ className }: Footer2Props) {
           {/* Section Columns */}
           {defaultSections.map((section, idx) => (
             <div key={idx} className="flex flex-col gap-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
+              <h3 className="text-xs  uppercase tracking-wider text-foreground">
                 {section.title}
               </h3>
               <ul className="flex flex-col gap-2 text-sm text-muted-foreground">

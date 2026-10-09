@@ -45,7 +45,7 @@ export default function Home() {
               Three Handcrafted Suites
             </Badge>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+          <h2 className="text-3xl sm:text-4xl   text-foreground">
             Platform Toolsets
           </h2>
           <p className="text-sm sm:text-base text-muted-foreground mt-2 leading-relaxed">
@@ -64,7 +64,7 @@ export default function Home() {
                 Ready • Live
               </Badge>
             </div>
-            <h3 className="font-extrabold text-xl text-foreground mb-2">
+            <h3 className=" text-xl text-foreground mb-2">
               OBS Stream Studio
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
@@ -98,7 +98,7 @@ export default function Home() {
                 In Development
               </Badge>
             </div>
-            <h3 className="font-extrabold text-xl text-foreground mb-2">
+            <h3 className=" text-xl text-foreground mb-2">
               PodcastTools
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">
@@ -127,7 +127,7 @@ export default function Home() {
                 Solidarity Suite
               </Badge>
             </div>
-            <h3 className="font-extrabold text-xl text-foreground mb-2">
+            <h3 className=" text-xl text-foreground mb-2">
               UnionTools
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-6">

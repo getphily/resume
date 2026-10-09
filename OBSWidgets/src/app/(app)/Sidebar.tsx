@@ -153,10 +153,10 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
 
   const itemClass = (active: boolean) =>
     cn(
-      "flex items-center rounded-lg text-sm font-medium transition-all group",
+      "flex items-center rounded-lg text-[15px] font-heading transition-all group",
       isCollapsed ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-3 py-2 min-h-[44px]",
       active
-        ? "bg-primary/10 text-primary font-semibold shadow-2xs"
+        ? "bg-primary/10 text-primary shadow-2xs"
         : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
     );
 
@@ -215,7 +215,7 @@ function DashboardNav({ isCollapsed }: { isCollapsed: boolean }) {
                   <>
                     <span className="truncate flex-1">{ts.name}</span>
                     {ts.status === 'dev' && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground uppercase">Dev</span>
+                      <span className="text-[10px]  px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground uppercase">Dev</span>
                     )}
                     {multi && (
                       <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", setActive ? "rotate-0" : "-rotate-90")} aria-hidden="true" />
@@ -301,11 +301,11 @@ function SidebarInner() {
         <div className="flex items-center justify-between p-3 border-b border-border min-h-[52px]">
           {(!isCollapsed || !mounted) && (
             <div className="flex flex-col min-w-0 pr-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
+              <span className="text-xs  uppercase tracking-wider text-muted-foreground truncate">
                 {section.title}
               </span>
               {section.badge && (
-                <span className="text-[10px] font-semibold text-primary/80 uppercase tracking-widest mt-0.5">
+                <span className="text-[11px] font-heading text-primary/80 uppercase tracking-widest mt-0.5">
                   {section.badge}
                 </span>
               )}
@@ -354,12 +354,12 @@ function SidebarInner() {
                 href={link.path}
                 aria-current={isActive ? 'page' : undefined}
                 className={cn(
-                  "flex items-center rounded-lg text-sm font-medium transition-all group",
+                  "flex items-center rounded-lg text-[15px] font-heading transition-all group",
                   isCollapsed 
                     ? "justify-center h-10 w-10 mx-auto" 
                     : "gap-3 px-3 py-2 min-h-[44px]",
                   isActive
-                    ? "bg-primary/10 text-primary font-semibold shadow-2xs"
+                    ? "bg-primary/10 text-primary shadow-2xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
                 )}
               >
@@ -376,7 +376,7 @@ function SidebarInner() {
                     <div className="flex items-center justify-between gap-1">
                       <span className="truncate">{link.name}</span>
                       {link.badge && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground uppercase">
+                        <span className="text-[10px]  px-1.5 py-0.5 rounded-sm bg-muted text-muted-foreground uppercase">
                           {link.badge}
                         </span>
                       )}

@@ -233,7 +233,7 @@ function AccountContent() {
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Dashboard</span>
           </Link>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl md:text-3xl   text-foreground">
             Account & Media
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -268,7 +268,7 @@ function AccountContent() {
             </label>
           </div>
           <div className="flex flex-col items-center">
-            <h3 className="font-bold text-sm text-foreground">Profile Picture</h3>
+            <h3 className=" text-sm text-foreground">Profile Picture</h3>
             <p className="text-[9px] text-muted-foreground uppercase tracking-widest mt-0.5">256x256 px Min</p>
           </div>
         </Card>

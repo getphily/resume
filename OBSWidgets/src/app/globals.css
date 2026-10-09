@@ -339,6 +339,7 @@
 @layer base {
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading) !important;
-    letter-spacing: 0.02em;
+    font-weight: normal !important; /* Prevent faux-bolding of Coolvetica */
+    letter-spacing: 0.02em !important; /* Override any tailwind tracking utilities */
   }
 }

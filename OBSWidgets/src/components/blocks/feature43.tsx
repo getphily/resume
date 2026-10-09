@@ -77,7 +77,7 @@ export function Feature43({
         
         {/* Header */}
         <div className="mx-auto mb-12 sm:mb-16 max-w-3xl text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-foreground">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl   text-foreground">
             {heading}
           </h2>
           {subheading && (
@@ -97,7 +97,7 @@ export function Feature43({
               <div className="mb-4 flex size-12 items-center justify-center rounded-xl bg-primary/10 border border-primary/20">
                 {feature.icon}
               </div>
-              <h3 className="mb-2 text-lg font-bold text-foreground">
+              <h3 className="mb-2 text-lg  text-foreground">
                 {feature.title}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed flex-1">

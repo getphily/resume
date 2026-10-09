@@ -58,14 +58,14 @@ export default function UnionToolsPage() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Upcoming Modules</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground ml-1">Upcoming Modules</h3>
         {toolsList.map((tool, idx) => {
           const IconComp = tool.icon;
           return (
             <Card key={idx} className="border-border bg-card p-4 flex flex-col gap-2">
               <div className="flex items-center gap-2">
                 <IconComp className="w-4 h-4 text-primary" />
-                <h4 className="font-bold text-sm text-foreground">{tool.title}</h4>
+                <h4 className=" text-sm text-foreground">{tool.title}</h4>
               </div>
               <p className="text-xs text-muted-foreground">{tool.description}</p>
             </Card>
@@ -80,7 +80,7 @@ export default function UnionToolsPage() {
       <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
         <Users className="w-10 h-10 text-primary" />
       </div>
-      <h2 className="text-2xl font-bold text-foreground mb-2">UnionTools</h2>
+      <h2 className="text-2xl  text-foreground mb-2">UnionTools</h2>
       <p className="text-sm text-muted-foreground max-w-md text-center mb-8">
         Open digital utilities to empower stewards, bargaining committees, and rank-and-file union members.
       </p>

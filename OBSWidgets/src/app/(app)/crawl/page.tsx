@@ -69,7 +69,7 @@ function TitleProperties({ config, onChange }: { config: ChyronConfig; onChange:
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Title Bar</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Title Bar</h3>
         <div className="flex items-center gap-2">
           <Switch aria-label="Enable Title Bar" checked={t.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
           <span className="text-xs font-bold text-muted-foreground uppercase">Enable Title</span>
@@ -98,7 +98,7 @@ function SubheaderProperties({ config, onChange }: { config: ChyronConfig; onCha
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Subheader</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Subheader</h3>
         <div className="flex items-center gap-2">
           <Switch aria-label="Enable Subheader" checked={s.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
           <span className="text-xs font-bold text-muted-foreground uppercase">Enable Subheader</span>
@@ -127,7 +127,7 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Logo Bug</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Logo Bug</h3>
         <div className="flex items-center gap-2">
           <Switch aria-label="Enable Logo Bug" checked={l.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
           <span className="text-xs font-bold text-muted-foreground uppercase">Enable Logo</span>
@@ -285,7 +285,7 @@ function ClockProperties({ config, onChange }: { config: ChyronConfig; onChange:
   return (
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Clock / Date</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Clock / Date</h3>
         <div className="flex items-center gap-2">
           <Switch aria-label="Enable Row" checked={c.enabled !== false} onCheckedChange={checked => update({ enabled: checked })} />
           <span className="text-xs font-bold text-muted-foreground uppercase">Enable Clock</span>
@@ -454,7 +454,7 @@ function CrawlBlocksManager({
     <Card className="border-border bg-card p-5 flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Crawl Blocks</h3>
+          <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Crawl Blocks</h3>
           <Badge variant="secondary" className="text-sm font-semibold text-primary bg-primary/10">
             {cr.blocks.length} {cr.blocks.length === 1 ? 'Block' : 'Blocks'}
           </Badge>
@@ -604,7 +604,7 @@ function CrawlProperties({
       {/* 1. Crawl Settings */}
       <Card className="border-border bg-card p-5 flex flex-col gap-4">
         <div className="flex justify-between items-center">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Crawl Settings</h3>
+          <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Crawl Settings</h3>
           <Badge variant={cr.enabled ? "default" : "secondary"} className="text-sm">
             {cr.enabled ? "Active" : "Disabled"}
           </Badge>
@@ -859,7 +859,7 @@ function LayoutProperties({ config, onChange }: { config: ChyronConfig; onChange
       </Card>
 
       <Card className="border-border bg-card p-5 flex flex-col gap-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Layout & Background</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Layout & Background</h3>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-foreground">Chyron Name</label>
           <Input value={config.name} onChange={e => onChange({ ...config, name: e.target.value })} className="h-9 text-xs" />

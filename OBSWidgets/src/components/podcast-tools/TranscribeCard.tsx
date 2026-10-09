@@ -17,7 +17,7 @@ export function TranscribeCard({ state, onTranscribe }: TranscribeCardProps) {
     <Card className="flex flex-col items-center justify-center p-8 gap-4 border-dashed border-2 border-muted-foreground/20 text-center">
       <Mic2 className="w-12 h-12 text-muted-foreground/50" />
       <div className="max-w-xs space-y-1">
-        <h3 className="font-semibold text-lg">Generate Transcript</h3>
+        <h3 className=" text-lg">Generate Transcript</h3>
         <p className="text-sm text-muted-foreground">
           Transcribe your audio locally in the browser to edit text like a document. No audio leaves your device.
         </p>

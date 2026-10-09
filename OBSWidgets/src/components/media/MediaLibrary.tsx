@@ -144,7 +144,7 @@ export default function MediaLibrary({
         <div className="absolute inset-0 z-50 bg-primary/10 backdrop-blur-sm flex items-center justify-center border-4 border-dashed border-primary m-4 rounded-xl pointer-events-none">
           <div className="bg-background p-8 rounded-2xl shadow-2xl flex flex-col items-center">
             <UploadCloud className="w-16 h-16 text-primary mb-4 animate-bounce" />
-            <h2 className="text-2xl font-bold text-foreground">Drop files to upload</h2>
+            <h2 className="text-2xl  text-foreground">Drop files to upload</h2>
             <p className="text-muted-foreground mt-2">Supports Image, Audio, and Video files</p>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function MediaLibrary({
       <div className="bg-card border-b border-border p-4 shrink-0 flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold text-foreground">Media Library</h1>
+            <h1 className="text-xl  text-foreground">Media Library</h1>
             <p className="text-sm text-muted-foreground">Manage your broadcast assets.</p>
           </div>
           <Button onClick={() => fileInputRef.current?.click()}>
@@ -229,7 +229,7 @@ export default function MediaLibrary({
             <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
               <File className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-bold text-foreground">No media found</h3>
+            <h3 className="text-lg  text-foreground">No media found</h3>
             <p className="text-sm text-muted-foreground max-w-sm mt-1">
               {search ? "No assets match your search." : "Upload images, audio, or video to use in your stream tools."}
             </p>

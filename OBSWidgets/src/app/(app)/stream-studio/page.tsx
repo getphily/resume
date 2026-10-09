@@ -18,7 +18,7 @@ export default function StreamStudioPage() {
       <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center animate-pulse">
         <Radio className="w-6 h-6" />
       </div>
-      <h1 className="text-xl font-bold text-foreground">
+      <h1 className="text-xl  text-foreground">
         Loading OBS Stream Studio...
       </h1>
       <p className="text-sm text-muted-foreground max-w-md">

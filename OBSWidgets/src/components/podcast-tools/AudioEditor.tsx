@@ -458,7 +458,7 @@ export function AudioEditor({ showTitle }: AudioEditorProps) {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
           <Mic className="w-5 h-5 text-primary" aria-hidden="true" />
-          <h2 className="text-lg font-bold text-foreground">Episode Editor</h2>
+          <h2 className="text-lg  text-foreground">Episode Editor</h2>
         </div>
         
         {hasAudio && (

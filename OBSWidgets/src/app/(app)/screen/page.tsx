@@ -252,7 +252,7 @@ function ScreenStudioContent() {
 
           {/* Active Page Properties */}
           <Card className="border-border bg-card p-5 flex flex-col gap-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Edit: {activePageObj.name}</h3>
+            <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Edit: {activePageObj.name}</h3>
             
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground">Headline</label>
@@ -285,7 +285,7 @@ function ScreenStudioContent() {
       {selectedPanel === 'global' && (
         <>
           <Card className="border-border bg-card p-5 flex flex-col gap-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Presets</h3>
+            <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Presets</h3>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(BROADCAST_PRESETS).map(([key, preset]) => (
                 <button
@@ -304,7 +304,7 @@ function ScreenStudioContent() {
           </Card>
 
           <Card className="border-border bg-card p-5 flex flex-col gap-5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Typography & Colors</h3>
+            <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Typography & Colors</h3>
             <TextFormattingToolbar
               fontFamily={config.layout.fontFamily}
               textColor={config.layout.textColor}

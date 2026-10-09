@@ -58,7 +58,7 @@ export function StudioShell({
             </Button>
             <div className="hidden md:flex items-center gap-2 border-l border-border pl-3">
               <div className="text-primary">{icon}</div>
-              <h1 className="text-sm font-bold tracking-tight m-0 truncate max-w-[150px]">{title}</h1>
+              <h1 className="text-sm   m-0 truncate max-w-[150px]">{title}</h1>
             </div>
           </div>
 

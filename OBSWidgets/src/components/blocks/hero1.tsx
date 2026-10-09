@@ -55,7 +55,7 @@ export function Hero1({
               </span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl   text-foreground leading-[1.15]">
               {heading}
             </h1>
 
@@ -164,7 +164,7 @@ export function Hero1({
                         <div className="aspect-video w-full rounded-xl bg-slate-950/80 flex items-center justify-center border border-border/60 relative overflow-hidden shadow-inner" >
                            <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 shadow-2xl">
                               <div className="text-sm font-bold text-blue-400 tracking-widest uppercase mb-1">Stream Starts In</div>
-                              <div className="text-5xl font-black text-white font-mono tracking-tighter">04:59</div>
+                              <div className="text-5xl font-black text-white font-mono er">04:59</div>
                            </div>
                         </div>
                       </div>

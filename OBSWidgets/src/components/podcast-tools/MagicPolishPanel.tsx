@@ -95,7 +95,7 @@ export function MagicPolishPanel({ buffer, fileBase, disabled, layer, onResult, 
       className="flex flex-col gap-5 rounded-lg border border-primary/20 bg-primary/[0.03] p-4 sm:p-5 shadow-sm"
     >
       <div className="flex flex-col gap-1.5">
-        <h3 className="flex items-center gap-2 text-base font-bold text-foreground">
+        <h3 className="flex items-center gap-2 text-base  text-foreground">
           <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
           Magic Polish
         </h3>

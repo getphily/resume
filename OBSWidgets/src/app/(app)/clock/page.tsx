@@ -182,7 +182,7 @@ function ClockStudioContent() {
     <>
       {/* Configuration Cards */}
       <Card className="border-border bg-card p-5 flex flex-col gap-4">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Presets</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Presets</h3>
         <div className="grid grid-cols-2 gap-2">
           {Object.entries(CLOCK_PRESETS).map(([key, preset]) => (
             <button
@@ -198,7 +198,7 @@ function ClockStudioContent() {
       </Card>
 
       <Card className="border-border bg-card p-5 flex flex-col gap-5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Time Settings</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Time Settings</h3>
         
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-foreground">Time Format</label>
@@ -258,7 +258,7 @@ function ClockStudioContent() {
       </Card>
 
       <Card className="border-border bg-card p-5 flex flex-col gap-5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground m-0">Styling</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground m-0">Styling</h3>
         
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-foreground">Font Family</label>

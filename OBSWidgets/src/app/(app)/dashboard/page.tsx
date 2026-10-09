@@ -138,7 +138,7 @@ function SortableWidgetCard({ item, copyUrl, copySuccess, isSelected, onToggleSe
                 </span>
               )}
             </div>
-            <h3 className="font-semibold text-sm truncate text-foreground">
+            <h3 className=" text-sm truncate text-foreground">
               {item.config.name || 'Unnamed Widget'}
             </h3>
           </div>
@@ -418,7 +418,7 @@ function DashboardContent() {
               {toolset ? 'Toolset Dashboard' : 'Creator Studio'}
             </Badge>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-3xl   text-foreground">
             {activeTool ? activeTool.name : toolset ? toolset.name : 'User Dashboard'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -451,7 +451,7 @@ function DashboardContent() {
       {/* Overview: one card per toolset */}
       {!toolset && (
         <div className="mb-10">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-4 m-0">Your Toolsets</h2>
+          <h2 className="text-sm  uppercase tracking-wider text-muted-foreground mb-4 m-0">Your Toolsets</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {TOOLSETS.map((ts) => {
               const SetIcon = ts.icon;
@@ -463,7 +463,7 @@ function DashboardContent() {
                     </div>
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="font-bold text-sm text-foreground m-0">{ts.name}</h3>
+                        <h3 className=" text-sm text-foreground m-0">{ts.name}</h3>
                         {ts.status === 'dev' && (
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">In Development</Badge>
                         )}
@@ -486,7 +486,7 @@ function DashboardContent() {
       {toolset && !showSaved && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">Tools</h2>
+            <h2 className="text-sm  uppercase tracking-wider text-muted-foreground m-0">Tools</h2>
             {toolset.status === 'dev' && (
               <p className="text-xs text-muted-foreground m-0">
                 This toolset is still in development. Saved projects will appear here once it launches.
@@ -503,7 +503,7 @@ function DashboardContent() {
                       <ToolIcon className="w-5 h-5" />
                     </div>
                     <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <h3 className="font-bold text-sm text-foreground m-0">{tool.name}</h3>
+                      <h3 className=" text-sm text-foreground m-0">{tool.name}</h3>
                       <p className="text-xs text-muted-foreground leading-relaxed m-0">{tool.desc}</p>
                     </div>
                     <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" aria-hidden="true" />
@@ -519,7 +519,7 @@ function DashboardContent() {
       {toolset?.id === 'broadcast' && !activeTool && (
       <div className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">
+          <h2 className="text-sm  uppercase tracking-wider text-muted-foreground m-0">
             Create New Broadcast Widget
           </h2>
         </div>
@@ -536,7 +536,7 @@ function DashboardContent() {
             <div className="flex flex-col gap-2 flex-1">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-primary" />
-                <h3 className="font-bold text-sm text-foreground">Clock Widget</h3>
+                <h3 className=" text-sm text-foreground">Clock Widget</h3>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1">
                 Digital stream clock with timezones, seconds, dates, and glowing neon FX.
@@ -561,7 +561,7 @@ function DashboardContent() {
             <div className="flex flex-col gap-2 flex-1">
               <div className="flex items-center gap-2">
                 <Timer className="w-4 h-4 text-primary" />
-                <h3 className="font-bold text-sm text-foreground">Timer Widget</h3>
+                <h3 className=" text-sm text-foreground">Timer Widget</h3>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1">
                 Countdown timer and stopwatch with SVG progress ring and chime alarms.
@@ -586,7 +586,7 @@ function DashboardContent() {
             <div className="flex flex-col gap-2 flex-1">
               <div className="flex items-center gap-2">
                 <Tv className="w-4 h-4 text-primary" />
-                <h3 className="font-bold text-sm text-foreground">Chyron Builder</h3>
+                <h3 className=" text-sm text-foreground">Chyron Builder</h3>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1">
                 Broadcast lower thirds with headlines, logo bug, clock, and scrolling crawl.
@@ -608,7 +608,7 @@ function DashboardContent() {
             <div className="flex flex-col gap-2 flex-1">
               <div className="flex items-center gap-2">
                 <Monitor className="w-4 h-4 text-primary" />
-                <h3 className="font-bold text-sm text-foreground">Screen Sets</h3>
+                <h3 className=" text-sm text-foreground">Screen Sets</h3>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1">
                 Full-screen Starting Soon, BRB, and Goodbye overlays with countdowns.
@@ -628,7 +628,7 @@ function DashboardContent() {
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground m-0">
+            <h2 className="text-sm  uppercase tracking-wider text-muted-foreground m-0">
               {activeTool ? `Saved ${activeTool.name}s` : toolset ? 'Saved Broadcast Widgets' : 'Your Saved Widgets'} ({visibleList.length})
             </h2>
             {session && (

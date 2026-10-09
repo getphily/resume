@@ -28,7 +28,7 @@ export default function RecordingStudioPage() {
           <div className="flex items-center gap-3">
             <AudioLines className="w-8 h-8 text-primary shrink-0" aria-hidden="true" />
             <div className="flex flex-col">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Recording Studio</h1>
+              <h1 className="text-2xl sm:text-3xl  text-foreground ">Recording Studio</h1>
               <p className="text-sm text-muted-foreground">
                 Record or upload an episode, cut it down, then Magic Polish it before export.
               </p>

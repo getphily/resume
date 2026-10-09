@@ -66,7 +66,7 @@ export default function PodcastCoursesPage() {
   
     const settingsPanel = (
       <div className="flex flex-col gap-4 pb-10">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Curriculum</h3>
+        <h3 className="text-xs  uppercase tracking-wider text-muted-foreground ml-1">Curriculum</h3>
         <div className="flex flex-col gap-2">
           {coursesList.map((course, idx) => {
             const completed = completedCourses.includes(course.id);
@@ -99,7 +99,7 @@ export default function PodcastCoursesPage() {
               <Badge variant="outline" className="w-fit text-[10px] border-blue-500/30 text-blue-600 mb-1">
                 Mini-Course
               </Badge>
-              <h2 className="text-2xl font-black text-foreground">
+              <h2 className="text-2xl  text-foreground">
                 {activeCourse.title}
               </h2>
             </div>

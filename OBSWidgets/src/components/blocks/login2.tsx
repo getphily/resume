@@ -77,7 +77,7 @@ export function Login2Block() {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold shadow-xs">
             <Radio className="w-4 h-4" />
           </div>
-          <span className="font-extrabold text-lg tracking-tight text-foreground">
+          <span className="font-extrabold text-lg  text-foreground">
             getphily&apos;s code stand
           </span>
         </Link>
@@ -98,7 +98,7 @@ export function Login2Block() {
             
             {/* Header */}
             <div className="flex flex-col gap-1.5 text-center">
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl   text-foreground">
                 {isLogin ? 'Log in to your account' : 'Create your account'}
               </h1>
               <p className="text-sm text-muted-foreground">

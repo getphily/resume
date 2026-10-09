@@ -64,7 +64,7 @@ export default function AuthCallbackPage() {
       <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center animate-pulse">
         <Radio className="w-6 h-6" />
       </div>
-      <h1 className="text-xl font-bold">
+      <h1 className="text-xl ">
         {errorMsg ? 'Authentication Failed' : 'Completing Google Sign In...'}
       </h1>
       <p className="text-sm text-muted-foreground max-w-sm">
