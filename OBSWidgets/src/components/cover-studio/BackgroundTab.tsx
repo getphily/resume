@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import MediaPicker from "@/components/media/MediaPicker";
+import { getAssetPublicUrl } from "@/lib/media/api";
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
@@ -41,6 +43,18 @@ export function BackgroundTab({ cfg, setCfg, images, setImages }: BackgroundTabP
 
     const url = URL.createObjectURL(file);
     const img = new Image();
+    img.onload = () => {
+      setImages(prev => ({ ...prev, bg: img }));
+      setCfg(prev => ({ ...prev, bg: { ...prev.bg, type: 'image' } }));
+    };
+    img.src = url;
+  };
+
+  
+  const handleMediaSelect = (asset: any) => {
+    const url = getAssetPublicUrl(asset);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
     img.onload = () => {
       setImages(prev => ({ ...prev, bg: img }));
       setCfg(prev => ({ ...prev, bg: { ...prev.bg, type: 'image' } }));
@@ -140,12 +154,18 @@ export function BackgroundTab({ cfg, setCfg, images, setImages }: BackgroundTabP
       {cfg.bg.type === 'image' && (
         <div className="flex flex-col gap-4">
           {!images.bg ? (
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors">
-              <Upload className="w-6 h-6 text-muted-foreground mb-2" />
-              <span className="text-xs font-medium text-foreground">Click to upload background</span>
-              <span className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP (Max 15MB)</span>
-              <input type="file" className="hidden" accept="image/jpeg, image/png, image/webp" onChange={handleImageUpload} />
-            </label>
+            <MediaPicker 
+              allowedKinds={['image']} 
+              onSelect={(asset) => handleMediaSelect(asset)} 
+              className="w-full"
+              trigger={
+                <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors">
+                  <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+                  <span className="text-xs font-medium text-foreground">Browse Media Library</span>
+                  <span className="text-xs text-muted-foreground mt-1">Select a background image</span>
+                </div>
+              }
+            />
           ) : (
             <div className="flex flex-col gap-4">
               <Button variant="outline" size="sm" onClick={handleRemoveImage} className="w-full text-destructive hover:text-destructive hover:bg-destructive/10">

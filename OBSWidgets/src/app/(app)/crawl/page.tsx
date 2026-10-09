@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
+import MediaPicker from "@/components/media/MediaPicker";
+import { getAssetPublicUrl } from "@/lib/media/api";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
@@ -170,31 +172,15 @@ function LogoProperties({ config, onChange }: { config: ChyronConfig; onChange: 
               <label className="text-xs font-semibold text-foreground block mb-1.5">Image URL</label>
               <div className="flex gap-2">
                 <Input value={l.imageUrl} onChange={e => update({ imageUrl: e.target.value })} placeholder="Paste image URL" className="flex-1 h-9 text-xs" />
-                <label className="cursor-pointer flex items-center px-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold shrink-0 transition-colors">
-                  Upload
-                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    const toastId = toast.loading('Uploading image...');
-                    try {
-                      const fileExt = file.name.split('.').pop();
-                      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-                      const { error } = await supabase.storage.from('assets').upload(`chyron/${fileName}`, file, { upsert: true });
-                      if (error) {
-                        const { error: error2 } = await supabase.storage.from('images').upload(`chyron/${fileName}`, file, { upsert: true });
-                        if (error2) throw error2;
-                        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(`chyron/${fileName}`);
-                        update({ imageUrl: publicUrl });
-                      } else {
-                        const { data: { publicUrl } } = supabase.storage.from('assets').getPublicUrl(`chyron/${fileName}`);
-                        update({ imageUrl: publicUrl });
-                      }
-                      toast.success('Image uploaded!', { id: toastId });
-                    } catch (err: any) {
-                      toast.error(`Upload failed: ${err.message}.`, { id: toastId, duration: 5000 });
-                    }
-                  }} />
-                </label>
+                <MediaPicker 
+                  allowedKinds={['image']} 
+                  onSelect={(asset) => update({ imageUrl: getAssetPublicUrl(asset) })} 
+                  trigger={
+                    <div className="cursor-pointer flex items-center px-3 bg-muted hover:bg-muted/80 text-foreground border border-border rounded-md text-xs font-semibold shrink-0 transition-colors h-9">
+                      Browse
+                    </div>
+                  }
+                />
               </div>
             </div>
           )}

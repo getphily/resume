@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Upload, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import toast from 'react-hot-toast';
+import MediaPicker from './media/MediaPicker';
+import { getAssetPublicUrl } from '@/lib/media/api';
 
 export function ImageUploadOrUrl({ value, onChange, label }: { value: string, onChange: (val: string) => void, label: string }) {
   const [uploading, setUploading] = useState(false);
@@ -98,18 +100,15 @@ export function ImageUploadOrUrl({ value, onChange, label }: { value: string, on
           </Button>
         )}
 
-        <Button 
-          size="sm" 
-          variant="secondary" 
-          disabled={uploading} 
-          asChild 
-          className="h-9 cursor-pointer gap-1.5 shrink-0 text-xs font-semibold"
-        >
-          <label>
-            <Upload className="w-3.5 h-3.5" /> {uploading ? 'UPLOADING...' : 'UPLOAD'}
-            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" disabled={uploading} />
-          </label>
-        </Button>
+        <MediaPicker 
+          allowedKinds={['image']} 
+          onSelect={(asset) => onChange(getAssetPublicUrl(asset))} 
+          trigger={
+            <Button size="sm" variant="secondary" className="h-9 cursor-pointer gap-1.5 shrink-0 text-xs font-semibold">
+              <Upload className="w-3.5 h-3.5" /> BROWSE
+            </Button>
+          } 
+        />
       </div>
     </div>
   );

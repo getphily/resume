@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import MediaPicker from "@/components/media/MediaPicker";
+import { getAssetPublicUrl } from "@/lib/media/api";
 import { Mic, Play, Plus, Share, MoreHorizontal, Headphones, Info, Edit2, CheckCircle2, ExternalLink, Check, GraduationCap, BookOpen, Upload, Download, AlertCircle, Trash2, Wand2, Rocket, Sparkles, Palette, ChevronDown, AudioLines, ArrowRight, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -802,9 +804,11 @@ export default function YourPodcastLandingPage() {
                     {!data.artworkUrl && !(activeStepIndex === 0 && !s1_coverComplete) && <AlertCircle className="absolute top-2 right-2 w-5 h-5 text-destructive animate-pulse z-20" />}
 
 
-                    <label className="absolute inset-0 w-full h-full cursor-pointer z-10">
-                      <input type="file" accept="image/png, image/jpeg" className="hidden" onChange={handleFileUpload} />
-                    </label>
+                    <MediaPicker 
+                      allowedKinds={['image']} 
+                      onSelect={(asset) => updateData({ artworkUrl: getAssetPublicUrl(asset) })} 
+                      trigger={<div className="absolute inset-0 w-full h-full cursor-pointer z-10"></div>}
+                    />
                     {data.artworkUrl ? (
                       <img src={data.artworkUrl} alt={data.title} className="w-full h-full object-cover group-hover:opacity-80 transition-opacity" />
                     ) : (

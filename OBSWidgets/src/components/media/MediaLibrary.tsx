@@ -30,7 +30,15 @@ import toast from 'react-hot-toast';
 import { formatBytes } from '@/lib/utils';
 import MediaDetailDrawer from './MediaDetailDrawer';
 
-export default function MediaLibrary() {
+export default function MediaLibrary({ 
+  mode = 'standalone', 
+  onSelect,
+  allowedKinds
+}: { 
+  mode?: 'standalone' | 'picker';
+  onSelect?: (asset: MediaAsset) => void;
+  allowedKinds?: MediaKind[];
+}) {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [summary, setSummary] = useState<MediaStorageSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,10 +54,12 @@ export default function MediaLibrary() {
   const fetchMedia = useCallback(async () => {
     try {
       const data = await getMediaAssets({
-        kind: filter === 'all' ? undefined : filter,
+        kind: filter === 'all' ? (allowedKinds?.length === 1 ? allowedKinds[0] : undefined) : filter,
         search: search.length > 2 ? search : undefined,
       });
-      setAssets(data);
+      // Filter out on frontend if multiple allowedKinds exist
+      const filtered = allowedKinds ? data.filter(a => allowedKinds.includes(a.kind)) : data;
+      setAssets(filtered);
       const sum = await getMediaStorageSummary();
       setSummary(sum);
     } catch (err: any) {
@@ -239,7 +249,7 @@ export default function MediaLibrary() {
                 key={asset.id} 
                 asset={asset} 
                 viewMode={viewMode}
-                onSelect={() => setSelectedAsset(asset)}
+                onSelect={() => mode === 'picker' && onSelect ? onSelect(asset) : setSelectedAsset(asset)}
                 onDelete={() => handleDelete(asset.id)}
               />
             ))}

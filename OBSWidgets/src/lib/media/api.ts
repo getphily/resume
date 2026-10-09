@@ -93,19 +93,9 @@ export async function getMediaAssets(options?: {
 
 // Generates a short-lived signed URL for a private media asset
 // In a real app we'd batch these and cache them.
-export async function getAssetSignedUrl(asset: MediaAsset): Promise<string> {
-  if (asset.public_path) {
-    // Return public URL if published
-    const { data } = supabase.storage.from('media-public').getPublicUrl(asset.public_path);
-    return data.publicUrl;
-  }
-  
-  const { data, error } = await supabase.storage
-    .from(asset.storage_bucket)
-    .createSignedUrl(asset.storage_path, 3600); // 1 hour
-
-  if (error) throw error;
-  return data.signedUrl;
+export function getAssetPublicUrl(asset: MediaAsset): string {
+  const { data } = supabase.storage.from(asset.storage_bucket).getPublicUrl(asset.storage_path);
+  return data.publicUrl;
 }
 
 export async function updateMediaAsset(id: string, updates: Partial<MediaAsset>): Promise<void> {

@@ -1,4 +1,6 @@
 import React, { useRef, useState } from 'react';
+import MediaPicker from "@/components/media/MediaPicker";
+import { getAssetPublicUrl } from "@/lib/media/api";
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { CoverConfig, CoverImages } from '@/lib/coverStudio/types';
@@ -55,6 +57,18 @@ export function HostPhotoTab({ cfg, setCfg, images, setImages }: HostPhotoTabPro
         }
       }
       setImages(prev => ({ ...prev, host: img }));
+    };
+    img.src = url;
+  };
+
+  
+  const handleMediaSelect = (asset: any) => {
+    const url = getAssetPublicUrl(asset);
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      setImages(prev => ({ ...prev, host: img }));
+      setCfg(prev => ({ ...prev, host: { ...prev.host, type: 'image' } }));
     };
     img.src = url;
   };
@@ -116,12 +130,18 @@ export function HostPhotoTab({ cfg, setCfg, images, setImages }: HostPhotoTabPro
       </p>
 
       {!images.host ? (
-        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors">
-          <Upload className="w-6 h-6 text-muted-foreground mb-2" />
-          <span className="text-xs font-medium text-foreground">Click to upload host photo</span>
-          <span className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP (Max 15MB)</span>
-          <input type="file" className="hidden" accept="image/jpeg, image/png, image/webp" onChange={handleImageUpload} />
-        </label>
+        <MediaPicker 
+          allowedKinds={['image']} 
+          onSelect={(asset) => handleMediaSelect(asset)} 
+          className="w-full"
+          trigger={
+            <div className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/20 hover:bg-muted/40 transition-colors">
+              <Upload className="w-6 h-6 text-muted-foreground mb-2" />
+              <span className="text-xs font-medium text-foreground">Browse Media Library</span>
+              <span className="text-xs text-muted-foreground mt-1">Select a host photo</span>
+            </div>
+          }
+        />
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex gap-2">
