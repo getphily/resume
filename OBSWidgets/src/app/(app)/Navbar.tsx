@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Logo } from '@/components/Logo';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { TOOLSETS } from '@/lib/toolsets';
 import { cn } from '@/lib/utils';
@@ -152,7 +153,7 @@ export default function Navbar() {
 
         {/* Brand Logo */}
         <Link href="/" className="flex items-center no-underline group min-h-[44px] p-1 rounded-md focus-visible:outline-white focus-visible:outline-2 focus-visible:outline-offset-2">
-          <Image src="/logo-gp-black.png" alt="GetPhily Logo" width={48} height={48} className="h-10 w-auto object-contain drop-shadow-sm group-hover:opacity-90 transition-opacity" priority />
+          <Logo className="h-10 w-10 drop-shadow-sm group-hover:opacity-90 transition-opacity"  />
         </Link>
 
         {/* Desktop Nav: Home, Dashboard, one item per toolset */}
