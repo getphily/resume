@@ -53,11 +53,11 @@ function TopNavLinks() {
         Dashboard
       </Link>
       <Link
-        href="/media"
-        className={cls(pathname.startsWith('/media'))}
-        aria-current={pathname.startsWith('/media') ? 'page' : undefined}
+        href="/account"
+        className={cls(pathname.startsWith('/account'))}
+        aria-current={pathname.startsWith('/account') ? 'page' : undefined}
       >
-        Media Library
+        Account & Media
       </Link>
       <span className="w-px h-5 bg-white/15 mx-2" aria-hidden="true" />
       {TOOLSETS.map((ts) => {

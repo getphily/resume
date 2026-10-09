@@ -3,16 +3,17 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, User, Sliders, Check, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, User, Sliders, Check, ShieldCheck, FileImage } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ThemeMode, VALID_THEMES, DEFAULT_THEME } from '@/app/ThemeProvider';
+import MediaLibrary from '@/components/media/MediaLibrary';
 
 interface ThemeOption {
   id: ThemeMode;
@@ -73,12 +74,16 @@ const THEME_OPTIONS: ThemeOption[] = [
   },
 ];
 
-export default function AccountPage() {
+import { Suspense } from 'react';
+
+function AccountContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
-  const [activeTab, setActiveTab] = useState<'PREFS' | 'PROFILE'>('PREFS');
+  const searchParams = useSearchParams();
+  const defaultTab = (searchParams.get('tab')?.toUpperCase() as 'PREFS' | 'PROFILE' | 'MEDIA') || 'PREFS';
+  const [activeTab, setActiveTab] = useState<'PREFS' | 'PROFILE' | 'MEDIA'>(defaultTab);
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -230,6 +235,19 @@ export default function AccountPage() {
         >
           <User className="w-4 h-4" />
           <span>Public Profile</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('MEDIA')}
+          className={cn(
+            "pb-3.5 text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer border-b-2",
+            activeTab === 'MEDIA'
+              ? "text-primary border-primary font-bold"
+              : "text-muted-foreground hover:text-foreground border-transparent"
+          )}
+        >
+          <FileImage className="w-4 h-4" />
+          <span>Media Library</span>
         </button>
       </div>
 
@@ -471,6 +489,21 @@ export default function AccountPage() {
         </Card>
       )}
 
+      {/* TAB 3: Media Library */}
+      {activeTab === 'MEDIA' && (
+        <div className="flex-1 min-h-[70vh] flex flex-col border border-border rounded-xl shadow-xs overflow-hidden bg-background">
+          <MediaLibrary />
+        </div>
+      )}
+
     </div>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-muted-foreground">Loading...</div>}>
+      <AccountContent />
+    </Suspense>
   );
 }

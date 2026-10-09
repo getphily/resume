@@ -69,6 +69,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
   if (
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/media') ||
+    pathname.startsWith('/account') ||
     pathname.startsWith('/crawl') ||
     pathname.startsWith('/chyron') ||
     pathname.startsWith('/clock') ||
@@ -81,7 +82,7 @@ function getToolSection(pathname: string): ToolSectionConfig {
       badge: 'OBS Overlays',
       links: [
         { name: 'Studio Hub', path: '/dashboard', icon: LayoutDashboard, desc: 'All widgets & embeds' },
-        { name: 'Media Library', path: '/media', icon: FileImage, desc: 'Your uploaded files' },
+        { name: 'Account & Media', path: '/account', icon: User, desc: 'Profile, Theme & Files' },
         { name: 'Chyron Builder', path: '/crawl', icon: Tv, desc: 'Animated lower-thirds & tickers' },
         { name: 'Clock Widget', path: '/clock', icon: Clock, desc: 'Broadcast clocks' },
         { name: 'Timer Widget', path: '/timer', icon: Timer, desc: 'Stream countdowns' },
@@ -118,18 +119,6 @@ function getToolSection(pathname: string): ToolSectionConfig {
         { name: 'CBA Diff Tool', path: '/union-tools#cba', icon: FileText, desc: 'Contract comparison', badge: 'Dev' },
         { name: 'Grievance Tracker', path: '/union-tools#grievances', icon: Calendar, desc: 'Deadline monitoring', badge: 'Dev' },
         { name: 'Wage Modeler', path: '/union-tools#wages', icon: TrendingUp, desc: 'Step scale projections', badge: 'Dev' },
-      ],
-    };
-  }
-
-  // 5. Account Settings
-  if (pathname.startsWith('/account')) {
-    return {
-      title: 'Account Settings',
-      badge: 'Profile',
-      links: [
-        { name: 'Profile & Auth', path: '/account', icon: User, desc: 'Identity & credentials' },
-        { name: 'Saved Widgets', path: '/dashboard', icon: LayoutDashboard, desc: 'Your stream studio items' },
       ],
     };
   }
